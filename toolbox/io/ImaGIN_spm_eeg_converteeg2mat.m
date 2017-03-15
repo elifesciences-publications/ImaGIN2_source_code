@@ -30,341 +30,91 @@ function D = ImaGIN_spm_eeg_converteeg2mat(S)
 % Stefan Kiebel
 % $Id: spm_eeg_converteeg2mat.m 193 2005-07-01 13:37:59Z james $
 
-
-try
-    S2.dataset=S.dataset;
-catch
-    [S.dataset, sts] = spm_select(1, '.*', 'Select M/EEG data file');
-    S2.dataset=S.dataset;
-    if ~sts, return; end
+% Parse inputs
+S2 = struct();
+if (nargin < 1) || isempty(S)
+    S = struct();
+else
+    S2 = ImaGIN_copy_fields(S2, S, {'dataset', 'Atlas', 'FileOut'});
 end
-Filename=S2.dataset(1:end-4);
 
-fmt=lower(spm_str_manip(S.dataset,'e'));
+% Ask dataset (if not defined in input)
+if ~isfield(S2, 'dataset')
+    [S.dataset, sts] = spm_select(1, '.*', 'Select M/EEG data file');
+    S2.dataset = S.dataset;
+    if ~sts
+        return;
+    end
+end
 
-
-% which species?
-try
-    S2.Atlas = S.Atlas;
-catch
-    %     Ctype = {
-    %             'Human',...
-    %             'Rat',...
-    %             'Mouse'};
-    %     str   = 'Select atlas';
-    % 	Sel   = spm_input(str, '+1', 'm', Ctype);
-    % 	S2.Atlas = Ctype{Sel};
+% Ask species (if not defined in input)
+if ~isfield(S2, 'Atlas')
     S2.Atlas = spm_input('Select atlas', '+1','Human|Rat|Mouse');
 end
 
-
-try
-    S2.FileOut=S.FileOut;
-catch
+% Get output file (if not defined in input)
+if ~isfield(S2, 'FileOut')
     S2.FileOut = spm_str_manip(S.dataset(1:end-4),'t');
 end
 
-% % which channel template file
-% try
-%     Fchannels = S.Fchannels;
-% catch
-%     Fchannels = spm_select(1, '\.mat$', 'Select channel template file', {}, fullfile(spm('dir'), 'EEGtemplates'));
-% end
-% S2.Fchannels = Fchannels;
+% Processing starts
+spm('Pointer','Watch');
 
+
+% Loop on input files
 Nfiles = size(S.dataset, 1);
-Cnames ='';
-switch fmt
-    case {'smr'}
-        for i1 = 1:Nfiles
-            S2.Fdata = deblank(S.dataset(i1, :));
-            try
-                S2.CreateTemplate = S.CreateTemplate;
-            end
-            try
-                S2.Fchannels = S.Fchannels;
-            end
-            try
-                S2.Bipolar=S.Bipolar;
-            end
-            try
-                S2.bipole = S.Montage;
-            end
-            try
-                S2.epochlength = S.epochlength;
-            end
-            try
-                S2.coarse = S.coarse;
-            end
-            try
-                S2.channel = S.channel;
-            end
+D = cell(1,Nfiles);
+for i1 = 1:Nfiles
+    % Get file extension
+    S2.Fdata = deblank(S.dataset(i1, :));
+    [fPath, fBase, fExt] = fileparts(S2.Fdata);
+               
+    switch lower(fExt)
+        case '.smr'
+            S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Fchannels', 'Bipolar', 'Montage', 'epochlength', 'coarse', 'channel'});
             D{i1} = ImaGIN_spm_eeg_rdata_spike2_mono(S2);
-        end
+        
+        case '.eeg'  % BrainAmp or Nihon Kohden
+            % BrainAmp: There is a header in the same folder (.vhdr or .ahdr)
+            if file_exist(fullfile(fPath, [fBase, '.vhdr'])) || file_exist(fullfile(fPath, [fBase, '.ahdr']))
+                S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Fchannels', 'Bipolar', 'Montage', 'epochlength', 'coarse', 'channel', 'SaveFile'});
+                D{i1} = ImaGIN_spm_eeg_rdata_elan(S2);
+            % Nihon Kohden
+            else
+                D{i1} = ImaGIN_spm_eeg_rdata_nk(S2);
+            end
 
-    case {'eeg'}
-        for i1 = 1:Nfiles
-            S2.Fdata = deblank(S.dataset(i1, :));
-            try
-                S2.CreateTemplate = S.CreateTemplate;
-            end
-            try
-                S2.Fchannels = S.Fchannels;
-            end
-            try
-                S2.Bipolar=S.Bipolar;
-            end
-            try
-                S2.bipole = S.Montage;
-            end
-            try
-                S2.epochlength = S.epochlength;
-            end
-            try
-                S2.coarse = S.coarse;
-            end
-            try
-                S2.channel = S.channel;
-            end
-            try
-                S2.SaveFile = S.SaveFile;
-            end
-            D{i1} = ImaGIN_spm_eeg_rdata_elan(S2);
-        end
-
-    case {'asc','txt'}
-        for i1 = 1:Nfiles
-            S2.Fdata = deblank(S.dataset(i1, :));
-            try
-                S2.CreateTemplate = S.CreateTemplate;
-            end
-            try
-                S2.Fchannels = S.Fchannels;
-            end
-            try
-                S2.coarse = S.coarse;
-            end
-            try
-                S2.Bipolar=S.Bipolar;
-            end
-            try
-                S2.channel = S.channel;
-            end
-            try
-                S2.Radc = S.Radc;
-            end
-            try
-                S2.Nevent = S.Nevent;
-            end
-            try
-                S2.filenamePos=S.filenamePos;
-            end
-            try
-                S2.filenameName=S.filenameName;
-            end
-            try
-                S2.MontageName = S.MontageName;
-            end
+        case {'.asc','.txt'}
+            S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Fchannels', 'coarse', 'Bipolar', 'channel', 'Radc', 'Nevent', 'filenamePos', 'filenameName', 'MontageName'});
             D{i1} = ImaGIN_spm_eeg_rdata_ascii(S2);
-        end
 
-    case {'trc'}
-        for i1 = 1:Nfiles
-            S2.Fdata = deblank(S.dataset(i1, :));
-            try
-                S2.pts = S.pts;
-            end
-            try
-                S2.System = S.System;
-            end
-            try
-                S2.CreateTemplate = S.CreateTemplate;
-            end
-            try
-                S2.Fchannels = S.Fchannels;
-            end
-            try
-                S2.channel = S.channel;
-            end
-            try
-                S2.coarse = S.coarse;
-            end
-            try
-                S2.Montage = S.Montage;
-            end
-            try
-                S2.MontageName = S.MontageName;
-            end
-            try
-                S2.NeventType = S.NeventType;
-            end
-            try
-                S2.event =  S.event;
-            end
-            try
-                S2.event_file=S.event_file;
-            end
-            try
-                S2.Bipolar=S.Bipolar;
-            end
-            try
-                S2.bipole=S.bipole;
-            end
-            try
-                S2.loadevents=S.loadevents;
-            end
+        case '.trc'
+            S2 = ImaGIN_copy_fields(S2, S, {'pts', 'System', 'CreateTemplate', 'Fchannels', 'channel', 'coarse', 'Montage', 'MontageName', 'NeventType', 'event_file' , 'Bipolar', 'bipole', 'loadevents'});
             D{i1} = ImaGIN_spm_eeg_rdata_micromed_mono(S2);
-        end
 
-    case {'msm'}
-        for i1 = 1:Nfiles
-            S2.Fdata = deblank(S.dataset(i1, :));
-            try
-                S2.Atlas = S.Atlas;
-            end
-            try
-                S2.SEEG = S.SEEG;
-            end
-            try
-                S2.Bipolar=S.Bipolar;
-            end
-            try
-                S2.coarse = S.coarse;
-            end
-            try
-                S2.SaveFile=S.SaveFile;
-            end
+        case '.msm'
+            S2 = ImaGIN_copy_fields(S2, S, {'Atlas', 'SEEG', 'Bipolar', 'coarse', 'SaveFile'});
             D{i1} = ImaGIN_spm_eeg_rdata_msm_mono(S2);
-        end
 
-    case {'bin'}
-        for i1 = 1:Nfiles
-            S2.Fdata = deblank(S.dataset(i1, :));
-            try
-                S2.Bipolar=S.Bipolar;
-            end
-            try
-                S2.bipole = S.Bipole;
-            end
-            try
-                S2.CreateTemplate = S.CreateTemplate;
-            end
-            try
-                S2.Fchannels = S.Montage;
-            end
-            try
-                S2.coarse = S.coarse;
-            end
-            try
-                S2.Nevent=S.Nevent;
-            end
-            try
-                S2.SEEG=S.SEEG;
-            end
-            try
-                S2.filenamePos=S.filenamePos;
-            end
-            try
-                S2.filenameName=S.filenameName;
-            end
-            try
-                S2.MontageName = S.MontageName;
-            end
-            try
-                S2.SaveFile=S.SaveFile;
-            end
+        case '.bin'
+            S2 = ImaGIN_copy_fields(S2, S, {'Bipolar', 'Bipole', 'CreateTemplate', 'Montage', 'coarse', 'Nevent', 'SEEG', 'filenamePos', 'filenameName', 'MontageName', 'SaveFile'});
             D{i1} = ImaGIN_spm_eeg_rdata_deltamedbin_mono(S2);
-        end
-
        
-    case {'edf'}
-        
-        for i1 = 1:Nfiles
-            S2.Fdata = deblank(S.dataset(i1, :));
-            try
-                S2.channel = S.channel;
-            end
-            try
-                S2.Atlas = S.Atlas;
-            end
-            try
-                S2.SEEG = S.SEEG;
-            end
-            try
-                S2.Bipolar=S.Bipolar;
-            end
-            try
-                S2.coarse = S.coarse;
-            end
-            try
-                S2.SizeMax = S.SizeMax;
-            end
-%             try
-%                 S2.MontageName=S.MontageName;
-%             end
-%             try
-%                 S2.filenamePos=S.filenamePos;
-%             end
-%             try
-%                 S2.Fchannels=S.Fchannels;
-%             end
-%             try
-%                 S2.CreateTemplate = S.CreateTemplate;
-%             end
-
-            spm('Pointer','Watch');
+        case '.edf'
+            S2 = ImaGIN_copy_fields(S2, S, {'channel', 'Atlas', 'SEEG', 'Bipolar', 'coarse', 'SizeMax'});
             D = ImaGIN_spm_eeg_rdata_edf(S2);
-        end
-        spm('Pointer','Arrow');
-        
-    case {'e'}
-        
-        for i1 = 1:Nfiles
-            S2.Fdata = deblank(S.dataset(i1, :));
-%             try
-%                 S2.Bipolar=S.Bipolar;
-%             end
-%             try
-%                 S2.bipole = S.Bipole;
-%             end
-            try
-                S2.CreateTemplate = S.CreateTemplate;
-            end
-            try
-                S2.Fchannels = S.Montage;
-            end
-            try
-                S2.coarse = S.coarse;
-            end
-%             try
-%                 S2.Nevent=S.Nevent;
-%             end
-            try
-                S2.SEEG=S.SEEG;
-            end
-            try
-                S2.filenamePos=S.filenamePos;
-            end
-            try
-                S2.filenameName=S.filenameName;
-            end
-            try
-                S2.MontageName = S.MontageName;
-            end
-            try
-                S2.SaveFile=S.SaveFile;
-            end
-            try
-                S2.channel = S.channel;
-            end
-            D = ImaGIN_spm_eeg_rdata_nicolet_mono(S2);
-        end
-        spm('Pointer','Arrow');
-        
-    otherwise
-        error('Unknown format');
-end
 
+        case '.e'
+            S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Montage', 'coarse', 'SEEG', 'filenamePos', 'filenameName', 'MontageName', 'SaveFile', 'channel'});
+            D = ImaGIN_spm_eeg_rdata_nicolet_mono(S2);
+
+        otherwise
+            error('Unknown format');
+    end
 end
+% Processing stops
+spm('Pointer','Arrow');
+
+
 
 
