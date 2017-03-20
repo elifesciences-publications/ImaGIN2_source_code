@@ -1,6 +1,21 @@
-function ImaGIN
+function ImaGIN(cmd)
+% IMAGIN Starts the ImaGIN toolbox GUI (spm toolbox).
 
-% Set ImaGIN path
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% Copyright (c)2000-2017 Inserm
+% =============================================================================-
+%
+% Authors: Olivier David, 2010-2017
+%          Francois Tadel, 2017
+
+%-Set ImaGIN path
 %-----------------------------------------------------------------------
 % Make sure the main ImaGIN folder is at the top of the path
 ImaGINdir = fileparts(which(mfilename));
@@ -18,6 +33,18 @@ for i = 1:length(toolboxDir)
     P = genpath(nextdir);
     % Add directory and subdirectories
     addpath(P, '-BEGIN');
+end
+
+
+%-Switch for specific commands
+%-----------------------------------------------------------------------
+if (nargin >= 1) && ~isempty(cmd)
+    switch lower(cmd)
+        case 'deploy'
+            addpath(fullfile(ImaGINdir, 'deploy'));
+            ImaGIN_deploy
+            return;
+    end
 end
 
 

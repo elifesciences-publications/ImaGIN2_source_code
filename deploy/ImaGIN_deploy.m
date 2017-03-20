@@ -7,7 +7,14 @@ function ImaGIN_deploy()
 %    - Copy files to GIT folder and open GitGUI
 
 % -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
 %
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% Copyright (c)2000-2017 Inserm
 % =============================================================================-
 %
 % Authors: Francois Tadel, 2017
@@ -17,13 +24,14 @@ function ImaGIN_deploy()
 % Start timer
 tic;
 % License file
-srcDir = fileparts(mfilename);
+srcDir = fileparts(fileparts(which(mfilename)));
 commentFile = fullfile(srcDir, 'deploy', 'autocomment.txt');
 
 
 %% ===== GET ALL DIRECTORIES =====
 % Get all the subdirectories
-srcPath = GetPath(srcDir);
+srcPath = GetPath(fullfile(srcDir, 'toolbox'));
+srcPath = [srcPath, srcDir, ';', fullfile(srcDir, 'deploy')];
 % Split string
 jPath = java.lang.String(srcPath);
 jSplitPath = jPath.split(';');
