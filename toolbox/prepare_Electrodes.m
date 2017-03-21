@@ -32,7 +32,7 @@ if strcmp(source, 'intranat')
     positiontmp = data{indi};
     nametmp = data{1};
     Position = [];
-    Name = [];
+    Name = cell(2,1);
     if strcmp(polarity,'monopolar')
         monop=[];
         for i=(indj+1):length(nametmp)
@@ -40,8 +40,11 @@ if strcmp(source, 'intranat')
                 ind1 = regexp(lower(nametmp{i}),'[a-z\'']');
                 ind2 = regexp(lower(nametmp{i}),'[0-9]');
                 num = num2str(str2num(nametmp{i}(ind2)));
+                num2 = nametmp{i}(ind2);
                 name = [lower(nametmp{i}(ind1)) num];
-                Name = cat(1,Name,{name});
+                name2 = [lower(nametmp{i}(ind1)) num2];
+                Name{1} = cat(1,Name{1},{name});
+                Name{2} = cat(1,Name{2},{name2});
                 Position = cat(1,Position,str2num(positiontmp{i}));
             end
         end
@@ -53,9 +56,13 @@ if strcmp(source, 'intranat')
                 ind1 = regexp(lower(nametmp{i}),'[a-z\'']');
                 sep = regexp(nametmp{i},'-');
                 ind2 = regexp(nametmp{i},'\d');
-                name = [lower(nametmp{i}(ind1 < sep)) num2str(str2num(nametmp{i}(ind2(ind2 > sep)))) num2str(str2num(nametmp{i}(ind2(ind2 < sep))))];
-                Name = cat(1,Name,{name});
-                Position = cat(1,Position,str2num(positiontmp{i}));
+                if ~isempty(ind1) && ~isempty(ind2)
+                    name = [lower(nametmp{i}(ind1 < sep)) num2str(str2num(nametmp{i}(ind2(ind2 < sep)))) lower(nametmp{i}(ind1 < sep)) num2str(str2num(nametmp{i}(ind2(ind2 > sep))))];
+                    name2 = [lower(nametmp{i}(ind1 < sep)) nametmp{i}(ind2(ind2 < sep)) lower(nametmp{i}(ind1 < sep)) nametmp{i}(ind2(ind2 > sep))];
+                    Name{1} = cat(1,Name{1},{name});
+                    Name{2} = cat(1,Name{2},{name2});
+                    Position = cat(1,Position,str2num(positiontmp{i}));
+                end
             end
         end
         end
@@ -63,6 +70,7 @@ if strcmp(source, 'intranat')
 S.Position = Position;
 S.Name = Name;
 end
+
 
 S.FileTxtOut = FileTxtOut;
 S.FileOut = FileOut;
@@ -73,7 +81,7 @@ end
 
 function data = extractIntranatFile(filename)
 delimiter = '\t';
-formatSpec = '%s%s%s%s%s%s%s%[^\n\r]';
+formatSpec = '%s%s%s%s%s%s%s%s%s%s%s%s%[^\n\r]';
 
 fileID = fopen(filename,'r');
 data = textscan(fileID, formatSpec, 'Delimiter', delimiter,  'ReturnOnError', false);

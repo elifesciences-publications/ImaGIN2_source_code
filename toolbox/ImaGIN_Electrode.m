@@ -67,8 +67,14 @@ for i0=1:size(t,1)
         corresp=0;
         
         if strcmpi(chantype(D,i1),'eeg')
-            for i2=1:length(Name)
-                if strcmpi(Sensors.label{i1},Name{i2})
+            for i2=1:length(Name{1})
+                if strcmpi(Sensors.label{i1},Name{1}{i2})
+                    Sensors.elecpos(i1,:)=Position(i2,:);
+                    Sensors.chanpos(i1,:)=Position(i2,:);
+                    corresp=corresp+1;
+                end
+                
+                if strcmpi(Sensors.label{i1},Name{2}{i2})
                     Sensors.elecpos(i1,:)=Position(i2,:);
                     Sensors.chanpos(i1,:)=Position(i2,:);
                     corresp=corresp+1;
@@ -79,22 +85,29 @@ for i0=1:size(t,1)
             
             if corresp==0
                 %try replacing ' by p
-                for i2=1:length(Name)
-                    if strcmpi(strrep(Sensors.label{i1},'''','p'),strrep(Name{i2},'''','p'))
+                for i2=1:length(Name{1})
+                    if strcmpi(strrep(Sensors.label{i1},'''','p'),strrep(Name{1}{i2},'''','p'))
+                        Sensors.elecpos(i1,:)=Position(i2,:);
+                        Sensors.chanpos(i1,:)=Position(i2,:);
+                        corresp=corresp+1;
+                    end
+                
+                    if strcmpi(strrep(Sensors.label{i1},'''','p'),strrep(Name{2}{i2},'''','p'))
                         Sensors.elecpos(i1,:)=Position(i2,:);
                         Sensors.chanpos(i1,:)=Position(i2,:);
                         corresp=corresp+1;
                     end
                 end
                 
+                
                 if corresp == 0
                     warning([Sensors.label{i1} ' not assigned'])  %warning without identifier are never activated. won't see this message on most computers...
                     chan_not_assigned{iter_bad} = Sensors.label{i1};
                     iter_bad = iter_bad +1 ;
                 end
-            elseif corresp>1
-                warning(['Several electrodes corresponding to ' Sensors.label{i1}])
-                disp(sprintf('Several electrodes corresponding to : %s', Sensors.label{i1}));
+%             elseif corresp>1
+%                 warning(['Several electrodes corresponding to ' Sensors.label{i1}])
+%                 disp(sprintf('Several electrodes corresponding to : %s', Sensors.label{i1}));
             end
             
         elseif strcmpi(chantype(D,i1),'ecg')
@@ -130,8 +143,3 @@ end
     end
     fclose(fid);
     end
-
-
-
-
-
