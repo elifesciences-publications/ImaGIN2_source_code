@@ -1,7 +1,7 @@
-function [iSel, iEog] = ImaGIN_select_channels(chNames, isSEEG)
+function [iSel, iEcg] = ImaGIN_select_channels(chNames, isSEEG)
 % IMAGIN_SELECT_CHANNELS Keep only channels of interest.
 %
-% USAGE:  [iSel, iEog] = ImaGIN_select_channels(chNames, isSEEG=1)
+% USAGE:  [iSel, iEcg] = ImaGIN_select_channels(chNames, isSEEG=1)
 %
 % INPUT: 
 %    - chNames : Cell-array of strings
@@ -9,7 +9,7 @@ function [iSel, iEog] = ImaGIN_select_channels(chNames, isSEEG)
 %
 % OUTPUT:
 %    - iSel : Array of indices of the channels that are considered as valid
-%    - iEog : Array of indices of the channels that are identified as EOG
+%    - iEcg : Array of indices of the channels that are identified as ECG
 
 % -=============================================================================
 % This function is part of the ImaGIN software: 
@@ -57,7 +57,7 @@ isNoInd = cellfun(@isempty, chInd);
 
 % Process all the channels
 iSel = [];
-iEog = [];
+iEcg = [];
 for i = 1:length(chNames)
     % No index or does not end with a digit
     if isNoInd(i) || ~ismember(chNames{i}(end), '0123456789')
@@ -74,7 +74,7 @@ for i = 1:length(chNames)
     % ECG: Accept (should be labelled as such)
     elseif ismember(lower(chTags{i}), {'ecg', 'ekg'})
         iSel(end+1) = i;
-        iEog(end+1) = i;
+        iEcg(end+1) = i;
     % Otherwise: accept
     else
         iSel(end+1) = i;
