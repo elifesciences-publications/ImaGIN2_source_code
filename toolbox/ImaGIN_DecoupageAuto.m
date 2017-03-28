@@ -262,9 +262,8 @@ for c=1:length(KeepEvent) % Navigate all stim events
     % selCh1 = find(strcmpi(elec.label,sfix));
     % selCh2 = find(strcmpi(elec.label,sfix2));
     % S.Channels = [selCh1,selCh2]; 
+    % S.FindBadChannels=0;
     %}
-    
-    S.FindBadChannels=0;
     [stimTime,~,StimulationFreqU] = ImaGIN_StimDetect(S);
     disp(KeepEvent(c)), disp(S.EvtName);
     
@@ -881,4 +880,10 @@ f = {f.name};
 for k=1:numel(f);
     delete(f{k})
 end
+%%
+cropSize = dir(fullfile(DirOut,'*.mat'));
+realCrops = numel({cropSize.name});
+expCrops = length(KeepEvent);
+
+msgbox(strcat(sFile, '  :: Nombre de Stims  = ',    num2str(expCrops),   '   :: Nombre de crops  =  ', num2str(realCrops)), sFile)
 disp('Done');
