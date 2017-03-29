@@ -1,4 +1,4 @@
-function R = spm_mesh_to_grid(M, V, T)
+function R = ImaGIN_spm_mesh_to_grid(M, V, T)
 % Non-linear interpolation of surface-based data onto a regular grid
 % FORMAT R = spm_mesh_to_grid(M, V, T)
 % M        - a patch structure with fields 'faces' and 'vertices'

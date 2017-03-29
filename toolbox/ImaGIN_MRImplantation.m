@@ -1,14 +1,28 @@
-function ImaGIN_MRImplantation(S);
+function ImaGIN_MRImplantation(S)
+% Define SEEG implantation
+%
+% DOCUMENTATION:
+%    Creates 2 pts files (in original coordinates and in MNI space) using the .txt file 
+%    created by looking at original structural patient's MRI. 
+%    Needs the sn.mat created when normalising patient's MRI.
 
-%Creates 2 pts files (in original coordinates and in MNI space)
-%using the .txt file created by looking at original
-%structural patient's MRI. Needs the sn.mat created when normalising
-%patient's MRI
-% O. David, 10/01/07
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
+% Copyright (c) 2000-2017 Inserm
+% =============================================================================-
+%
+% Authors: Olivier David, 2007
 
 
-% Root='C:\Users\odavid\Documents\Data\Epilepsy\Thomann';
-% FileName=fullfile(Root,'Pos IRM MNI.txt');
 try
     FileName=S.FileName;
 catch

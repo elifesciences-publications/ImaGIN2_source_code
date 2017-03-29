@@ -1,5 +1,5 @@
 function ImaGIN(cmd)
-% IMAGIN Starts the ImaGIN toolbox GUI (spm toolbox).
+% Starts the ImaGIN toolbox GUI (spm toolbox).
 
 % -=============================================================================
 % This function is part of the ImaGIN software: 
@@ -12,7 +12,7 @@ function ImaGIN(cmd)
 % FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
 % DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
 %
-% Copyright (c)2000-2017 Inserm
+% Copyright (c) 2000-2017 Inserm
 % =============================================================================-
 %
 % Authors: Olivier David, 2010-2017

@@ -1,24 +1,21 @@
 function D = ImaGIN_causality_compute(S)
-% compute diffent measure of asymetric interactions
-% FORMAT D = spm_eeg_tf(S)
-% 
-% D		- filename of EEG-data file or EEG data struct
-% stored in struct D.events:
-% fmin			- minimum frequency
-% fmax			- maximum frequency
-% rm_baseline	- baseline removal (1/0) yes/no
-% Mfactor       - Morlet wavelet factor (can not be accessed by GUI)
-% 
-% D				- EEG data struct with time-frequency data (also written to files)
-%_______________________________________________________________________
-%
-% spm_eeg_tf estimates instantaneous power and phase of data using the
-% continuous Morlet wavelet transform.
-%_______________________________________________________________________
-% Copyright (C) 2005 Wellcome Department of Imaging Neuroscience
+% Compute diffent measure of asymetric interactions
 
-% Stefan Kiebel
-% $Id: spm_eeg_tf.m 341 2005-11-30 18:08:16Z stefan $
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
+% Copyright (c) 2000-2017 Inserm
+% =============================================================================-
+%
+% Authors: Olivier David
 
 
 [Finter,Fgraph,CmdLine] = spm('FnUIsetup','EEG causality setup',0);

@@ -1,5 +1,5 @@
 function ImaGIN_deploy()
-% IMAGIN_DEPLOY - ImaGIN deployment script.
+% ImaGIN deployment script.
 %
 % STEPS:
 %    - Update *.m inital comments (with doc/autocomment.txt)
@@ -17,7 +17,7 @@ function ImaGIN_deploy()
 % FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
 % DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
 %
-% Copyright (c)2000-2017 Inserm
+% Copyright (c) 2000-2017 Inserm
 % =============================================================================-
 %
 % Authors: Francois Tadel, 2017

@@ -1,10 +1,21 @@
 function D = ImaGIN_RescaleTF(S)
+% Time-rescale several TF files to normalise the length of events (e.g. seizures) before averaging
 
-%Time-rescale several TF files to normalise the length of events (e.g.
-%seizures) before averaging
-%Olivier David
-%2008-03-14
-
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
+% Copyright (c) 2000-2017 Inserm
+% =============================================================================-
+%
+% Authors: Olivier David, 2008
 
 [Finter,Fgraph,CmdLine] = spm('FnUIsetup','EEG time-frequency rescale',0);
 

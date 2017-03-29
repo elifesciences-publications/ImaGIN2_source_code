@@ -1,8 +1,27 @@
 function [H,D,N]=ImaGIN_PermutationEntropy(data,k,TimeDelay,Prior)
+%
+% INPUTS:
+%    - data: vector
+%
+% REFERENCES:
+%    - Bandt & Pompe, 2002; Li X et al, 2007
 
-%Ref: Bandt & Pompe, 2002; Li X et al, 2007
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
+% Copyright (c) 2000-2017 Inserm
+% =============================================================================-
+%
+% Authors: Olivier David
 
-%data is a vector
 
 Permutations=perms(1:k);
 Nperm=size(Permutations,1);

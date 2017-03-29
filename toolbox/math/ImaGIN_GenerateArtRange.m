@@ -1,4 +1,19 @@
 function mArt=ImaGIN_GenerateArtRange(rcmin, rcmax, nb, fe, art_duration, break_duration, window, mode)
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
+% Copyright (c) 2000-2017 Inserm
+% =============================================================================-
+%
+% Authors: Olivier David
 
 id='MATLAB:NonIntegerInput';
 warning('off',id);
@@ -8,7 +23,6 @@ prange=linspace(rcmin,rcmax,nb);
 mArt=zeros(round(window*fe),nb);
 for ii=1:length(prange)
     tau=prange(ii);
-%     mArt=[mArt,ImaGIN_GenerateArtefact(tau,fe,art_duration, window, mode)];
     mArt(:,ii)=ImaGIN_GenerateArtefact(tau,fe,art_duration, break_duration, window, mode);
 end
 

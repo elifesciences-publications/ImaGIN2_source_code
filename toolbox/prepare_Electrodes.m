@@ -1,10 +1,26 @@
 function prepare_Electrodes(source, polarity, FileIn, implantationFile, FileOut, FileTxtOut)
-
-%Add electrode position
+% Add electrode position
+%
 %source : 'classic' (a file with the electrodes names and another one with
 %the MNI positions), implantationFile is the source directory of the 2
 %files
 %      or 'intranat' (a file -implantationFile- with electrodes names, position, atlas,...)
+
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
+% Copyright (c) 2000-2017 Inserm
+% =============================================================================-
+%
+% Authors: ?
 
 [Root,file,~] = fileparts(FileIn);
 

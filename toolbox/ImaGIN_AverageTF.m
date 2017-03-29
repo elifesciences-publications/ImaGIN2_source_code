@@ -1,38 +1,21 @@
 function D = ImaGIN_AverageTF(S)
+% Average TF in a given frequency band (from 3D to 2D data)
 
-%Average TF in a given frequency band (from 3D to 2D data)
-%Olivier David
-
-% User interface for conversion of EEG-files to SPM's data structure
-% FORMAT D = spm_eeg_converteeg2mat(S)
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
 %
-% struct S is optional and has the following (optional) fields:
-%    fmt       - string that determines type of input file. Currently, this
-%                string can be either 'CNT' or 'BDF'
-%    Mname     - char matrix of input file name(s)
-%    Fchannels - String containing name of channel template file
-%_______________________________________________________________________
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
 %
-% spm_eeg_converteeg2mat is a user interface to convert EEG-files from their
-% native format to SPM's data format. This function assembles some
-% necessary information before branching to the format-specific conversion
-% routines.
-% The user has to specify, by either using struct S or the GUI, a 'channel
-% template file' that contains information about the (approximate) spatial
-% positions of the channels.
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
 %
-% Output: The converted data are written to files. The header
-% structs, but not the data, are returned in D as a cell vector of structs.
-%_______________________________________________________________________
+% Copyright (c) 2000-2017 Inserm
+% =============================================================================-
 %
-% Additional formats can be added by (i) extending the code below in a
-% straightforward fashion, (ii) providing a new channel template file and
-% (iii) adding the actual conversion routine to the SPM-code.
-%_______________________________________________________________________
-% Copyright (C) 2005 Wellcome Department of Imaging Neuroscience
-
-% Stefan Kiebel
-% $Id: spm_eeg_TF_images.m 299 2005-11-15 15:25:17Z james $
+% Authors: Olivier David
 
 [Finter,Fgraph,CmdLine] = spm('FnUIsetup','TF',0);
 try

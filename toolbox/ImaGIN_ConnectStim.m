@@ -1,13 +1,26 @@
 function ImaGIN_ConnectStim(S)
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
+% Copyright (c) 2000-2017 Inserm
+% =============================================================================-
+%
+% Authors: Olivier David
 
 % global defaults
 spm('defaults','EEG')
 
-global st defaults
+global st
 
 FS1 = spm('FontSize', 14);
-FS2 = spm('FontSize', 12);
-FS3 = spm('FontSize', 9);
 
 % try
 %     Prefixe=S.Prefixe;
@@ -805,8 +818,7 @@ guidata(F, h);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function DisplayNumberStim(hObject, events)
 
-% spm('defaults','EEG')
-global st defaults
+global st
 
 F  = spm_figure('GetWin','Graphics');
 h = guidata(F);

@@ -1,34 +1,29 @@
 function ImaGIN_spm_eeg_convertmat2ana_3D(S)
-
-%3D for intracerebral EEG
-%Olivier David
-
-% Convert epoched EEG/ERP data from SPM- to analyze format by projecting
-% onto the scalp surface
-% FORMAT spm_eeg_convertmat2ana(S)
+% 3D volume export for intracerebral EEG
 %
-% S		    - optinal input struct
-% (optional) fields of S:
-% Fname		- matrix of EEG mat-files
-% n         - size of quadratic output image (size: n x n x 1)
-%_______________________________________________________________________
-%
-% spm_eeg_convertmat2ana converts EEG/MEG data from the SPM format to the
-% scalp format. The channel data is interpolated to voxel-space using a
-% spline interpolation. The electrodes' locations are specified by the
-% channel template file. Each channel's data will be found in an individual
-% voxel given that n is big enough. The data is written to 4-dim analyze
-% images, i.e. the data of each single trial or ERP is contained in one
-% image file.
-%_______________________________________________________________________
-% Copyright (C) 2005 Wellcome Department of Imaging Neuroscience
-
-% Stefan Kiebel
-% $Id: spm_eeg_convertmat2ana.m 213 2005-08-22 12:43:29Z stefan $
-
-% [Finter, Fgraph, CmdLine] = spm('FnUIsetup', 'EEG conversion setup',0);
+% INPUTS:
+%     S         - optional input struct
+%     (optional) fields of S:
+%     Fname		- matrix of EEG mat-files
+%     n         - size of quadratic output image (size: n x n x 1)
 % 
-% select matfiles to convert
+
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
+% Copyright (c) 2000-2017 Inserm
+% =============================================================================-
+%
+% Authors: Stefan Kiebel, 2005  (for spm_eeg_convertmat2ana.m)
+%          Olivier David        (adaptation for SEEG)
 
 try
     Fname = S.Fname;

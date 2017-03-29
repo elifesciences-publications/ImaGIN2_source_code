@@ -1,4 +1,19 @@
 function [data,Channel]=ReadSMR(DataFile,channelnumber,Coarse,ReadTime)
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
+% Copyright (c) 2000-2017 Inserm
+% =============================================================================-
+%
+% Authors: Francois Tadel, 2017
 
 fid=fopen(DataFile);
 data.data=[];
@@ -30,10 +45,11 @@ for i1=1:length(channelnumber)
             end
             %         data.data(n,1:length(double(d(1:Coarse:end))))=double(d(1:Coarse:end));
             if Coarse2>1
-try
-    %                 d= ImaGIN_lowpassFilter(double(d),1/header.sampleinterval,1/(2*header.sampleinterval*Coarse2)-1);    %antialiasing,
-                d= ImaGIN_bandpassFilter(double(d),1/header.sampleinterval,1,1/(2*header.sampleinterval*Coarse2)-1);    %antialiasing,
-end
+                try
+                    d= ImaGIN_bandpassFilter(double(d),1/header.sampleinterval,1,1/(2*header.sampleinterval*Coarse2)-1);    %antialiasing,
+                catch
+                    warning('Call to ImaGIN_bandpassFilter generated an error.');
+                end
             end
             if i1==1
                 data.data(n,:)=d(1:Coarse2:end);

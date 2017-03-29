@@ -1,21 +1,23 @@
 function D = ImaGIN_spm_eeg_rdata_msm_mono(S)
-% converts EEG data from binary .msm - to SPM-format
-% FORMAT D = ImaGIN_spm_eeg_rdata_deltamedbin(S)
-% 
-% S       - struct (optional)
-% (optional) fields of S:
-% Fdata		  - filename of Deltamed-file
-% Fchannels   - filename of channel template
-% reference   - name of reference channel(s)
-% channel     - index of channel(s) to read
-%_______________________________________________________________________
-% 
-% ImaGIN_spm_eeg_rdata_deltamedbin reads a *.bin Deltamed file and its associated header (.txt), stores everything
-% in struct D and saves struct D to mat-file. The data is stored separately
-% in a dat-file.
-%_______________________________________________________________________
+% Converts EEG data from binary .msm to SPM-format
+%
+% USAGE:   D = ImaGIN_spm_eeg_rdata_msm_mono(S)
 
-% Olivier David
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
+% Copyright (c) 2000-2017 Inserm
+% =============================================================================-
+%
+% Authors: Olivier David
 
 
 D = [];

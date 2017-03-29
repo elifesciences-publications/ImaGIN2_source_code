@@ -10,7 +10,7 @@ function D=ImaGIN_ArtefactCorrectionModel(S)
 % FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
 % DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
 %
-% Copyright (c)2000-2017 Inserm
+% Copyright (c) 2000-2017 Inserm
 % =============================================================================-
 % 
 % Author: Olivier David
