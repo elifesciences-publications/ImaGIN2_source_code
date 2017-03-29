@@ -14,6 +14,9 @@ function ImaGIN_deploy()
 % as published by the Free Software Foundation. Further details on the GPLv3
 % license can be found at http://www.gnu.org/copyleft/gpl.html.
 %
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
 % Copyright (c)2000-2017 Inserm
 % =============================================================================-
 %
@@ -45,7 +48,7 @@ if isempty(autoComment)
     error('Auto-comment file not found.');
 end
 % Convert to Unix-like string
-autoComment = strrep(autoComment, char([13 10]), char(10));
+% autoComment = strrep(autoComment, char([13 10]), char(10));
 % Initialize line counts
 nFiles   = 0;
 nCode    = 0;
@@ -88,19 +91,16 @@ else
 end
 
 
-% %% ===== COPY TO GIT FOLDER =====
-% % Copy all the subfolders
-% disp('DEPLOY> Copying to GIT folder...');
-% !xcopy C:\Work\Dev\brainstorm3\brainstorm.m C:\Work\Dev\brainstorm_git\brainstorm3\brainstorm.m /y /q
-% !xcopy C:\Work\Dev\brainstorm3\defaults C:\Work\Dev\brainstorm_git\brainstorm3\defaults /s /e /y /q
-% !xcopy C:\Work\Dev\brainstorm3\deploy   C:\Work\Dev\brainstorm_git\brainstorm3\deploy   /s /e /y /q
-% !xcopy C:\Work\Dev\brainstorm3\doc      C:\Work\Dev\brainstorm_git\brainstorm3\doc      /s /e /y /q
-% !xcopy C:\Work\Dev\brainstorm3\external C:\Work\Dev\brainstorm_git\brainstorm3\external /s /e /y /q
-% !xcopy C:\Work\Dev\brainstorm3\java     C:\Work\Dev\brainstorm_git\brainstorm3\java     /s /e /y /q
-% !xcopy C:\Work\Dev\brainstorm3\toolbox  C:\Work\Dev\brainstorm_git\brainstorm3\toolbox  /s /e /y /q
-% % Start GIT GUI in the deployment folder
-% system('start /b cmd /c ""C:\Program Files\Git\cmd\git-gui.exe" --working-dir "C:\Work\Dev\brainstorm_git\brainstorm3""');
-
+%% ===== COPY TO GIT FOLDER =====
+% Copy all the subfolders
+disp('DEPLOY> Copying to GIT folder...');
+!xcopy C:\Work\Dev\Inserm\ImaGIN2\ImaGIN.m C:\Work\Dev\Inserm\ftract_dev_git\ImaGIN2\ImaGIN.m  /y /q
+!xcopy C:\Work\Dev\Inserm\ImaGIN2\doc      C:\Work\Dev\Inserm\ftract_dev_git\ImaGIN2\doc       /s /e /y /q
+!xcopy C:\Work\Dev\Inserm\ImaGIN2\deploy   C:\Work\Dev\Inserm\ftract_dev_git\ImaGIN2\deploy    /s /e /y /q
+!xcopy C:\Work\Dev\Inserm\ImaGIN2\external C:\Work\Dev\Inserm\ftract_dev_git\ImaGIN2\external  /s /e /y /q
+!xcopy C:\Work\Dev\Inserm\ImaGIN2\toolbox  C:\Work\Dev\Inserm\ftract_dev_git\ImaGIN2\toolbox   /s /e /y /q
+% Start GIT GUI in the deployment folder
+system('start /b cmd /c ""C:\Program Files\Git\cmd\git-gui.exe" --working-dir "C:\Work\Dev\Inserm\ftract_dev_git\ImaGIN2""');
 
 
 end
