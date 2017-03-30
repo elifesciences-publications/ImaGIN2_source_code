@@ -72,13 +72,10 @@ function ImaGIN_CropManual(D,t,S)
 try
     EventRefName=S.EventStart;
 catch
+    allEvt = unique({D.events.type});
+    disp(['Available event types: ', sprintf('%s ', allEvt{:})]);
     EventRefName=spm_input('Type of start event', 1, 's');
 end
-% try
-%     NumEventStart=S.NumEventStart;
-% catch
-%     NumEventStart=spm_input('Indice of start event', 1, 'r');
-% end
 if isempty(EventRefName)
     EventStart=0;
 end
@@ -182,12 +179,6 @@ Dnew = timeonset(Dnew, Time(1)./D.fsample+D.timeonset);
 %     end
 % end
 
-% if str2num(version('-release'))>=14
-%     save(fullfile(P, D.fname), '-V6', 'D');
-% else
-%     save(fullfile(P, D.fname), 'D');
-% end
-
 save(Dnew);
 
 
@@ -199,6 +190,8 @@ function ImaGIN_CropEpoch(D)
 try
     EventRefName=D.EventRef;
 catch
+    allEvt = unique({D.events.type});
+    disp(['Available event types: ', sprintf('%s ', allEvt{:})]);
     EventRefName=spm_input('Type of reference event', 1,'s');
 end
 Events=D.events;
@@ -276,16 +269,7 @@ if D.NewFile
             end
             Dnew = events(Dnew, 1, Events);
 
-            
-            
-            
-         %   Dnew = type(Dnew, 'single');
-            
-            %renumber events???
-            
             save(Dnew);
-%         else
-%             error('Duration before/after event is too long');
         end
     end
 

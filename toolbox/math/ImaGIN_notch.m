@@ -20,7 +20,7 @@ function x = ImaGIN_notch(x, varargin)
 %          Francois Tadel, 2017 (code reformatting)
 
 % CALL:  x = ImaGIN_notch(x,Fs,Fp,Fmax)
-if (nargin == 3)
+if (nargin == 4)
     Fs   = varargin{1};
     Fp   = varargin{2};
     Fmax = varargin{3};
@@ -34,7 +34,7 @@ if (nargin == 3)
     end
     
 % CALL:  x = ImaGIN_notch(x,Wo,BW)
-elseif (nargin == 2)
+elseif (nargin == 3)
     Wo = varargin{1};
     BW = varargin{2};
     
