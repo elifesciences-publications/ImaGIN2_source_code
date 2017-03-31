@@ -33,7 +33,6 @@ try
     FileOut=P.FileOut;
 end
 
-
 for i0=1:size(t,1)
     T=deblank(t(i0,:));
     D=spm_eeg_load(T);
