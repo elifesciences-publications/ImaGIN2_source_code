@@ -19,16 +19,10 @@ FS1 = spm('FontSize', 14);
 FS2 = spm('FontSize', 12);
 FS3 = spm('FontSize', 10);
 
-
-% handles = guihandles(gcf);
-% t=get(handles.DispFile,'String');
 t = spm_select(1, '\.mat$', 'Select data file');
-D=spm_eeg_load(t);
-Nchannels=nchannels(D);
-Nsamples=nsamples(D);
-Time=D.time;
-Labels=chanlabels(D);
-Events=events(D);
+D = spm_eeg_load(t);
+
+Events = events(D);
 if ~isempty(Events)
     try
         Events(1).type;
@@ -36,9 +30,9 @@ if ~isempty(Events)
         Events=Events{1};
     end
 end
-Types={};
-Code=[];
-for i1=1:length(Events)
+Types = {};
+Code = [];
+for i1 = 1:length(Events)
     trouve=0;
     for i2=1:length(Types)
         if ~strcmp(Types{i2},Events(i1).type) && i2==length(Types) && ~trouve
@@ -54,13 +48,13 @@ for i1=1:length(Events)
         Code(1)=1;
     end
 end
-Ntypes=length(Types);
+Ntypes = length(Types);
 
-%Load and clear interactive window
+% Load and clear interactive window
 Fi  = spm_figure('GetWin','Interactive');
-figure(Fi);clf
+figure(Fi);
+clf;
 
-% FlagImage = spm_input('Display ',1,'Surface|Image');
 if ~isfield(D,'tf')
     Ctype = {
         'Morlet wavelet',...
@@ -72,32 +66,13 @@ if ~isfield(D,'tf')
 
     Flag = spm_input('Display ',1,'Power|Synchrony');
 
-    % %Load Graphics window
-    % F  = spm_figure('GetWin','Graphics');
-    % figure(F);clf
-    % handles = guihandles(gcf);
-    %
-    % handles.dispeventbutton=uicontrol('Tag', 'dispeventbutton', 'Style', 'radiobutton',...
-    %     'Units', 'normalized', 'Position', [0.41 0.945 0.04 0.03],...
-    %     'FontSize', FS1,'Value',0,'Visible','off',...
-    %     'BackgroundColor', 'w',...
-    %     'CallBack', @eventbutton_update,...
-    %     'Parent', F);
-    %
-    % handles.normalisebutton=uicontrol('Tag', 'normalisebutton', 'Style', 'radiobutton',...
-    %     'Units', 'normalized', 'Position', [0.95 0.484 0.04 0.03],...
-    %     'FontSize', FS1,'Value',0,'Visible','off',...
-    %     'BackgroundColor', 'w',...
-    %     'CallBack', @normalisebutton_update,...
-    %     'Parent', F);
-
-    Direc=spm_str_manip(t,'h');
-    File=spm_str_manip(t,'t');
-    E=what(Direc);
-    ok=0;
+    Direc = spm_str_manip(t,'h');
+    File = spm_str_manip(t,'t');
+    E = what(Direc);
+    ok = 0;
     switch Method
-        case{'Morlet wavelet'}
-            %Check if Morlet wavelet has been computed
+        case 'Morlet wavelet'
+            % Check if Morlet wavelet has been computed
             for i1=1:length(E.mat)
                 if strcmp(E.mat{i1},['w1_' File])
                     ok=1;
@@ -121,8 +96,8 @@ if ~isfield(D,'tf')
                 end
             end
 
-        case{'Hilbert'}
-            %Check if Hilbert has been computed
+        case 'Hilbert'
+            % Check if Hilbert has been computed
             for i1=1:length(E.mat)
                 if strcmp(E.mat{i1},['h1_' File])
                     ok=1;
@@ -134,64 +109,50 @@ if ~isfield(D,'tf')
                 return
             else
                 switch Flag
-                    case{'Power'}
+                    case 'Power'
                         Flag2 = spm_input('Power integrated over time window ','+1','Yes|No');
                         if strcmp(Flag2,'Yes')
                             t=fullfile(Direc,['h1_' File]);
                         else
                             t=fullfile(Direc,['h1_' File]);
                         end
-                    case{'Synchrony'}
+                    case 'Synchrony'
                         t=fullfile(Direc,['h2_' File]);
                 end
             end
 
-        case{'Coherence'}
-            %Check if coherence has been computed
+        case 'Coherence'
+            % Check if coherence has been computed
             for i1=1:length(E.mat)
                 if strcmp(E.mat{i1},['c1_' File])
-                    ok=1;
-                    break
+                    ok = 1;
+                    break;
                 end
             end
             if ~ok
                 spm_input('Coherence not computed yet', '+1','d')
-                return
+                return;
             else
                 switch Flag
-                    case{'Power'}
-                        t=fullfile(Direc,['c1_' File]);
-                    case{'Synchrony'}
-                        t=fullfile(Direc,['c2_' File]);
+                    case 'Power'
+                        t = fullfile(Direc,['c1_' File]);
+                    case 'Synchrony'
+                        t = fullfile(Direc,['c2_' File]);
                 end
             end
     end
-    %load data
-    D=spm_eeg_load(t);
+    % Load data
+    D = spm_eeg_load(t);
 
 else
-    Method=D.tf.Method;
-%     Flag=D.tf.Label;
-%     tmp=spm_str_manip(strtok(t,'_'),'t');
-%     switch tmp(2)
-%         case{'1'}
-%             Flag='Power';
-%         case{'2'}
-%             Flag='Synchrony';
-%     end
+    Method = D.tf.Method;
 end
-Flag=D.tf.Label;
+Flag = D.tf.Label;
 
-%Reinterpolate for Display
-% Freq=min(D.tf.frequencies):min([.5 min(diff(D.tf.frequencies))]):max(D.tf.frequencies);
-% Temps=min(D.tf.time):min([.01 min(diff(D.tf.time))]):max(D.tf.time);
-% Temps=Temps(1:ceil(length(Temps)/1e4):end);
-% Freq=Freq(1:ceil(length(Freq)/500):end);
-Freq=min(D.tf.frequencies):min([(max(D.tf.frequencies)-min(D.tf.frequencies))/300 min(diff(D.tf.frequencies))]):max(D.tf.frequencies);
-Temps=min(D.tf.time):min([(max(D.tf.time)-min(D.tf.time))/1e3 min(diff(D.tf.time))]):max(D.tf.time);
-% Temps=Temps(1:ceil(length(Temps)/1e4):end);
-% Freq=Freq(1:ceil(length(Freq)/500):end);
-ok=1;
+% Reinterpolate for display
+Freq = min(D.tf.frequencies):min([(max(D.tf.frequencies)-min(D.tf.frequencies))/300 min(diff(D.tf.frequencies))]):max(D.tf.frequencies);
+Temps = min(D.tf.time):min([(max(D.tf.time)-min(D.tf.time))/1e3 min(diff(D.tf.time))]):max(D.tf.time);
+ok = 1;
 while ok
     try
         ok=0;
@@ -213,11 +174,8 @@ for i1=1:D.nchannels
 end
 D.tf.time=Temps;
 D.tf.frequencies=Freq;
-% D=clone(D,['disp' D.fnamedat],[size(D,1) length(Freq) length(Temps)]);
-% D(:,:,:)=DataDisp(:,:,:);
 
-
-%Load Graphics window
+% Load Graphics window
 F  = spm_figure('GetWin','Graphics');
 figure(F);clf
 handles = guihandles(gcf);
@@ -237,14 +195,12 @@ handles.normalisebutton=uicontrol('Tag', 'normalisebutton', 'Style', 'radiobutto
     'Parent', F);
 
 
-
-%All channel selected by default
+% All channel selected by default
 SelChan=1:D.nchannels;
 SelTrial=1:D.ntrials;
 
-% store data
-% h.FlagImage=FlagImage;
-h.Flag=Flag;
+% Store data
+h.Flag = Flag;
 try
     time=D.tf.time;
 catch
@@ -273,27 +229,20 @@ h.Types=Types;
 h.Ntypes=Ntypes;
 h.Code=Code;
 h.DataDisp=DataDisp;
-% h.poweraxes = axes('Position',...
-%     [0.08 0.55 0.85 0.35],...
-%     'Parent', F);
 h.poweraxes = axes('Position',...
     [0.09 0.55 0.87 0.35],...
     'Parent', F);
 guidata(F, h);
 
-% %Display montage in interactive window
-% draw_montage(D,SelChan,h.Flag);
-
-
-%Compute power averaged on electrodes
+% Compute power averaged on electrodes
 data_plots(h.DataDisp,1);
 
-% make plots without bars
+% Make plots without bars
 draw_plots(1,0)
 
 h = guidata(F);
 
-%Zoom in time
+% Zoom in time
 h.TimeMin=num2str(min(D.tf.time),4);
 h.TimeMax=num2str(max(D.tf.time),4);
 h.TimeCen=num2str(mean([str2double(h.TimeMin) str2double(h.TimeMax)]),4);
@@ -355,7 +304,7 @@ uicontrol(F, 'Tag', 'timeslider2', 'Style', 'slider',...
     'Callback', @timeslider_update,...
     'Parent', F, 'Interruptible', 'off');
 
-%Zoom in frequency
+% Zoom in frequency
 h.FreqMin=num2str(min(D.tf.frequencies));
 h.FreqMax=num2str(max(D.tf.frequencies));
 h.FreqCen=num2str(mean([str2double(h.FreqMin) str2double(h.FreqMax)]));
@@ -402,8 +351,7 @@ uicontrol(F, 'Tag', 'freqslider2', 'Style', 'slider',...
     'Callback', @freqslider_update,...
     'Parent', F, 'Interruptible', 'off');
 
-
-%Frequency normalisation
+% Frequency normalisation
 uicontrol(F, 'Style', 'text', 'Units', 'normalized',...
     'String', 'Frequency normalisation',...
     'Position',[0.65 0.482 0.3 0.029],...
@@ -413,7 +361,7 @@ uicontrol(F, 'Style', 'text', 'Units', 'normalized',...
 set(handles.normalisebutton,'Visible','off');
 
 
-%Adjust colours
+% Adjust colours
 h.ColMin=num2str(h.MinPlot,4);
 h.ColMax=num2str(h.MaxPlot,4);
 h.ColCen=num2str(mean([str2num(h.ColMin) str2num(h.ColMax)]),4);
@@ -517,19 +465,8 @@ if FlagTrial
             'Position',[0.34 0.97 0.18 0.029],...
             'HorizontalAlignment', 'center', 'FontSize', FS1,...
             'BackgroundColor', 'w');
-        %     uicontrol('Tag', 'dispeventbutton', 'Style', 'radiobutton',...
-        %         'Units', 'normalized', 'Position', [0.41 0.945 0.04 0.03],...
-        %         'String', 'Y', 'FontSize', FS1,'Value',0,...
-        %         'BackgroundColor', spm('Colour'),...
-        %         'CallBack', @eventbutton_update,...
-        %         'Parent', F);
         set(handles.dispeventbutton,'Visible','on');
 
-        %     uicontrol(F, 'Style', 'text', 'Units', 'normalized',...
-        %         'String', 'Go to event',...
-        %         'Position',[0.52 0.97 0.18 0.029],...
-        %         'HorizontalAlignment', 'center', 'FontSize', FS1,...
-        %         'BackgroundColor', 'w');
         Neventcode=D.ntrials;
 
         if Neventcode>1
@@ -574,11 +511,7 @@ if FlagTrial
                 'TooltipString', 'Choose trial number',...
                 'Callback', @trialslider_update,...
                 'Parent', F, 'Interruptible', 'off','Visible','off');
-            %         uicontrol(F, 'Style', 'text', 'Units', 'normalized',...
-            %             'String', 'Go to event',...
-            %             'Position',[0.52 0.97 0.18 0.029],...
-            %             'HorizontalAlignment', 'center', 'FontSize', FS1,...
-            %             'BackgroundColor', 'w','Visible','off');
+
             % frame for eventgoslider text
             uicontrol(F, 'Style','Frame','BackgroundColor',spm('Colour'), 'Units',...
                 'normalized', 'Position',[0.53 0.932 0.16 0.025],'Visible','off');
@@ -600,34 +533,6 @@ if FlagTrial
                 'HorizontalAlignment', 'right', 'FontSize', FS1,...
                 'BackgroundColor', spm('Colour'),'Visible','off');
         end
-
-        %     handles.eventgoslider = uicontrol(F, 'Tag', 'eventgoslider', 'Style', 'slider',...
-        %         'Min', 1, 'Max', Neventcode, 'Value', 1, 'Units',...
-        %         'normalized', 'Position', [0.53 0.957 0.16 0.02],...
-        %         'SliderStep', [1/(Neventcode-1) min(Neventcode-1, 10/(Neventcode-1))],...
-        %         'TooltipString', 'Choose trial number',...
-        %         'Callback', @eventslider_update,...
-        %         'Parent', F, 'Interruptible', 'off');
-        %     % frame for eventgoslider text
-        %     uicontrol(F, 'Style','Frame','BackgroundColor',spm('Colour'), 'Units',...
-        %         'normalized', 'Position',[0.53 0.932 0.16 0.025]);
-        %     % event go slider texts
-        %     uicontrol(F, 'Style', 'text', 'Units', 'normalized',...
-        %         'String', '1',...
-        %         'Position',[0.535 0.933 0.03 0.022],...
-        %         'HorizontalAlignment', 'left', 'FontSize', FS1,...
-        %         'BackgroundColor', spm('Colour'));
-        %     handles.eventgotext = uicontrol(F, 'Style', 'text', 'Tag', 'eventgotext',...
-        %         'Units', 'normalized',...
-        %         'String', int2str(get(handles.eventgoslider, 'Value')),...
-        %         'Position',[0.59 0.933 0.04 0.022],...
-        %         'HorizontalAlignment', 'center', 'FontSize', FS1,...
-        %         'BackgroundColor', spm('Colour'));
-        %     uicontrol(F, 'Style', 'text', 'Units', 'normalized',...
-        %         'String', num2str(Neventcode),...
-        %         'Position',[0.645 0.933 0.04 0.022],...
-        %         'HorizontalAlignment', 'right', 'FontSize', FS1,...
-        %         'BackgroundColor', spm('Colour'));
 
         uicontrol(F, 'Style', 'text', 'Units', 'normalized',...
             'String', 'Event type name',...
@@ -689,13 +594,8 @@ if FlagTrial
             'String', mat2str(Ntypes),...
             'Position',[0.29 0.933 0.04 0.022],...
             'HorizontalAlignment', 'right', 'FontSize', FS1,...
-            'BackgroundColor', spm('Colour'));
-        %     uicontrol('Tag', 'dispeventbutton', 'Style', 'radiobutton',...
-        %         'Units', 'normalized', 'Position', [0.41 0.945 0.04 0.03],...
-        %         'FontSize', FS1,'Value',0,...
-        %         'BackgroundColor', 'w',...
-        %         'CallBack', @eventbutton_update,...
-        %         'Parent', F);
+            'BackgroundColor', 'w');
+        
         set(handles.dispeventbutton,'Visible','on');
 
         Neventcode=D.ntrials;
@@ -796,19 +696,9 @@ else
             'Position',[0.34 0.97 0.18 0.029],...
             'HorizontalAlignment', 'center', 'FontSize', FS1,...
             'BackgroundColor', 'w');
-        %     uicontrol('Tag', 'dispeventbutton', 'Style', 'radiobutton',...
-        %         'Units', 'normalized', 'Position', [0.41 0.945 0.04 0.03],...
-        %         'String', 'Y', 'FontSize', FS1,'Value',0,...
-        %         'BackgroundColor', spm('Colour'),...
-        %         'CallBack', @eventbutton_update,...
-        %         'Parent', F);
+
         set(handles.dispeventbutton,'Visible','on');
 
-        %     uicontrol(F, 'Style', 'text', 'Units', 'normalized',...
-        %         'String', 'Go to event',...
-        %         'Position',[0.52 0.97 0.18 0.029],...
-        %         'HorizontalAlignment', 'center', 'FontSize', FS1,...
-        %         'BackgroundColor', 'w');
         Neventcode=length(find(Code==1));
 
         if Neventcode>1
@@ -853,11 +743,7 @@ else
                 'TooltipString', 'Choose trial number',...
                 'Callback', @eventslider_update,...
                 'Parent', F, 'Interruptible', 'off','Visible','off');
-            %         uicontrol(F, 'Style', 'text', 'Units', 'normalized',...
-            %             'String', 'Go to event',...
-            %             'Position',[0.52 0.97 0.18 0.029],...
-            %             'HorizontalAlignment', 'center', 'FontSize', FS1,...
-            %             'BackgroundColor', 'w','Visible','off');
+
             % frame for eventgoslider text
             uicontrol(F, 'Style','Frame','BackgroundColor',spm('Colour'), 'Units',...
                 'normalized', 'Position',[0.53 0.932 0.16 0.025],'Visible','off');
@@ -879,34 +765,6 @@ else
                 'HorizontalAlignment', 'right', 'FontSize', FS1,...
                 'BackgroundColor', spm('Colour'),'Visible','off');
         end
-
-        %     handles.eventgoslider = uicontrol(F, 'Tag', 'eventgoslider', 'Style', 'slider',...
-        %         'Min', 1, 'Max', Neventcode, 'Value', 1, 'Units',...
-        %         'normalized', 'Position', [0.53 0.957 0.16 0.02],...
-        %         'SliderStep', [1/(Neventcode-1) min(Neventcode-1, 10/(Neventcode-1))],...
-        %         'TooltipString', 'Choose trial number',...
-        %         'Callback', @eventslider_update,...
-        %         'Parent', F, 'Interruptible', 'off');
-        %     % frame for eventgoslider text
-        %     uicontrol(F, 'Style','Frame','BackgroundColor',spm('Colour'), 'Units',...
-        %         'normalized', 'Position',[0.53 0.932 0.16 0.025]);
-        %     % event go slider texts
-        %     uicontrol(F, 'Style', 'text', 'Units', 'normalized',...
-        %         'String', '1',...
-        %         'Position',[0.535 0.933 0.03 0.022],...
-        %         'HorizontalAlignment', 'left', 'FontSize', FS1,...
-        %         'BackgroundColor', spm('Colour'));
-        %     handles.eventgotext = uicontrol(F, 'Style', 'text', 'Tag', 'eventgotext',...
-        %         'Units', 'normalized',...
-        %         'String', int2str(get(handles.eventgoslider, 'Value')),...
-        %         'Position',[0.59 0.933 0.04 0.022],...
-        %         'HorizontalAlignment', 'center', 'FontSize', FS1,...
-        %         'BackgroundColor', spm('Colour'));
-        %     uicontrol(F, 'Style', 'text', 'Units', 'normalized',...
-        %         'String', num2str(Neventcode),...
-        %         'Position',[0.645 0.933 0.04 0.022],...
-        %         'HorizontalAlignment', 'right', 'FontSize', FS1,...
-        %         'BackgroundColor', spm('Colour'));
 
         uicontrol(F, 'Style', 'text', 'Units', 'normalized',...
             'String', 'Event type name',...
@@ -1095,10 +953,8 @@ end
 guidata(F,h)
 
 % make plots
-if strcmp(action,'zoomfreqmaxbutton')|strcmp(action,'zoomfreqminbutton')|strcmp(action,'zoomfreqcenbutton')
+if strcmp(action,'zoomfreqmaxbutton') || strcmp(action,'zoomfreqminbutton') || strcmp(action,'zoomfreqcenbutton')
     adjust_window(h.poweraxes)
-% elseif strcmp(action,'zoomcolinbutton2')|strcmp(action,'zoomcoloutbutton2')
-%     draw_colors(h.poweraxes2, zcol2)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1132,68 +988,7 @@ guidata(F,h)
 % make plots
 if strcmp(action,'zoomtimemaxbutton')|strcmp(action,'zoomtimeminbutton')|strcmp(action,'zoomtimecenbutton')
     adjust_window(h.poweraxes)
-% elseif strcmp(action,'zoomcolinbutton2')|strcmp(action,'zoomcoloutbutton2')
-%     draw_colors(h.poweraxes2, zcol2)
 end
-
-
-
-
-% offsettime=h.offsettime;
-% offsetfreq=h.offsetfreq;
-% ztime=h.ztime;
-% zfreq=h.zfreq;
-% offsettime2=h.offsettime2;
-% offsetfreq2=h.offsetfreq2;
-% ztime2=h.ztime2;
-% zfreq2=h.zfreq2;
-% 
-% if strcmp(action,'zoomfreqinbutton')
-%     zfreq=zfreq*1.1;
-%     axe=h.poweraxes;
-%     time=h.time;
-% elseif strcmp(action,'zoomfreqoutbutton')
-%     zfreq=zfreq/1.1;
-%     axe=h.poweraxes;
-%     time=h.time;
-% elseif strcmp(action,'zoomfreqinbutton2')
-%     zfreq2=zfreq2*1.1;
-%     axe=h.poweraxes2;
-%     time=h.time2;
-% elseif strcmp(action,'zoomfreqoutbutton2')
-%     zfreq2=zfreq2/1.1;
-%     axe=h.poweraxes2;
-%     time=h.time2;
-% end
-% if zfreq>1
-%     set(handles.zoomfreqoutbutton,'Visible','on')
-%     set(handles.freqslider,'Visible','on')
-% else
-%     set(handles.zoomfreqoutbutton,'Visible','off')
-%     set(handles.freqslider,'Visible','off')
-%     zfreq=1;
-% end
-% if zfreq2>1
-%     set(handles.zoomfreqoutbutton2,'Visible','on')
-%     set(handles.freqslider2,'Visible','on')
-% else
-%     set(handles.zoomfreqoutbutton2,'Visible','off')
-%     set(handles.freqslider2,'Visible','off')
-%     zfreq2=1;
-% end
-% 
-% h.zfreq=zfreq;
-% if isfield(h,'DataPlot2')
-%     h.zfreq2=zfreq2;
-% end
-% guidata(F,h)
-% 
-% % make plots
-% if strcmp(action,'zoomfreqinbutton')|strcmp(action,'zoomfreqoutbutton')
-%     adjust_window(axe, time, ztime,zfreq,offsettime,offsetfreq)
-% elseif strcmp(action,'zoomfreqinbutton2')|strcmp(action,'zoomfreqoutbutton2')
-%     adjust_window(axe, time, ztime2,zfreq2,offsettime2,offsetfreq2)
-% end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1225,49 +1020,10 @@ end
 guidata(F,h)
 
 % make plots
-if strcmp(action,'zoomcolmaxbutton')|strcmp(action,'zoomcolminbutton')|strcmp(action,'zoomcolcenbutton')
+if strcmp(action,'zoomcolmaxbutton') || strcmp(action,'zoomcolminbutton') || strcmp(action,'zoomcolcenbutton')
     draw_colors(h.poweraxes)
-% elseif strcmp(action,'zoomcolinbutton2')|strcmp(action,'zoomcoloutbutton2')
-%     draw_colors(h.poweraxes2, zcol2)
 end
 
-
-
-
-% zcol=h.zcol;
-% zcol2=h.zcol2;
-% if strcmp(action,'zoomcolinbutton')
-%     zcol=zcol*1.1;
-% elseif strcmp(action,'zoomcoloutbutton')
-%     zcol=zcol/1.1;
-% elseif strcmp(action,'zoomcolinbutton2')
-%     zcol2=zcol2*1.1;
-% elseif strcmp(action,'zoomcoloutbutton2')
-%     zcol2=zcol2/1.1;
-% end
-% if zcol<1
-%     set(handles.zoomcolinbutton,'Visible','on')
-% else
-%     set(handles.zoomcolinbutton,'Visible','off')
-%     zcol=1;
-% end
-% if zcol2<1
-%     set(handles.zoomcolinbutton2,'Visible','on')
-% else
-%     set(handles.zoomcolinbutton2,'Visible','off')
-%     zcol2=1;
-% end
-% 
-% h.zcol=zcol;
-% h.zcol2=zcol2;
-% guidata(F,h)
-% 
-% % make plots
-% if strcmp(action,'zoomcolinbutton')|strcmp(action,'zoomcoloutbutton')
-%     draw_colors(h.poweraxes, zcol)
-% elseif strcmp(action,'zoomcolinbutton2')|strcmp(action,'zoomcoloutbutton2')
-%     draw_colors(h.poweraxes2, zcol2)
-% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function eventbutton_update(hObject, events)
@@ -1275,18 +1031,11 @@ function eventbutton_update(hObject, events)
 F  = spm_figure('GetWin','Graphics');
 h = guidata(F);
 action = get(hObject,'Value');
-% 
-% if action
-%     set(hObject,'Value',0,'String','Y');
-% else
-%     set(hObject,'Value',1,'String','N');
-% end
 
 h.action=action;
 guidata(F,h);
 
 % make plots
-
 draw_bars(action)
 
 
@@ -1325,6 +1074,7 @@ data_plots(Data,1)
 
 % make plots
 draw_plots(1,1)
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function trialslider_update(hObject, events)
@@ -1365,7 +1115,6 @@ Neventcode=max([size(Events,2) 2]);
 NeventcodeStep=max([2 Neventcode]);
 set(handles.eventtypeslider,'Max', Neventcode, 'Value', 1,'SliderStep', [1/(NeventcodeStep-1) min(NeventcodeStep-1, 1/(NeventcodeStep-1))]);
 set(handles.eventtypetext, 'String', '1');
-%set(handles.eventtypetextmax, 'String', num2str(Neventcode))
 
 % make plots
 draw_plots(1,1)
@@ -1398,13 +1147,6 @@ try
     set(handles.eventtypetext, 'String', mat2str(ind));
     set(handles.eventnametext, 'String', Events(ind).type)
 end
-
-% %Update slider for events
-% Neventcode=max([length(find(h.Code==ind)) 2]);
-% NeventcodeStep=max([2 Neventcode]);
-% set(handles.eventgoslider,'Max', Neventcode, 'Value', 1,'SliderStep', [1/(NeventcodeStep-1) min(NeventcodeStep-1, 10/(NeventcodeStep-1))]);
-% set(handles.eventgotext, 'String', '1');
-% set(handles.eventgotextmax, 'String', num2str(Neventcode))
 
 % plot bars
 try
@@ -1447,17 +1189,12 @@ h.ntype=ntype;
 guidata(F,h);
 
 
-% make plots
-%adjust_window(h.poweraxes, h.time, h.ztime,h.zfreq,h.offsettime, h.offsetfreq)
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function timeslider_update(hObject, events)
 % update called from zoom buttons
 
-F  = spm_figure('GetWin','Graphics');
+F = spm_figure('GetWin','Graphics');
 h = guidata(F);
-D=h.D;
 
 % slider value
 ind = round(get(hObject, 'Value'));
@@ -1477,8 +1214,6 @@ function freqslider_update(hObject, events)
 
 F  = spm_figure('GetWin','Graphics');
 h = guidata(F);
-handles = guihandles(F);
-D=h.D;
 
 % slider value
 ind = round(get(hObject, 'Value'));
@@ -1513,7 +1248,6 @@ catch
     FreqIndex=1:length(freq);
 end
 
-
 axes(axe);
 axis([min(time(TimeIndex)) max(time(TimeIndex)) min(freq(FreqIndex)) max(freq(FreqIndex))])
 
@@ -1533,9 +1267,8 @@ D=h.D;
 Events=h.Events;
 SelChan=h.SelChan;
 
-if get(handles.normalisebutton,'Value')|min(h.DataPlot(:))<0
+if get(handles.normalisebutton,'Value') || (min(h.DataPlot(:)) < 0)
     h.col = [flipud(fliplr(hot(128)));hot(128)];
-%     h.col = colormap(h.col([10:120 135:247],:));
     h.col = colormap(h.col);
 else
     colormap('default');
@@ -1545,11 +1278,7 @@ end
 if FlagAxes==1
     DataPlot=h.DataPlot;
     time=h.time;
-    ztime=h.ztime;
-    zfreq=h.zfreq;
     zcol=h.zcol;
-    offsettime=h.offsettime;
-    offsetfreq=h.offsetfreq;
     h.MaxPlot=max(abs(DataPlot(:)));
     h.MinPlot=min(abs(DataPlot(:)));
     MaxPlot=h.MaxPlot;
@@ -1562,11 +1291,7 @@ elseif FlagAxes==2
         DataPlot=h.DataPlot2;
     end
     time=h.time2;
-    ztime=h.ztime2;
-    zfreq=h.zfreq2;
     zcol=h.zcol2;
-    offsettime=h.offsettime2;
-    offsetfreq=h.offsetfreq2;
     h.MaxPlot2=max(abs(DataPlot(:)));
     h.MinPlot2=min(abs(DataPlot(:)));
     MaxPlot=h.MaxPlot2;
@@ -1576,31 +1301,14 @@ elseif FlagAxes==2
 end
 axes(axe);
 cla
-% switch h.FlagImage
-%     case 'Surface'
-%         surf(DataPlot,'XData',time,'YData',D.tf.frequencies);
-%         view([0 90])
-%         shading interp
-%     case 'Image'
-%         hold on
-%         for i1=1:length(D.tf.frequencies)-1
-%             imagesc(time,D.tf.frequencies(i1:i1+1),DataPlot(i1:i1+1,:))
-%         end
-%         hold off
-% end
+
 imagesc(time,D.tf.frequencies,DataPlot)
 axis xy
 axis([min(time) max(time) min(D.tf.frequencies) max(D.tf.frequencies)])
 if get(handles.normalisebutton,'Value')|| min(h.DataPlot(:))<0
     caxis([-zcol*MaxPlot zcol*MaxPlot])
-% %OD tmp
-%     caxis([-10 10])
 else
     caxis([MinPlot zcol*MaxPlot])
-
-% %OD tmp
-%     caxis([MinPlot 4])
-
 end
 colorbar;
 xlabel('Time [s]', 'Interpreter', 'tex', 'FontSize', FS1);
@@ -1644,12 +1352,9 @@ elseif FlagAxes==2
 end
 
 guidata(F,h)
-
-%zoom
 adjust_window(axe)
 
-% %plot montage
-% draw_montage(D,SelChan)
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function draw_colors(hsel)
@@ -1671,6 +1376,7 @@ else
 end
 colorbar
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function draw_bars(action)
 % This function plots events in the subplots
@@ -1678,88 +1384,33 @@ function draw_bars(action)
 F  = spm_figure('GetWin','Graphics');
 h = guidata(F);
 handles = guihandles(F);
-D=h.D;
-D=h.D;
 Types=h.Types;
 Nevents=length(Types);
-Events=h.Events;
-
 if Nevents>1
     Ntype=str2num(get(handles.eventtypetext,'String'));
 else
     Ntype=1;
 end
-n=0;
 
-SelChan=h.SelChan;
 if Nevents>0
-        %     M1=0;
-        %     M2=2*max(D.tf.frequencies);
-        %     for i3=1:D.events.Ntypes
-        %         tmp=find(D.events.code==i3);
-        %         for i4=1:length(tmp)
-        %             h.eventaxes{i3,i4}=line([time(D.events.time(tmp(i4))) time(D.events.time(tmp(i4)))],[M1 M2],'color','m','linewidth',1,'Visible','off');
-        %         end
-        %     end
-        n=length(find(h.Code==Ntype));
-        for i1=1:Nevents
-            set(h.eventaxes{h.Code(i1),length(find(h.Code(1:i1)==h.Code(i1)))},'Visible','off')
+    n=length(find(h.Code==Ntype));
+    for i1=1:Nevents
+        set(h.eventaxes{h.Code(i1),length(find(h.Code(1:i1)==h.Code(i1)))},'Visible','off')
+    end
+    for i2=1:n
+        if action
+            set(h.eventaxes{Ntype,i2},'Visible','on')
         end
-        for i2=1:n
-            if action
-                set(h.eventaxes{Ntype,i2},'Visible','on')
-            end
-        end
+    end
 end
 guidata(F,h)
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function draw_montage(D,SelChan,Flag)
-% This function plots the montage and selected electrodes in the
-% interactive window
-
-FS3 = spm('FontSize', 10);
-
-Fi  = spm_figure('GetWin','Interactive');
-figure(Fi);clf
-colormap('gray')
-handles = guihandles(gcf);
-Fchannels=fullfile(spm('dir'), 'EEGtemplates',D.channels.ctf);
-M=load(Fchannels);
-Im=load(fullfile(spm('dir'), 'EEGtemplates','BregmaZoom'));
-%     h.montaxes = axes('Position',...
-%         [0.01 0.01 0.2 0.14],...
-%         'Parent', F);
-%     axes(h.montaxes);
-imagesc(Im.x,Im.y,Im.Bregma)
-% imagesc(Im.x,-Im.y,flipud(Im.Bregma))
-axis equal
-axis tight
-axis off
-hold on
-for i1=1:M.Nchannels
-    hi.montelec(i1)=plot(M.Cpos(1,i1),M.Cpos(2,i1),'k.','Markersize',30);
-    hh=text(M.Cpos(1,i1)+.5,M.Cpos(2,i1),sprintf('%d',i1));
-    set(hh,'FontWeight','Bold','FontSize',FS3,'Color','b','HorizontalAlignment','left');
-end
-switch Flag
-    case{'Power'}
-        set(hi.montelec(SelChan),'Color','r');
-    case{'Synchrony'}
-end
-hold off
-guidata(Fi,hi);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function averagebutton(D,SelChan)
 % This function computes and display event-related average
 
-FS1 = spm('FontSize', 14);
-FS2 = spm('FontSize', 12);
-
-F  = spm_figure('GetWin','Graphics');
+F = spm_figure('GetWin','Graphics');
 h = guidata(F);
 handles = guihandles(F);
 D=h.D;
@@ -1806,8 +1457,6 @@ h.zfreq2=1;
 h.offsettime2=find(h.time2==0);
 h.offsetfreq2=1;
 h.zcol2=1;
-% h.MaxPlot2=max(abs(DataPlot2(:)));
-% h.MinPlot2=min(abs(DataPlot2(:)));
 if ~isfield(h,'poweraxes2')
     h.poweraxes2 = axes('Position',...
         [0.09 0.10 0.85 0.35],...
@@ -1826,32 +1475,20 @@ if get(handles.normalisebutton,'Value')
 end
 draw_plots(2,1)
 
-% %plot montage
-% draw_montage(D,Av.Chan,h.Flag)
-
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function normalisebutton_update(varargin)
 % This function computes and display frequency normalisation
-
-% hObject=varargin{1};
-% action = get(hObject,'Value');
-% 
-
-FS1 = spm('FontSize', 14);
-FS2 = spm('FontSize', 12);
 
 F  = spm_figure('GetWin','Graphics');
 h = guidata(F);
 handles = guihandles(F);
 D=h.D;
 Events=h.Events;
-SelChan=h.SelChan;
 action =get(handles.normalisebutton,'Value');
 Fi  = spm_figure('GetWin','Interactive');
-figure(Fi);clf
+figure(Fi);
+clf
 
 if action
     if h.Ntypes>1
@@ -1900,7 +1537,6 @@ if action
         tmp(1,:,:)=h.DataPlot2;
         h.DataNorm2= squeeze(ImaGIN_spm_eeg_bc(DD, tmp));
     end
-%     draw_montage(D,SelChan,h.Flag)
 else
     h=rmfield(h,'DataNorm');
     D.tf.rm_baseline=0;
@@ -1922,11 +1558,9 @@ end
 function data_plots(Data,Flag)
 % This function computes data (average over SelChan) before plot
 
-
 F  = spm_figure('GetWin','Graphics');
 h = guidata(F);
 handles = guihandles(F);
-D=h.D;
 SelChan=h.SelChan;
 SelTrial=h.SelTrial;
 
@@ -1945,10 +1579,6 @@ if Flag==1
     end
     DataPlot=DataPlot/length(SelChan);
     h.MaxPlot=max(abs(DataPlot(:)));
-    
-%     %OD tmp
-%     h.MaxPlot=4;
-
     h.MinPlot=min(abs(DataPlot(:)));
     h.DataPlot=DataPlot;
 elseif Flag==2
@@ -1972,3 +1602,4 @@ try
 end
 
 guidata(F,h);
+
