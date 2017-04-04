@@ -50,16 +50,6 @@ function D = ImaGIN_FFT_main(D,S)
         D.fft = [];
     end
 
-    try
-        ZeroCrossing = S.ZeroCrossing;
-    catch
-        tmp = spm_input('Zero Crossing','+1','Yes|No');
-        switch tmp
-            case 'No',   ZeroCrossing = 0;
-            case 'Yes',  ZeroCrossing = 1;
-        end
-    end
-
     Time1 = time(D);
 
     try
@@ -104,18 +94,8 @@ function D = ImaGIN_FFT_main(D,S)
         TimeEnd = max(find(Time1<=TimeRange(i0,2)));
 
         N = length(TimeStart:round(Nsamples/3):TimeEnd-Nsamples);
-        if ZeroCrossing
-            index = zeros(N,D.nchannels);
-            n = 0;
-            for i1 = TimeStart:round(Nsamples/3):TimeEnd-Nsamples
-                n = n+1;
-                index(n,:) = sum(abs(diff(sign(D(:,i1:i1+Nsamples-1))')));
-            end
-            index = min(index,[],2);
-        else
-            index = ones(N,1);
-        end
-        N = length(TimeStart:round(Nsamples/3):TimeEnd-Nsamples);
+        index = ones(N,1);
+
         f = zeros(N,D.nchannels,length(FreqIndex));
         n = 0;
         n2 = 0;
@@ -137,6 +117,11 @@ function D = ImaGIN_FFT_main(D,S)
         end
     end
 
+    % Convert from @meeg object to struct, if not it is impossible to add the new field "fft"
+    Dmeeg = D;
+    Dfile = fullfile(D);
+    D = struct(D);
+    
     D.fft.Freq = Freq(FreqIndex);
     D.fft.Data = F;
     D.fft.Param.TimeRange = TimeRange;
@@ -144,7 +129,11 @@ function D = ImaGIN_FFT_main(D,S)
     D.fft.Param.FrequencyResolution = FrequencyResolution;
     D.fft.Param.n = n;
 
-    save(D);
+    % save(D);  
+    save(Dfile, 'D');
+    
+    % Return original meeg file (unmodified)
+    D = Dmeeg;
 end
 
 
