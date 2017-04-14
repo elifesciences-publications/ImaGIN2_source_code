@@ -1,7 +1,7 @@
-function D = ImaGIN_spm_eeg_rdata_nk(S)
+function D = ImaGIN_convert_nk(InputFile, OutputFile)
 % Converts EEG data from Nihon Kohden .EEG/.LOG/.PNT/.21E format to SPM-format
 %
-% USAGE: D = ImaGIN_spm_eeg_rdata_nk(S)
+% USAGE: D = ImaGIN_convert_nk(InputFile, OutputFile)
 
 % -=============================================================================
 % This function is part of the ImaGIN software: 
@@ -20,27 +20,22 @@ function D = ImaGIN_spm_eeg_rdata_nk(S)
 % Author: Francois Tadel, 2017
 
 
-% Check fields in input
-if (nargin == 0) || isempty(S) || ~isfield(S, 'Fdata') || ~isfield(S, 'FileOut')
-    error(['Usage: D = ImaGIN_spm_eeg_rdata_nk(S)' 10 'Structure S must include fields: Fdata, FileOut']);
-end
-
 % Read Nihon Kohden file with Brainstorm functions
-[sFileIn, ChannelMat] = in_fopen_nk(S.Fdata);
+[sFileIn, ChannelMat] = in_fopen_nk(InputFile);
 [F, TimeVector] = in_fread(sFileIn, ChannelMat, 1, []);
 
+% Get channels classified as EEG
+iEEG = channel_find(ChannelMat.Channel, 'EEG,SEEG,ECOG');
 % Detect channels of interest
-iSel = ImaGIN_select_channels({ChannelMat.Channel.Name});
+iSel = ImaGIN_select_channels({ChannelMat.Channel(iEEG).Name});
 if isempty(iSel)
     error('No valid channel names were found.');
 end
 % Keep only these ones in the data
 ChannelMat.Channel = ChannelMat.Channel(iSel);
 F = F(iSel,:);
+sFileIn.channelflag = sFileIn.channelflag(iSel);
 
-% Output file
-[fPath,fBase,fExt] = fileparts(S.Fdata);
-OutputFile = fullfile(fPath, [fBase,'.mat']);
 % Export to SPM format
 sFileOut = out_fopen_spm(OutputFile, sFileIn, ChannelMat);
 out_fwrite_spm(sFileOut, [], [], F);

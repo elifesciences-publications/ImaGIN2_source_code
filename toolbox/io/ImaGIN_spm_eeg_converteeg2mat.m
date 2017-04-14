@@ -82,7 +82,8 @@ for i1 = 1:Nfiles
                 D{i1} = ImaGIN_spm_eeg_rdata_elan(S2);
             % Nihon Kohden
             else
-                D{i1} = ImaGIN_spm_eeg_rdata_nk(S2);
+                OutputFile = fullfile(fPath, [fBase, '.mat']);
+                D{i1} = ImaGIN_convert_nk(S2.Fdata, OutputFile);
             end
 
         case {'.asc','.txt'}
@@ -90,8 +91,13 @@ for i1 = 1:Nfiles
             D{i1} = ImaGIN_spm_eeg_rdata_ascii(S2);
 
         case '.trc'
-            S2 = ImaGIN_copy_fields(S2, S, {'pts', 'System', 'CreateTemplate', 'Fchannels', 'channel', 'coarse', 'Montage', 'MontageName', 'NeventType', 'event_file' , 'Bipolar', 'bipole', 'loadevents'});
-            D{i1} = ImaGIN_spm_eeg_rdata_micromed_mono(S2);
+            % Old version: JPL & OD
+            % S2 = ImaGIN_copy_fields(S2, S, {'pts', 'System', 'CreateTemplate', 'Fchannels', 'channel', 'coarse', 'Montage', 'MontageName', 'NeventType', 'event_file' , 'Bipolar', 'bipole', 'loadevents'});
+            % D{i1} = ImaGIN_spm_eeg_rdata_micromed_mono(S2);
+
+            % New version: Brainstorm
+            OutputFile = fullfile(fPath, [fBase, '.mat']);
+            D{i1} = ImaGIN_convert_micromed(S2.Fdata, OutputFile);
 
         case '.msm'
             S2 = ImaGIN_copy_fields(S2, S, {'Atlas', 'SEEG', 'Bipolar', 'coarse', 'SaveFile'});

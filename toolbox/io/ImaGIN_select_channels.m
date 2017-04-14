@@ -69,19 +69,22 @@ for i = 1:length(chNames)
     elseif ~ismember(lower(chNames{i}(1)), 'abcdefghijklmopqrstuvwxyz')
         continue;
     % Unwanted labels
-    elseif ismember(lower(chTags{i}), {'mark', 'dc', 'emg', 'eog', 'veo', 'heo', 'veog', 'heog', 'myo', 'oc', 'dd', 'dg', 'el', 'ref', 'eegref', 'eref', 'vref', 'ref', 'pulse', 'mast'})
+    elseif ismember(lower(chTags{i}), {'mark', 'dc', 'emg', 'eog', 'veo', 'heo', 'veog', 'heog', 'myo', 'oc', 'dd', 'dg', 'el', 'ref', 'eegref', 'eref', 'vref', 'ref', 'pulse', 'mast', 'spo2'})
         continue;
     % Unwanted EEG labels
     elseif isSEEG && ismember(lower(chTags{i}), {'cz', 'fz', 'pz', 'oz', 'nz', 'fpz'})
         continue;
     % ECG: Accept (should be labelled as such)
     elseif ismember(lower(chTags{i}), {'ecg', 'ekg'})
-        iSel(end+1) = i;
         iEcg(end+1) = i;
     % Otherwise: accept
     else
         iSel(end+1) = i;
     end
 end
+
+% Add ECG channels at the end of the file
+iSel = [iSel, iEcg];
+
 
 
