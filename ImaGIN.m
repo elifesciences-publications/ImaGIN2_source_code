@@ -17,7 +17,7 @@ function ImaGIN(cmd)
 %
 % Authors: Olivier David, 2010-2017
 %          Francois Tadel, 2017
-
+ 
 %-Set ImaGIN path
 %-----------------------------------------------------------------------
 % Make sure the main ImaGIN folder is at the top of the path
