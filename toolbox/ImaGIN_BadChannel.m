@@ -1,5 +1,4 @@
 function D = ImaGIN_BadChannel(S)
-% Extract badchannels indices
 
 % -=============================================================================
 % This function is part of the ImaGIN software: 
@@ -17,7 +16,7 @@ function D = ImaGIN_BadChannel(S)
 %
 % Authors: Olivier David
 
-
+% Extract badchannels indices
 FileIn = S.dataset; % cropped seeg file .dat/.mat
 badDir = S.DirFileOut; % Dir with badchannels
 trainDir = S.trainBase; 
@@ -36,9 +35,11 @@ S2.FileName = FileIn;
 
 T = ImaGIN_FeatureSEEG(S2); % function returns a table T of features
 
+%--------- uncomment to retrain the classifier ------------------
 Tbase = readtable(strcat(trainDir, '/trainBaseFeatures.csv')); % load training base 
 trainingData = Tbase(:,2:9);
 [trainedClassifier, ~] = ImaGIN_trainClassifier(trainingData); % train the model 
+%------------------------------------------------------------------
 %load(strcat(trainDir, '/ImaGIN_trainedClassifier.mat')) % path??? load the trained classifier
 yfit = trainedClassifier.predictFcn(T(:,2:8)); % predict new dataset
 bd = strcmp(yfit,'Bad');

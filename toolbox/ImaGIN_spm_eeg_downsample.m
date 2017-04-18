@@ -20,8 +20,11 @@ catch
     DD = spm_select(inf, 'mat', 'Select EEG mat file');
 end
 
-for i1 = 1:size(DD,1)
+for i1=1:size(DD,1)
+
     D=deblank(DD(i1,:));
+
+    P = spm_str_manip(D, 'H');
 
     try
         D = spm_eeg_load(D);
@@ -50,13 +53,11 @@ for i1 = 1:size(DD,1)
     % Prepare for writing data
     % treat continuous and epoched data differently because of different scaling method
 
-    if (size(D,3) > 1)  % epoched
+    if size(D, 3) > 1
+        % epoched
         spm_progress_bar('Init', D.ntrials, 'Trials downsampled'); drawnow;
-        if (D.ntrials > 100)
-            Ibar = floor(linspace(1, D.ntrials,100));
-        else
-            Ibar = 1:D.ntrials; 
-        end
+        if D.ntrials > 100, Ibar = floor(linspace(1, D.ntrials,100));
+        else, Ibar = 1:D.ntrials; end
 
         nsampl=length(resample(squeeze(D(1, :, 1)), Radc_new, round(D.fsample)));
         try
@@ -66,27 +67,25 @@ for i1 = 1:size(DD,1)
         end
         for i2 = 1:D.ntrials
             for i3=1:D.nchannels
-                d = squeeze(D(i3, :, i2));
-                d2 = resample(d, Radc_new,round(D.fsample));
-                Dnew(i3,:,i2)=d2;
-                if ismember(i2, Ibar)
-                    spm_progress_bar('Set', i2); drawnow;
-                end
+            d = squeeze(D(i3, :, i2));
+            d2 = resample(d, Radc_new,round(D.fsample));
+            Dnew(i3,:,i2)=(mean(abs(d))/mean(abs(d2)))*d2;
+            if ismember(i2, Ibar)
+                spm_progress_bar('Set', i2); drawnow;
+            end
             end
         end
+    else
+        % continuous
 
-    else % continuous
         % adjust the timing information
         try
             Events=D.events;
             Events.time = round(Events.time*Radc_new/D.fsample);
         end
         spm_progress_bar('Init', D.nchannels, 'Channels downsampled'); drawnow;
-        if (D.nchannels > 100)
-            Ibar = floor(linspace(1, D.nchannels, 100));
-        else
-            Ibar = 1:D.nchannels;
-        end
+        if D.nchannels > 100, Ibar = floor(linspace(1, D.nchannels, 100));
+        else, Ibar = 1:D.nchannels; end
 
         nsampl=length(resample(squeeze(D(1,:,:)), Radc_new, round(D.fsample)));
         try
@@ -97,7 +96,8 @@ for i1 = 1:size(DD,1)
         for i = 1:D.nchannels
             d = squeeze(D(i, :, :));
             d2 = resample(d, Radc_new, round(D.fsample));
-            Dnew(i,:,1)=d2;
+            
+            Dnew(i,:,1)=(mean(abs(d))/mean(abs(d2)))*d2;
             if ismember(i, Ibar)
                 spm_progress_bar('Set', i); drawnow;
             end
@@ -111,5 +111,3 @@ for i1 = 1:size(DD,1)
 end
 
 spm('Pointer', 'Arrow');
-
-

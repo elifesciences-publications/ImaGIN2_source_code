@@ -28,7 +28,6 @@ FileH=SONFileHeader(fid);
 SizeOfHeader=20;                                            % Block header is 20 bytes long
 header=SONGetBlockHeaders(fid,chan);
 
-NumberOfSamples=sum(header(5,:));                           % Sum of samples in all blocks
 SampleInterval=(header(3,1)-header(2,1))/(header(5,1)-1);   % Sample interval in clock ticks
 
 %OD: find blocks to read
@@ -50,8 +49,6 @@ h.system=['SON' num2str(FileH.systemID)];                   % if wanted
 h.FileChannel=chan;
 h.phyChan=Info.phyChan;
 h.kind=Info.kind;
-%h.blocks=Info.blocks;
-%h.preTrig=Info.preTrig;
 h.comment=Info.comment;
 h.title=Info.title;
 h.sampleinterval=SONGetSampleInterval(fid,chan);

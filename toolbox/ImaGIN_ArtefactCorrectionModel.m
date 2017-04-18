@@ -116,7 +116,6 @@ for i1=1:length(ev)
     end
 end
 
-
 if estimateLength
     Data=D(GoodChannels,:);
     d=[zeros(size(Data,1),1) abs(diff(Data,2,2)) zeros(size(Data,1),1)];
@@ -168,18 +167,13 @@ end
 mmArt2=cat(3,zeros(size(mmArt,1),size(mmArt,2)),mmArt);
 mmArt2=mmArt2(:,:,1:size(mmArt,3));
 
-
 if D.fsample>=2048
     mmArt3=cat(3,zeros(size(mmArt,1),size(mmArt,2)),mmArt2);
     mmArt3=mmArt3(:,:,1:size(mmArt,3));
-    %     mmArt5=cat(3,zeros(size(mmArt,1),size(mmArt,2)),mmArt4);
-    %     mmArt5=mmArt5(:,:,1:size(mmArt,3));
     mmArt=cat(1,mmArt,mmArt2,mmArt3);
 else
     mmArt=cat(1,mmArt,mmArt2);
 end
-
-
 
 for c = SelectedChannels
     sig = [];

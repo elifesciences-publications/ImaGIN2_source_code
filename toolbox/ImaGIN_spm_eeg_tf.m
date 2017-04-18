@@ -42,6 +42,7 @@ if size(DD,1)>1
     catch
         Ctype = {
             'Morlet wavelet',...
+            'Hilbert', ...
             'Mexhat wavelet',...
             'Multitaper',...
             'Coherence'};
@@ -68,8 +69,7 @@ if size(DD,1)>1
             try
                 S.frequencies;
             catch
-                S.frequencies = ...
-                    spm_input('Frequencies (Hz)', '+1', 'r', '', [1, inf]);
+                S.frequencies = spm_input('Frequencies (Hz)', '+1', 'r', '', [1, inf]);
             end
         case 'Coherence'
             try
@@ -105,7 +105,7 @@ if size(DD,1)>1
             try
                 S.Width;
             catch
-                S.Width = spm_input('Number of oscillations for integration?', '+1', 'r', '5', 1);
+                S.Width = spm_input('Number of oscillations for integration', '+1', 'r', '5', 1);
             end
 
             try
@@ -128,7 +128,7 @@ if size(DD,1)>1
                 try
                     S.Coarse;
                 catch
-                    S.Coarse = spm_input('Downsampling factor for integration?', '+1', 'r', '5', 1);
+                    S.Coarse = spm_input('Downsampling factor for integration', '+1', 'r', '5', 1);
                 end
             else
                 try
@@ -183,7 +183,7 @@ if size(DD,1)>1
             try
                 S.Width;
             catch
-                S.Width = spm_input('Number of oscillations for integration?', '+1', 'r', '5', 1);
+                S.Width = spm_input('Number of oscillations for integration', '+1', 'r', '5', 1);
             end
 
             try
@@ -205,7 +205,7 @@ if size(DD,1)>1
             try
                 S.Coarse;
             catch
-                S.Coarse = spm_input('Downsampling factor for integration?', '+1', 'r', '5', 1);
+                S.Coarse = spm_input('Downsampling factor for integration', '+1', 'r', '5', 1);
             end
 
         case{'Multitaper'}
@@ -236,7 +236,7 @@ if size(DD,1)>1
             try
                 S.NSegments;
             catch
-                S.NSegments = spm_input('Number of segments ', '+1', 'i','1', 1);
+                S.NSegments = spm_input('Number of segments', '+1', 'i','1', 1);
             end
 
             try
@@ -258,7 +258,7 @@ if size(DD,1)>1
                 try
                     D.tf.Coarse = S.Coarse;
                 catch
-                    D.tf.Coarse = spm_input('Downsampling factor for integration?', '+1', 'r', '5', 1);
+                    D.tf.Coarse = spm_input('Downsampling factor for integration', '+1', 'r', '5', 1);
                 end
             end
     end
@@ -423,7 +423,7 @@ function [D, TimeWindow, TimeWindowWidth] = ImaGIN_spm_eeg_tf_main(D,S)
             try
                 D.tf.Width = S.Width;
             catch
-                D.tf.Width = spm_input('Number of oscillations for integration?', '+1', 'r', '5', 1);
+                D.tf.Width = spm_input('Number of oscillations for integration', '+1', 'r', '5', 1);
             end
 
             try
@@ -446,7 +446,7 @@ function [D, TimeWindow, TimeWindowWidth] = ImaGIN_spm_eeg_tf_main(D,S)
                 try
                     D.tf.Coarse = S.Coarse;
                 catch
-                    D.tf.Coarse = spm_input('Downsampling factor for integration?', '+1', 'r', '5', 1);
+                    D.tf.Coarse = spm_input('Downsampling factor for integration', '+1', 'r', '5', 1);
                 end
             else
                 try
@@ -457,7 +457,7 @@ function [D, TimeWindow, TimeWindowWidth] = ImaGIN_spm_eeg_tf_main(D,S)
                 try
                     D.tf.Coarse = S.Coarse;
                 catch
-                    D.tf.Coarse = spm_input('Downsampling factor for integration?', '+1', 'r', '5', 1);
+                    D.tf.Coarse = spm_input('Downsampling factor for integration', '+1', 'r', '5', 1);
                 end
             end
 
@@ -590,7 +590,7 @@ function [D, TimeWindow, TimeWindowWidth] = ImaGIN_spm_eeg_tf_main(D,S)
                 try
                     D.tf.Coarse = S.Coarse;
                 catch
-                    D.tf.Coarse = spm_input('Downsampling factor for integration?', '+1', 'r', '5', 1);
+                    D.tf.Coarse = spm_input('Downsampling factor for integration', '+1', 'r', '5', 1);
                 end
             end
     end

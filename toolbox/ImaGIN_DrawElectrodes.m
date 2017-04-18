@@ -48,7 +48,6 @@ function varargout = ImaGIN_DrawElectrodes(action,varargin)
 % $Id$
 
 global st
-global defaults
 
 Fig = spm_figure('FindWin');
 colors = strvcat('y','b','g','r','c','m');              % 6 possible colors
@@ -70,7 +69,7 @@ spm('Clear')
 
 if nargin<2
     load(spm_select(1,'^.*S.*dip.*\.mat$','Select dipole file'));
-    if ~exist('sdip') & exist('result')
+    if ~exist('sdip') && exist('result')
         sdip = result;
     end
 else
@@ -86,10 +85,8 @@ Pcanonical = fullfile(spm('dir'),'canonical','avg152T1.nii');
 
 if nargin<3
 	if ~isstruct(st)
-%         P = spm_select(1,'image','Image to display dipoles on');
         P = Pcanonical;
 	elseif isempty(st.vols{1})
-%         P = spm_select(1,'image','Image to display dipoles on');
         P = Pcanonical;
 	end
 else
@@ -114,8 +111,6 @@ uicontrol(Fig,'Style','Frame','Position',[70 250 180 90].*WS);
 uicontrol(Fig,'Style','Text', 'Position',[75 320 170 016].*WS,'String','Crosshair Position');
 uicontrol(Fig,'Style','PushButton', 'Position',[75 316 170 006].*WS,...
 	'Callback','spm_orthviews(''Reposition'',[0 0 0]);','ToolTipString','move crosshairs to origin');
-% uicontrol(fg,'Style','PushButton', 'Position',[75 315 170 020].*WS,'String','Crosshair Position',...
-%	'Callback','spm_orthviews(''Reposition'',[0 0 0]);','ToolTipString','move crosshairs to origin');
 uicontrol(Fig,'Style','Text', 'Position',[75 295 35 020].*WS,'String','mm:');
 uicontrol(Fig,'Style','Text', 'Position',[75 275 35 020].*WS,'String','vx:');
 uicontrol(Fig,'Style','Text', 'Position',[75 255 75 020].*WS,'String','Img Intens.:');
@@ -145,9 +140,6 @@ sdip.hdl.hdipplus = uicontrol(Fig,'Style','pushbutton','String','+', ...
 sdip.hdl.hdipminus = uicontrol(Fig,'Style','pushbutton','String','-', ...
         'Position',[400 293 20 20].*WS, ...
         'Callback','ImaGIN_DrawElectrodes(''ChgDip'')','Visible','off');
-
-    
-        
         
 % Dipoles orientation and strength:
 %-----------------------------------
@@ -167,16 +159,6 @@ st.vols{1}.sdip = sdip;
 % First plot = first channel
 ImaGIN_DrawElectrodes('DrawDip',1,1)
     
-% get(sdip.hdl.hseed(1),'Value')
-% for ii=1:sdip.n_seeds, delete(hseed(ii)); end
-% h1 = uicontrol(Fig,'Style','togglebutton','Position',[600 25 10 10].*WS)
-% h2 = uicontrol(Fig,'Style','togglebutton','Position',[620 100 20 20].*WS,'String','1')
-% h2 = uicontrol(Fig,'Style','checkbox','Position',[600 100 10 10].*WS)
-% h3 = uicontrol(Fig,'Style','radiobutton','Position',[600 150 20 20].*WS)
-% h4 = uicontrol(Fig,'Style','radiobutton','Position',[700 150 20 20].*WS)
-% delete(h2),delete(h3),delete(h4),
-% delete(hdip)
-
 %________________________________________________________________________
 case 'drawdip'
 %------------------------------------------------------------------------
@@ -230,8 +212,7 @@ if size(i_seed,2)==1, i_seed=i_seed'; end
 %-----------------
 loc_mm = sdip.loc{i_seed(1)}(:,i_dip);
 if length(i_seed)>1
-%     unit = ones(1,sdip.n_dip);
-	for ii = i_seed(2:end)
+    for ii = i_seed(2:end)
         loc_mm = loc_mm + sdip.loc{ii}(:,i_dip);
     end
     loc_mm = loc_mm/length(i_seed);
@@ -249,31 +230,6 @@ if length(i_dip)>1
 else
     tabl_seed_dip = [i_seed' ones(length(i_seed),1)*i_dip];
 end
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % First point to consider
-% loc_mm = sdip.loc{i_seed(1)}(:,i_dip);
-% 
-% % PLace the underlying image at right cuts
-% spm_orthviews('Reposition',loc_mm);
-% % spm_orthviews('Reposition',loc_vx);
-% % spm_orthviews('Xhairs','off')
-% 
-% % if i_seed = set, Are there other dipoles close enough ?
-% tabl_seed_dip=[i_seed(1) i_dip]; % table summarising which set & dip to use.
-% if length(i_seed)>1
-% 	unit = ones(1,sdip.n_dip);
-% 	for ii = i_seed(2:end)'
-%         d2 = sqrt(sum((sdip.loc{ii}-loc_mm*unit).^2));
-%         l_cl = find(d2<=lim_cl);
-%         if ~isempty(l_cl)
-%             for jj=l_cl
-%                 tabl_seed_dip = [tabl_seed_dip ; [ii jj]];
-%             end
-%         end
-% 	end
-% end
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Scaling, according to all dipoles in the selected seed sets.
 % The time displayed is the one corresponding to the maximum EEG power !
@@ -327,7 +283,6 @@ else
                 ind = ind+1;
             end
         end
-%         ic = mod(ind-1,Ncolors)+1;
         for jj=1:sdip.n_dip
             im = mod(jj-1,Nmarker)+1;
             ic = mod(jj-1,Ncolors)+1;
@@ -500,8 +455,6 @@ set(ax{2}.ax,'NextPlot','replace')
 % Sagital slice, # 3
 set(Fig,'CurrentAxes',ax{3}.ax)
 set(ax{3}.ax,'NextPlot','add')
-% dh(5) = plot(dim(2)-loc(2),loc(3),[mark,col],'LineWidth',2);
-% dh(6) = plot(dim(2)-loc(2)+[0 -js(2)],loc(3)+[0 js(3)],col,'LineWidth',2);
 dh(5) = plot(bb(2,2)-bb(1,2)-loc(2),loc(3),[mark,col],'LineWidth',2);
 dh(6) = plot(bb(2,2)-bb(1,2)-loc(2)+[0 -js(2)],loc(3)+[0 js(3)],col,'LineWidth',2);
 set(ax{3}.ax,'NextPlot','replace')

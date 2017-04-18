@@ -39,10 +39,6 @@ if nargin == 0
     S = [];
 end
 
-% %-Ensure backward compatibility
-% %--------------------------------------------------------------------------
-% S = spm_eeg_compatibility(S, mfilename);
-
 %-Get MEEG object
 %--------------------------------------------------------------------------
 try
@@ -58,7 +54,6 @@ try
 catch
     FileOut=[S.pre D.fname];
 end
-
 
 D = spm_eeg_load(D);
 

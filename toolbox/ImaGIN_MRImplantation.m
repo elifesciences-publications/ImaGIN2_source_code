@@ -39,21 +39,11 @@ catch
     DirOut=pathFile;
 end
 
-% try
-%     FileNameSN=S.FileNameSN;
-% catch
-%     FileNameSN = spm_select(1, '\_sn.mat$', 'Select normalisation sn.mat');
-% end
-% 
 try
     Deformation=S.Deformation;
 catch
     Deformation = spm_select(1, 'y_', 'Select forward deformation field y_');
 end
-% tmp1=spm_str_manip(Deformation,'t');
-% tmp2=spm_str_manip(Deformation,'h');
-% FileSource = 
-
 
 try
     FileSource=S.FileSource;
@@ -119,7 +109,6 @@ for i1=1:NName
     end
 end
 
-
 %longitudinal bipolar montage
 NElectrodeBip=0;
 PosElectrodeBip=[];
@@ -135,9 +124,6 @@ for i1=1:length(NameElectrode)-1
         NElectrodeBip=NElectrodeBip+1;
     end
 end
-
-
-
 
 a_ptsname_pat=fullfile(DirOut,[nameFile '.pts']);
 f=fopen(a_ptsname_pat,'w');
@@ -177,20 +163,6 @@ for s_c=1:NElectrodeBip
 end;
 fclose(f);
 
-
-% %Compute inverse deformation field from sn (spm8)
-% clear matlabbatch
-% matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.sn2def.matname{1}=FileNameSN;
-% matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.sn2def.vox=[NaN NaN NaN];
-% matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.sn2def.bb=NaN*ones(2,3);
-% % matlabbatch{1}.spm.util.defs.comp{1}.inv.space{1}=[FileSource ',1'];
-% matlabbatch{1}.spm.util.defs.comp{1}.inv.space{1}=FileSource;
-% matlabbatch{1}.spm.util.defs.ofname='inverse';
-% matlabbatch{1}.spm.util.defs.fnames='';
-% matlabbatch{1}.spm.util.defs.savedir.saveusr{1}=spm_str_manip(FileNameSN,'h');
-% matlabbatch{1}.spm.util.defs.interp=1;
-% spm_jobman('run',matlabbatch);
-
 %Compute inverse deformation field
 clear matlabbatch
 matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.def{1}=Deformation;
@@ -198,8 +170,6 @@ matlabbatch{1}.spm.util.defs.comp{1}.inv.space{1}=FileSource;
 matlabbatch{1}.spm.util.defs.out{1}.savedef.ofname='inverse';
 matlabbatch{1}.spm.util.defs.out{1}.savedef.savedir.saveusr{1}=spm_str_manip(FileSource,'h');
 spm_jobman('run',matlabbatch);
-
-
 
 %Read deformation field
 P=fullfile(spm_str_manip(FileSource,'h'),'y_inverse.nii');
@@ -215,8 +185,6 @@ V3=spm_read_vols(P3);
 wPosElectrode=PosElectrode;
 for i1=1:size(PosElectrode,1)
     D=(XYZ(1,:)-PosElectrode(i1,1)).^2+(XYZ(2,:)-PosElectrode(i1,2)).^2+(XYZ(3,:)-PosElectrode(i1,3)).^2;
-%     [tmp1 tmp2]=min(D);   %nearest neighbour
-%     wPosElectrode(i1,:)=[V1(tmp2) V2(tmp2) V3(tmp2)];
     [tmp,order]=sort(D);
     tmp=tmp(1:18);      %cubic neighborhood
     order=order(1:18);
@@ -229,8 +197,6 @@ end
 wPosElectrodeBip=PosElectrodeBip;
 for i1=1:size(PosElectrodeBip,1)
     D=(XYZ(1,:)-PosElectrodeBip(i1,1)).^2+(XYZ(2,:)-PosElectrodeBip(i1,2)).^2+(XYZ(3,:)-PosElectrodeBip(i1,3)).^2;
-%     [tmp1 tmp2]=min(D);   %nearest neighbour
-%     wPosElectrode(i1,:)=[V1(tmp2) V2(tmp2) V3(tmp2)];
     [tmp,order]=sort(D);
     tmp=tmp(1:18);      %cubic neighborhood
     order=order(1:18);

@@ -172,29 +172,8 @@ if isfield(D,'spike')   %Recalculate seizure
         
         if Instantaneous
             %Instantaneous firing rate for each neurone
-            timingsindex=unique(indsample(D,timings));
             for i3=1:length(SelNeuro{i1})
                 n=n+1;
-%                 events=find(markers==SelNeuro{i1}(i3));
-%                 for i4=1:length(events)
-%                     if length(events)>1
-%                         if Causal
-%                             if i4==1
-%                                 Data(n,timingsindex(events(i4)))=inv(timings(events(i4+1))-timings(events(i4)));
-%                             else
-%                                 Data(n,timingsindex(events(i4)))=inv(timings(events(i4))-timings(events(i4-1)));
-%                             end
-%                         else
-%                             if i4==1
-%                                 Data(n,timingsindex(events(i4)))=inv(timings(events(i4+1))-timings(events(i4)));
-%                             elseif i4==length(events)
-%                                 Data(n,timingsindex(events(i4)))=inv(timings(events(i4))-timings(events(i4-1)));
-%                             else
-%                                 Data(n,timingsindex(events(i4)))=2*inv(timings(events(i4+1))-timings(events(i4-1)));
-%                             end
-%                         end
-%                     end
-%                 end
                 D.Firing.Name{n}=[D.spike.name{i1} ' - ' num2str(SelNeuro{i1}(i3))];
                 Data(n,:)=hist(timings,min(Time):TimeBinDuration:max(Time))/TimeBinDuration;
             end
@@ -206,8 +185,6 @@ if isfield(D,'spike')   %Recalculate seizure
                     win=TimeWindow(i2)+[-TimeWindowWidth TimeWindowWidth]/2;
                     Data(n,i2)=length(find(markers(find(timings>=win(1)&timings<=win(2)))==SelNeuro{i1}(i3)))/TimeWindowWidth;
                 end
-%                 windowSize = round(TemporalSmoothing*fsample(D));
-%                 Data(n,:)= filter(ones(1,windowSize)/windowSize,1,Data(n,:));
                 D.Firing.Name{n}=[D.spike.name{i1} ' - ' num2str(SelNeuro{i1}(i3))];
             end
         end
@@ -215,10 +192,7 @@ if isfield(D,'spike')   %Recalculate seizure
     if Instantaneous
         S=zeros(size(Data,1),length(Time));
         for i1=1:size(Data,1)
-            index=find(Data(i1,:));
-%             S(i1,:) = interp1(Time(index),Data(i1,index),Time,'linear');
             S(i1,:) = interp1(min(Time):TimeBinDuration:max(Time),Data(i1,:),Time,'linear');
-%             S(i1,:) = interp1(Time(index),Data(i1,index),Time,'cubic');
         end
     else
         S=zeros(size(Data,1),length(Time));
@@ -233,12 +207,10 @@ if isfield(D,'spike')   %Recalculate seizure
         end
     end
 
-    D.Firing.data=S;
-
+    D.Firing.data = S;
     save(D);
 
     spm('Pointer', 'Arrow');
-
 
 else
     error('No spike data')

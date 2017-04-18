@@ -108,9 +108,7 @@ function ImaGIN_MontageDisplay
 
             figure(Fgraph);clf
 
-            % axes('Position', [0.05 0.15 0.2 0.07]);
             imagesc(Im.x,Im.y,Im.Bregma)
-            % imagesc(Im.x,-Im.y,flipud(Im.Bregma))
             axis equal
             axis tight
             title('Paxinos coordinates in mm','FontSize',FS1)

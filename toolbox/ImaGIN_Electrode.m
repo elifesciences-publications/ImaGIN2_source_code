@@ -23,7 +23,19 @@ catch
     t = spm_select(Inf, '\.mat$', 'Select data file');
 end
 
-P=spm_str_manip(deblank(t(1,:)),'h');
+P = spm_str_manip(deblank(t(1,:)),'h');
+
+try
+    Name = S.Name;
+catch
+    try
+        filename = S.filenameName;
+        Name = readName(filename);
+    catch
+        filename = spm_select(1, '\.txt$', 'Select txt file for electrode names', {}, P);
+        Name = readName(filename);
+    end
+end
 
 try
     Position = S.Position;
@@ -37,124 +49,84 @@ catch
     end
 end
 
+% try
+%     FileOut=S.FileOut;
+% catch
+%     S.FileOut = spm_input('Name of output file', '+1', 's');
+% end
 
-try
-    Name = S.Name;
-catch
-    try
-        filename = S.filenameName;
-        Name = readName(filename,Position);
-    catch
-        filename = spm_select(1, '\.txt$', 'Select txt file for electrode names', {}, P);
-        Name = readName(filename,Position);
-    end
-end
-
-try
-    FileOut=S.FileOut;
-catch
-    S.FileOut = spm_input('Name of output file', '+1', 's');
-end
-
-try
-    FileTxtOut = S.FileTxtOut;
-catch
-    disp('do not save the recording sensors')
-end
-
+% try
+%     FileTxtOut = S.FileTxtOut;
+% catch
+%     disp('do not save the recording sensors')
+% end
 
 
 for i0=1:size(t,1)
-    T=deblank(t(i0,:));
-    D=spm_eeg_load(T);
-    
-    %     Cnames=chanlabels(D);
-    Sensors=sensors(D,'EEG');
-    Sensors.label=deblank(Sensors.label);
+    T = deblank(t(i0,:));
+    D = spm_eeg_load(T);
+
+    Sensors = sensors(D,'EEG');
+    Sensors.label = deblank(Sensors.label);
     
     if length(unique(Sensors.label))~=length(Sensors.label)
         warning('repeated label in the TRC file')
     end
-    
-    chan_not_assigned = cell(1,1);
-    iter_bad = 1;
-    for i1=1:length(Sensors.chantype)
-        corresp=0;
-        
+
+    % Loop on all channels available in the file
+    for i1 = 1:length(Sensors.chantype)
         if strcmpi(chantype(D,i1),'eeg')
-            for i2=1:length(Name{1})
-                if strcmpi(Sensors.label{i1},Name{1}{i2})
-                    Sensors.elecpos(i1,:)=Position(i2,:);
-                    Sensors.chanpos(i1,:)=Position(i2,:);
-                    corresp=corresp+1;
-                end
-                
-                if strcmpi(Sensors.label{i1},Name{2}{i2})
-                    Sensors.elecpos(i1,:)=Position(i2,:);
-                    Sensors.chanpos(i1,:)=Position(i2,:);
-                    corresp=corresp+1;
-                end
+            % Look for channel in position file
+            iChanPos = find(strcmpi(Sensors.label{i1}, Name));
+            % Channel not found: try replacing ' by p
+            if isempty(iChanPos)
+                iChanPos = find(strcmpi(strrep(Sensors.label{i1},'''','p'), strrep(Name,'''','p')));
             end
-            
-            Sensors.chantype{i1}='eeg';
-            
-            if corresp==0
-                %try replacing ' by p
-                for i2=1:length(Name{1})
-                    if strcmpi(strrep(Sensors.label{i1},'''','p'),strrep(Name{1}{i2},'''','p'))
-                        Sensors.elecpos(i1,:)=Position(i2,:);
-                        Sensors.chanpos(i1,:)=Position(i2,:);
-                        corresp=corresp+1;
-                    end
-                
-                    if strcmpi(strrep(Sensors.label{i1},'''','p'),strrep(Name{2}{i2},'''','p'))
-                        Sensors.elecpos(i1,:)=Position(i2,:);
-                        Sensors.chanpos(i1,:)=Position(i2,:);
-                        corresp=corresp+1;
-                    end
-                end
-                
-                
-                if corresp == 0
-                    warning([Sensors.label{i1} ' not assigned'])  %warning without identifier are never activated. won't see this message on most computers...
-                    chan_not_assigned{iter_bad} = Sensors.label{i1};
-                    iter_bad = iter_bad +1 ;
-                end
-%             elseif corresp>1
-%                 warning(['Several electrodes corresponding to ' Sensors.label{i1}])
-%                 disp(sprintf('Several electrodes corresponding to : %s', Sensors.label{i1}));
+            % If channel was found: get its position
+            if ~isempty(iChanPos)
+                Sensors.elecpos(i1,:) = Position(iChanPos,:);
+                Sensors.chanpos(i1,:) = Position(iChanPos,:);
+            else
+                disp(['ImaGIN> WARNING: ' Sensors.label{i1} ' not assigned']);
             end
-            
         elseif strcmpi(chantype(D,i1),'ecg')
             Sensors.chantype{i1}='ecg';
         end
-        
     end
-    
+
+%     try
+%         fid = fopen(FileTxtOut,'w');
+%         recording_output = (D.sensors('eeg').label);
+%         fprintf(fid,'%s\n',recording_output{:});
+%         fclose(fid);
+%     catch
+%         disp('recording sensors not saved.')
+%     end
    
-   try
-       fid = fopen(FileTxtOut,'w');
-       recording_output = (D.sensors('eeg').label);
-       fprintf(fid,'%s\n',recording_output{:});
-       fclose(fid);
-   catch
-       disp('recording sensors not saved.')
-   end
-   
-    D=sensors(D,'EEG',Sensors);
-    newname=FileOut;
-    D2=clone(D,newname, [D.nchannels D.nsamples D.ntrials]);
-    D2(:,:,:)=D(:,:,:);
-    save(D2);
-    
+    D = sensors(D,'EEG',Sensors);
+%     newname = FileOut;
+%     D2 = clone(D,newname, [D.nchannels D.nsamples D.ntrials]);
+%     D2(:,:,:) = D(:,:,:);
+%     save(D2);
+    save(D);
 end
 
 end
 
-    function Name = readName(filename,Position)
-    fid=fopen(filename);
-    for i1=1:size(Position,1)
-        Name{i1}=fgetl(fid);
+
+%% Read name from file
+function Name = readName(filename)
+    fid = fopen(filename);
+    i1 = 1;
+    while 1
+        tmp = fgetl(fid);
+        if isequal(tmp, -1) || isempty(tmp)
+            break;
+        end
+        Name{i1} = tmp;
+        i1 = i1 + 1;
     end
     fclose(fid);
-    end
+end
+
+

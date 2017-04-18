@@ -26,11 +26,6 @@ try
 catch
     DD = spm_select(inf, '\.mat$', 'Select TF EEG mat file(s) to normalise');
 end
-% if ~iscell(DD)
-%     Dname{1}=DD;
-% else
-%     Dname=DD;
-% end
 %baseline file
 try
     BB = S.B;
@@ -45,7 +40,6 @@ if isempty(BB)
         BB = spm_input('Baseline time window (s)', '+1', 'r', '', 2);
     end
 end
-
 
 try
     clear tmp
@@ -71,7 +65,7 @@ if ~isnumeric(BB)
 end
 
 if ~isnumeric(BB)
-    if isfield(BB{1}, 'Nfrequencies')&isfield(DD{1},'Nfrequencies')
+    if isfield(BB{1}, 'Nfrequencies') && isfield(DD{1},'Nfrequencies')
         s=zeros(BB{1}.Nfrequencies,BB{1}.nchannels);
         m=zeros(BB{1}.Nfrequencies,BB{1}.nchannels);
         for i1=1:size(BB{1},1)
@@ -84,12 +78,8 @@ if ~isnumeric(BB)
         end
         s(find(s<=10*eps))=1;    %because otherwise it gives inf for normalised data
         for i2=1:length(DD)
-            %         if length(DD)>1
             D=DD{i2};
-            %         else
-            %             D=DD;
-            %         end
-            if BB{1}.Nfrequencies==D.Nfrequencies&BB{1}.nchannels==D.nchannels
+            if (BB{1}.Nfrequencies == D.Nfrequencies) && (BB{1}.nchannels == D.nchannels)
                 data=D(:,:,:,:);
                 for i1=1:D.nchannels
                     for i2=1:D.ntrials
@@ -111,7 +101,6 @@ else
     if isfield(DD{1},'Nfrequencies')
         for i2=1:length(DD)
             index=find(DD{i2}.tf.time>=min(BB)&DD{i2}.tf.time<=max(BB));
-            %         if length(DD)>1
             D=DD{i2};
             data=D(:,:,:,:);
             for i1=1:D.nchannels
@@ -132,3 +121,5 @@ else
         error('No time frequency data');
     end
 end
+
+

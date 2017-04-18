@@ -74,9 +74,6 @@ catch
     FileOut = [Filename(1:end-3) 'txt'];
 end
 
-
-% D=timeonset(D,0);
-% save(D)
 Time=time(D);
 
 
@@ -96,7 +93,6 @@ else
     end
 end
 
-% Data=sum(D(SelChan,Start:End),1);
 Data=D(SelChan,Start:End);
 
 %find bad channels which saturate
@@ -106,7 +102,6 @@ if FindBadChannels
         tmp=abs(Data(i1,1:2:end));
         L(i1)=length(find(tmp==max(tmp)))/length(tmp);
     end
-%     GoodChannels=find(L<200/size(Data,2));
     GoodChannels=find(L<0.05);      %Assume that bad channels saturate 5% of time
     Data=ImaGIN_Normalisation(Data(GoodChannels,:),2);
 end
@@ -116,17 +111,10 @@ for i1=1:size(Data,1)
     Data(i1,:)=ImaGIN_notch(Data(i1,:),D.fsample,50,250);
 end
 
-
 %Simple version based on averaging between electrodes
 stimulation = [];
 if 1==1
-    
-    % d=[0 abs(diff(Data,2)) 0];
     d=[zeros(size(Data,1),1) abs(diff(Data,2,2)) zeros(size(Data,1),1)];
-%     d=ImaGIN_Normalisation(d,2);
-%     [tmp,Order]=sort(max(d'),'descend');
-%     d=mean(d(Order(1:ceil(length(Order)/2)),:));
-
 
     d=ImaGIN_Normalisation(d,2);
     d1=max(d,[],1);
@@ -136,11 +124,8 @@ if 1==1
     
     d=d1+d2;
 
-    
     d=ImaGIN_Normalisation(d,2);
-    
-    % [tmp1,tmp2]=max(d);
-    % Index=find(d>tmp1/4);
+
     Index=find(d>2);
     Index=Index(find(Index>ceil(Stim/2)+1&Index<length(d)-ceil(Stim/2)-1));
     if ~isempty(Index)
@@ -153,7 +138,6 @@ if 1==1
             else
                 IndexClust(tmp1)=max(IndexClust(tmp1));
             end
-            %         IndexClust(tmp1(find(IndexClust(tmp1)==0)))=min(IndexClust(1:i1-1))+1;
         end
         IndexNew=zeros(1,max(IndexClust));
         for i1=1:length(IndexNew)
@@ -166,12 +150,8 @@ if 1==1
         for i1=1:length(Index)
             Template=Template+d(Index(i1)+[-ceil(Stim/2):ceil(Stim/2)]);
         end
-        
-        % Template=d(tmp2+[-ceil(Stim/2):ceil(Stim/2)]);
-        
-        
+
         cc=zeros(size(d));
-        % for i1=ceil(Stim/2)+1:length(d)-ceil(Stim/2)-1
         for i1=Index
             tmp=corrcoef(Template,d(i1+[-ceil(Stim/2):ceil(Stim/2)]));
             cc(i1)=tmp(2);
@@ -181,11 +161,9 @@ if 1==1
             end
         end
         %Threshold cc
-        Threshold=0.4;
-        Threshold=min([0.4 median(cc(find(cc~=0)))]);
+        Threshold=min([0.4, median(cc(find(cc~=0)))]);
         tmp=find(cc>Threshold);
         stimulation=tmp;
-        
         
         %Second pass
         Index=stimulation;
@@ -209,7 +187,6 @@ if 1==1
         Threshold=0.4;
         tmp=find(cc>Threshold);
         stimulation=tmp;
-
     end 
     
     if ~isempty(stimulation)
@@ -253,23 +230,16 @@ if 1==1
                 end                    
             end
         end
-        
         stimulation=stimulation-offset;
     end
-    
 else
-    
     %more complex version where start and end stim are automatically found
-    
     clear stimulation StartStim EndStim template
     n=0;
     for i0=1:size(Data,1)
-        % d=[0 abs(diff(Data,2)) 0];
         d=[0 abs(diff(Data(i0,:),2,2)) 0];
         d=ImaGIN_Normalisation(d,2);
-        
-        % [tmp1,tmp2]=max(d);
-        % Index=find(d>tmp1/4);
+
         Index=find(d>3);
         
         Index=Index(find(Index>ceil(Stim/2)+1&Index<length(d)-ceil(Stim/2)-1));
@@ -277,12 +247,8 @@ else
         for i1=1:length(Index)
             Template=Template+d(Index(i1)+[-ceil(Stim/2):ceil(Stim/2)]);
         end
-        
-        % Template=d(tmp2+[-ceil(Stim/2):ceil(Stim/2)]);
-        
-        
+
         cc=zeros(size(d));
-        % for i1=ceil(Stim/2)+1:length(d)-ceil(Stim/2)-1
         for i1=Index
             tmp=corrcoef(Template,d(i1+[-ceil(Stim/2):ceil(Stim/2)]));
             cc(i1)=tmp(2);
@@ -302,7 +268,6 @@ else
             n=n+1;
             template(n,:)=Template;
         end
-        
     end
     
     Template=mean(template);
@@ -313,54 +278,23 @@ else
     end
     Index=find(StartStim>0);
     Index=Index(find(CC>0.6));
-    
-        
-% % %     StartStim=median(StartStim(find(EndStim>0)))-fsample(D);
-% % %     EndStim=median(EndStim(find(EndStim>0)))+fsample(D);
-% %     StartStim=min(StartStim(find(EndStim>0)))-fsample(D);
-% %     EndStim=max(EndStim(find(EndStim>0)))+fsample(D);
-%     
-%     
-%     Duration=(EndStim-StartStim)./fsample(D);
-%     Index=find(StartStim>0);
-% %     idx=kmeans(Duration(Index),2);
-%     idx=kmeans([StartStim(Index);EndStim(Index);Duration(Index)]',2);
-%     if mean(Duration(Index(find(idx==1))))>mean(Duration(Index(find(idx==2))))
-%         Index=Index(find(idx==1));
-%     else
-%         Index=Index(find(idx==2));
-%     end
-%     
-    
-    
+
     StartStim=min(StartStim(Index))-fsample(D);
     EndStim=max(EndStim(Index))+fsample(D);
-    
-    
+
     d=[zeros(size(Data(Index,:),1),1) abs(diff(Data(Index,:),2,2)) zeros(size(Data(Index,:),1),1)];
-    % d=ImaGIN_Normalisation(d,2);
-    % [tmp,Order]=sort(max(d'),'descend');
-    % d=mean(d(Order(1:ceil(length(Order)/2)),:));
     d=mean(d);
     d=ImaGIN_Normalisation(d,2);
-    
-    % [tmp1,tmp2]=max(d);
-    % Index=find(d>tmp1/4);
+
     Index=find(d>3);
-    
     Index=Index(find(Index>=StartStim&Index<=EndStim));
-    
     Index=Index(find(Index>ceil(Stim/2)+1&Index<length(d)-ceil(Stim/2)-1));
     Template=0;
     for i1=1:length(Index)
         Template=Template+d(Index(i1)+[-ceil(Stim/2):ceil(Stim/2)]);
     end
-    
-    % Template=d(tmp2+[-ceil(Stim/2):ceil(Stim/2)]);
-    
-    
+
     cc=zeros(size(d));
-    % for i1=ceil(Stim/2)+1:length(d)-ceil(Stim/2)-1
     for i1=Index
         tmp=corrcoef(Template,d(i1+[-ceil(Stim/2):ceil(Stim/2)]));
         cc(i1)=tmp(2);
@@ -374,11 +308,7 @@ else
     Threshold=0.5;
     tmp=find(cc>Threshold);
     stimulation=tmp;
-        
 end
-
-
-
 
 %remove outliers close to other stims
 if length(stimulation)>1
@@ -389,7 +319,6 @@ if length(stimulation)>1
             remove=[remove i1];
         end
     end
-%     StimulationFreqU=D.fsample/median(diff(stimulation));   %uncorrected stim frequency
     stimulation=stimulation(setdiff(1:length(stimulation),remove));
 end
 
@@ -409,9 +338,7 @@ else
     else
         StimulationFreqU=0;   %uncorrected stim frequency
     end
-    
-    
-    
+
     %fill the gaps
     if StimContinuous
         tmp=stimulation;
@@ -430,43 +357,8 @@ else
     Stimulation=Time(round(StimulationIndex));
 end
 
-% 
-% tmp2=diff(tmp);
-% tmp3=[1 find(tmp2~=1)+1 length(tmp)];
-% Stimulation=zeros(length(tmp3)-1,1);
-% for i1=1:length(tmp3)-1
-%     [t1,t2]=max(cc(tmp(tmp3(i1):tmp3(i1+1))));
-%     Stimulation(i1)=tmp(t2+tmp3(i1)-1);
-% end
-% Stimulation=Time(Start-1+Stimulation);
-% 
-% ok=1;
-% while ok
-%     StimulationOK=ones(size(Stimulation));
-%     for i1=2:length(Stimulation)
-%         if Stimulation(i1)-Stimulation(i1-1)<1/(10*StimInit)
-%             StimulationOK(i1)=0;
-%         end
-%     end
-%     Index=find(StimulationOK==0);
-%     if isempty(Index)
-%         ok=0;
-%     else
-%         Stimulation=Stimulation(find(StimulationOK));
-%     end
-% end
-
-
-% P = spm_str_manip(Filename, 'H');
-% F = spm_str_manip(Filename, 'tr');
-
 fid=fopen(FileOut,'w');
 fprintf(fid,'%f\n',Stimulation);
 fclose(fid);
-
-% Filename=fullfile(DirOut,[F '_StimulationIndex.txt']);
-% fid=fopen(Filename,'w');
-% fprintf(fid,'%f\n',StimulationIndex);
-% fclose(fid);
 
 

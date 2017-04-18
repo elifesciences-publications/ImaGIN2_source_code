@@ -56,12 +56,11 @@ catch
     S.Time(2) = spm_input('Time end (>1)', '+1', 'r', '1.2', 1);
     S.Time(3) = spm_input('Time resolution (<1)', '+1', 'r', '0.001', 1);
 end
-TimeTemplate=[S.Time(1):S.Time(3):S.Time(2)];
+TimeTemplate = S.Time(1):S.Time(3):S.Time(2);
 
 for i2=1:length(DD)
     D=DD{i2};
     Time=D.tf.time-S.Event(i2,1);
-%     Time=Time/Time(find(abs(D.tf.time-S.Event(i2,2))==min(abs(D.tf.time-S.Event(i2,2)))));
     Time=Time/(S.Event(i2,2)-S.Event(i2,1));
 
     %Resample
@@ -79,3 +78,6 @@ for i2=1:length(DD)
     save(Dnew);
 
 end
+
+
+

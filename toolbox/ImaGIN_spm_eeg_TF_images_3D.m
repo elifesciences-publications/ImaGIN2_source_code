@@ -24,7 +24,6 @@ catch
 	D = spm_select(inf, '\.mat$', 'Select EEG mat file');
 	
 end
-P = spm_str_manip(D, 'H');
 
 try
 	D = spm_eeg_load(D);
@@ -32,20 +31,20 @@ catch
 	error(sprintf('Trouble reading file %s', D));
 end
 
-if isfield(D, 'Nfrequencies') & ndims(D)==3
-	try
-		fmt = S.fmt;
-	catch
-		spm_input('average over ...', 1, 'd')
-		Ctype = {
-			'electrodes',...
-				'frequency'};
-		str   = 'Average over which dimension';
-		Sel   = spm_input(str, 2, 'm', Ctype);
-		fmt = Ctype{Sel};
-	end
-	
-	switch fmt
+if isfield(D, 'Nfrequencies') && (ndims(D) == 3)
+    try
+        fmt = S.fmt;
+    catch
+        spm_input('average over ...', 1, 'd')
+        Ctype = {
+            'electrodes',...
+            'frequency'};
+        str   = 'Average over which dimension';
+        Sel   = spm_input(str, 2, 'm', Ctype);
+        fmt = Ctype{Sel};
+    end
+    
+    switch fmt
 		case {'electrodes'}
 			try
 				D.electrodes_of_interest = S.thresholds.elecs;
@@ -71,22 +70,21 @@ if isfield(D, 'Nfrequencies') & ndims(D)==3
 					if isempty(tmp) break, end
 				end
 			end
-			try
-				D.Nregion = S.region_no;
-			catch 
-				str = 'region number';
-				Ypos = -1;
-				
-				while 1
-					if Ypos == -1   
-						[D.Nregion, Ypos] = spm_input(str, '+1', 'r', [], [1 Inf]);
-					else
-						D.Nregion = spm_input(str, Ypos, 'r', [], [1 Inf]);
-					end
-					if ~isempty(D.Nregion) break, end
-					str = 'No data';
-				end
-				
+            try
+                D.Nregion = S.region_no;
+            catch
+                str = 'region number';
+                Ypos = -1;
+                
+                while 1
+                    if Ypos == -1
+                        [D.Nregion, Ypos] = spm_input(str, '+1', 'r', [], [1 Inf]);
+                    else
+                        D.Nregion = spm_input(str, Ypos, 'r', [], [1 Inf]);
+                    end
+                    if ~isempty(D.Nregion) break, end
+                    str = 'No data';
+                end
             end
             Types={};
             for i1=1:length(Events)
@@ -105,33 +103,33 @@ if isfield(D, 'Nfrequencies') & ndims(D)==3
             for i = 1 : length(Types)
                 Itrials = find(strcmp(Events.type == Types(i)));
                 cd(D.path)
-                dname = sprintf('%dROI_TF_trialtype%d', D.Nregion, Types(i));
+                dname = sprintf('%dROI_TF_trialtype%d', D.Nregion, Types{i});
                 [m, sta] = mkdir(dname);
                 cd(dname);
 				
-				for l = Itrials
-					% if single trial data make new directory for single trials,
-					% otherwise just write images to trialtype directory
-					if size(D,4) ~= length(Types)
-						% single trial data
-						dname = sprintf('trial%d.img', l);
-						fname = dname;
-						[m, sta] = mkdir(dname);
-						cd(dname);
-					else
-						fname = 'average.img';
-					end
-					data=squeeze(mean(D(D.electrodes_of_interest,:,:,i),1));	
-					V.fname = fname;
-					V.dim = [D.Nfrequencies D.nsamples  1 ];
-					V.dt=[spm_type('float64') 0]; %%%check later with john
-					V.mat = eye(4);
-					V.pinfo = [1 0 0]';
-					
-					spm_write_vol(V, data); % d is data
-				end
+                for l = Itrials
+                    % if single trial data make new directory for single trials,
+                    % otherwise just write images to trialtype directory
+                    if size(D,4) ~= length(Types)
+                        % single trial data
+                        dname = sprintf('trial%d.img', l);
+                        fname = dname;
+                        [m, sta] = mkdir(dname);
+                        cd(dname);
+                    else
+                        fname = 'average.img';
+                    end
+                    data=squeeze(mean(D(D.electrodes_of_interest,:,:,i),1));
+                    V.fname = fname;
+                    V.dim = [D.Nfrequencies D.nsamples  1 ];
+                    V.dt=[spm_type('float64') 0]; %%%check later with john
+                    V.mat = eye(4);
+                    V.pinfo = [1 0 0]';
+                    
+                    spm_write_vol(V, data); % d is data
+                end
 				
-			end
+            end
 			
         case {'frequency'}
             try
@@ -142,7 +140,7 @@ if isfield(D, 'Nfrequencies') & ndims(D)==3
                         Ypos = '+1';
                     end
                     
-                    inds=find(D.tf.frequencies>=D.Frequency_window(1) & D.tf.frequencies<=D.Frequency_window(2))
+                    inds = find(D.tf.frequencies>=D.Frequency_window(1) & D.tf.frequencies<=D.Frequency_window(2));
                     if ~isempty(inds) break, end
                     str = 'No data in range';
                 end
@@ -150,13 +148,13 @@ if isfield(D, 'Nfrequencies') & ndims(D)==3
                 str = 'Frequency window';
 				
 				Ypos = -1;
-				while 1
-					if Ypos == -1
-						Ypos = '+1';
-					end
+                while 1
+                    if Ypos == -1
+                        Ypos = '+1';
+                    end
                     [D.Frequency_window, Ypos] = spm_input(str, Ypos, 'r', [], 2);
                     
-                    inds=find(D.tf.frequencies>=D.Frequency_window(1) & D.tf.frequencies<=D.Frequency_window(2))
+                    inds = find(D.tf.frequencies>=D.Frequency_window(1) & D.tf.frequencies<=D.Frequency_window(2));
                     if ~isempty(inds) break, end
                     str = 'No data in range';
                 end
@@ -165,8 +163,6 @@ if isfield(D, 'Nfrequencies') & ndims(D)==3
             D=clone(D,['F' num2str(D.Frequency_window(1)) '_' num2str(D.Frequency_window(2)) '_' D.fnamedat], [size(D,1) size(D,3) 1]);
             D(:,:)=data;
             
-           % Ctf = load(fullfile(spm('dir'), 'EEGtemplates', D.channels.ctf));
-           % D.channels.Bad = setdiff(1:Ctf.Nchannels,D.tf.channels);
             D.time=D.tf.time;
             D=rmfield(D,'Nfrequencies');
             save(D);
@@ -196,3 +192,7 @@ else
     S.Fname = fullfile(D.path, D.fname);
     ImaGIN_spm_eeg_convertmat2ana_3D(S);
 end
+
+
+
+

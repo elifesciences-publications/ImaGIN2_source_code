@@ -6,7 +6,6 @@ function ImaGIN_spm_eeg_convertmat2ana_3D(S)
 %     (optional) fields of S:
 %     Fname		- matrix of EEG mat-files
 %     n         - size of quadratic output image (size: n x n x 1)
-% 
 
 % -=============================================================================
 % This function is part of the ImaGIN software: 
@@ -55,8 +54,6 @@ if CorticalMesh
         SaveMNI = S.SaveMNI;
     catch
         str   = 'Save image in';
-        % 	Sel   = spm_input(str, '+1', 'm', Ctype);
-        % 	S.Atlas = Ctype{Sel};
         SaveMNI=spm_input(str, '+1','Native|MNI');
         if strcmp(SaveMNI,'Native')
             SaveMNI=0;
@@ -105,8 +102,6 @@ try
     Atlas = S.Atlas;
 catch
     str   = 'Select atlas';
-% 	Sel   = spm_input(str, '+1', 'm', Ctype);
-% 	S.Atlas = Ctype{Sel};
     Atlas=spm_input(str, '+1','Human|Rat|Mouse|PPN');
 end
 
@@ -128,17 +123,23 @@ end
 try
     interpolate_bad = S.interpolate_bad;
 catch
-    interpolate_bad = spm_input('Interpolate bad channels or mask out?',...
-        '+1', 'b', 'Interpolate|Mask out', [1,0]);
+    interpolate_bad = spm_input('Bad channels', '+1', 'b', 'Interpolate|Mask out', [1,0]);
 end
 
 spm('Pointer', 'Watch'); drawnow
 
 % Load data set into structures
-clear D
+D = cell(1, Nsub);
 for i = 1:Nsub
     D{i} = spm_eeg_load(deblank(Fname(i,:)));
 end
+
+% Detect which function to use for griddata3
+if exist('griddata3', 'file')
+    fcn_griddata3 = @griddata3;
+else
+    fcn_griddata3 = @oc_griddata3;
+end 
 
 for k = 1:Nsub
     
@@ -146,22 +147,14 @@ for k = 1:Nsub
         TimeWindow=D{k}.time;
     end
     
-    % load channel template file (contains location of channels)
-%     Fchannels = spm_select(1, '\.mat$', 'Select channel template file', {}, fullfile(spm('dir'), 'EEGtemplates'));
-%     Ctf=load(Fchannels);
-%     Ctf = load(fullfile(spm('dir'), 'EEGtemplates', D.channels.ctf));
     Ctf=sensors(D{k},'EEG');
     
-    
     if CorticalMesh
-
         mesh = ImaGIN_spm_eeg_inv_mesh(sMRI, 4);
         mm        = export(gifti(mesh.tess_ctx),'patch');
         mm_mni        = export(gifti(mesh.tess_mni),'patch');
         GL      = spm_mesh_smooth(mm);
-        DistMean = 3.4;     %average distance between neighbours at highest resolution
-        
-        
+
         Bad=badchannels(D{k});
         Good=setdiff(setdiff(1:nchannels(D{k}),indchantype(D{k},'ECG')),Bad);
         
@@ -177,9 +170,7 @@ for k = 1:Nsub
         end
         
         ok=1;
-%         n=0;
         while ok
-%             n=n+1
             ok=0;
             IndexConn=cell(1,length(Index));
             IndexNew=cell(1,length(Index));
@@ -204,15 +195,9 @@ for k = 1:Nsub
         Cind=Good;
 
     else
-
         [Cel, Cind, x, y, z, Index] = ImaGIN_spm_eeg_locate_channels(D{k}, n, interpolate_bad,SizeHorizon,Ctf,Atlas);
         [Cel2, Cind2, x2, y2, z2, Index2] = ImaGIN_spm_eeg_locate_channels(D{k}, n, interpolate_bad,SizeSphere,Ctf,Atlas);
-
     end
-
-
-
-
 
     if isfield(D{k},'time')
         time=D{k}.time;
@@ -225,16 +210,10 @@ for k = 1:Nsub
         [tmp,timewindow(i1)]=min(abs(time-TimeWindow(i1)));
     end
     timewindow=unique(timewindow);
-%     if isfield(D{k},'time')
-%     if D{k}.nsamples>1
-        timewindowwidth=round(TimeWindowWidth*D{k}.fsample/2);
-%     else
-%         timewindowwidth=0;
-%     end
+    timewindowwidth=round(TimeWindowWidth*D{k}.fsample/2);
     
     switch Atlas
         case{'Human'}
-            bb = [[-78 -112 -50];[78 76 85]];
             tmp=spm('Defaults','EEG');
             bb=tmp.normalise.write.bb;
             V = fullfile(spm('dir'), 'toolbox', 'OldNorm', 'T1.nii');
@@ -271,7 +250,6 @@ for k = 1:Nsub
         d = (D{k}(Cind, :,:));
     else
         FlagSyn=1;
-%         Nchannels=length(D{k}.channels.eeg)-length(D{k}.channels.Bad);
         Nchannels=(1+sqrt(1+8*D{k}.nchannels))/2;
         M=ImaGIN_ConnectivityMatrix(Nchannels);
         tmpd=(D{k}(:, :,:));
@@ -299,22 +277,6 @@ for k = 1:Nsub
         end
     end
 
-%     D{k}.Nsamples=2;
-    
-%     fname = [F '.img'];
-%     dat = file_array(fname,[n1 n2 n3 D{k}.Nsamples],'FLOAT32');
-%     N = nifti;
-%     N.dat = dat;
-%     N.mat = eye(4);
-%     N.mat_intent = 'Aligned';
-%     create(N);
-%     for j = 1 : D{k}.Nsamples % time bins
-%         di = zeros(n1, n2, n3);
-%         di(Index) = griddata3(Cel(:,1), Cel(:,2), Cel(:,3), d(:, j),x,y,z, 'linear');
-%         N.dat(:,:,:,j) = di;
-%         disp(sprintf('Subject %d, sample %d', k, j))
-%     end
-
     tmp=round(1000*max(abs(time(timewindow))));
     for j = timewindow % time bins
         J=round(1000*time(j));
@@ -332,18 +294,9 @@ for k = 1:Nsub
             V.fname = sprintf('sample_%0.6d.img',J);
         else
             V.fname = sprintf('sample_%d.img',J);            
-        end            
-%         if D{k}.Nsamples<10
-%             V.fname = sprintf('sample_%d.img',J);
-%         elseif D{k}.Nsamples<100
-%             V.fname = sprintf('sample_%0.2d.img',J);
-%         elseif D{k}.Nsamples<1000
-%             V.fname = sprintf('sample_%0.3d.img',J);
-%         elseif D{k}.Nsamples<10000
-%             V.fname = sprintf('sample_%d.img',J);
-%         end            
+        end                  
         
-        win=j+[-timewindowwidth:timewindowwidth];
+        win=j+ (-timewindowwidth:timewindowwidth);
         win=win(find(win>=1&win<=D{k}.nsamples));
         tmpd=mean(d(:,win),2);
         
@@ -384,111 +337,30 @@ for k = 1:Nsub
             else
                 di = ImaGIN_spm_mesh_to_grid(mm, V, EMap);
             end
-%             Maxdi=max(di(:));
-%             if abs(Maxdi-1)<1e-6
-%                 V.dt=[4 0];
-%             end
             Maskout=find(isnan(di));
             di(Maskout)=-Inf;
             di=spm_dilate(di);
-%             di2=spm_dilate(abs(di));
-%             di3=sign(di);di3(di3==0)=1;
-%             di3=spm_dilate(di3);
-%             di=di2.*di3;
-%             di=spm_dilate(di);
             di(di==-Inf)=NaN;
-% %             di=(Maxdi/max(di(:)))*di;
-% %             
-% %         spm_write_vol(V,di);
-% % %         V=spm_vol(V.fname);
-% % %         spm_smooth(V,V.fname,2);
-% %             %smooth image of latency
-% %             clear matlabbatch
-% %             matlabbatch{1}.spm.spatial.smooth.data = {[V.fname ',1']};
-% %             matlabbatch{1}.spm.spatial.smooth.fwhm = [3 3 3];
-% %             matlabbatch{1}.spm.spatial.smooth.dtype = 0;
-% %             matlabbatch{1}.spm.spatial.smooth.im = 1;
-% %             matlabbatch{1}.spm.spatial.smooth.prefix = 's';
-% %             spm('defaults', 'EEG');
-% %             spm_jobman('run', matlabbatch);
-% %             movefile(['s' V.fname],V.fname)
-% %             movefile(['s' V.fname(1:end-3) 'hdr'],[V.fname(1:end-3) 'hdr'])
-% %             
-% %             
-% %             di=spm_vol(V.fname);
-% %             di=spm_read_vols(di);
-% %             di=(Maxdi/max(di(:)))*di;
-%             %erosion
-%             Mask=zeros(size(di));
-%             Mask(~isnan(di))=1;
-%             Mask=spm_erode(Mask);
-%             Mask(Mask==0)=NaN;
-%             di=di.*Mask;
-%             di=(Maxdi/max(di(:)))*di;
 
             V=spm_write_vol(V,di);
-
-%             clear matlabbatch
-%             matlabbatch{1}.spm.spatial.smooth.data = {[V.fname ',1']};
-%             matlabbatch{1}.spm.spatial.smooth.fwhm = [3 3 3];
-%             matlabbatch{1}.spm.spatial.smooth.dtype = 0;
-%             matlabbatch{1}.spm.spatial.smooth.im = 1;
-%             matlabbatch{1}.spm.spatial.smooth.prefix = 's';
-%             spm('defaults', 'EEG');
-%             spm_jobman('run', matlabbatch);
-%             movefile(['s' V.fname],V.fname)
-%             movefile(['s' V.fname(1:end-3) 'hdr'],[V.fname(1:end-3) 'hdr'])
-% 
-%             di=spm_vol(V.fname);
-%             di=spm_read_vols(di);
-%             di=(Maxdi/max(di(:)))*di;
-%             V=spm_write_vol(V,di);
-% 
-%             %             spm_smooth(di, di, 0.5);
-% %             di = di.*(abs(di) > Maxdi*exp(-8));            
-% %             di(abs(di) <= Maxdi*exp(-8))=NaN;
-% %             di=(Maxdi/max(di(:)))*di;
-% %             %erosion
-% %             Mask=zeros(size(di));
-% %             Mask(abs(di)>Maxdi*exp(-8))=1;
-% %             Mask=spm_erode(Mask);
-% %             Mask=spm_erode(Mask);
-% %             di=di.*Mask;
-%             
-%             
-% %             di=spm_erode(di);
-% %             di=spm_erode(di);
-            
-
         else
-            
             di = NaN*zeros(n2,n1,n3);
-            %         di = zeros(n2,n1,n3);
-            di(Index) = griddata3(Cel(:,1), Cel(:,2), Cel(:,3), tmpd,x,y,z, 'linear');
-            %         di(Index) = griddata3(Cel(:,1), Cel(:,2), Cel(:,3), tmpd,x,y,z, 'linear',{'Qt','Qbb','Qc','Qz'});
-            %         di(Index) = griddata3(Cel(:,1), Cel(:,2), Cel(:,3), tmpd,x,y,z, 'nearest');
-            di2 = zeros(n2,n1,n3);
+            di(Index) = fcn_griddata3(Cel(:,1), Cel(:,2), Cel(:,3), tmpd,x,y,z, 'linear');
             di2 = NaN*zeros(n2,n1,n3);
-            di2(Index2) = griddata3(Cel2(:,1), Cel2(:,2), Cel2(:,3), tmpd,x2,y2,z2, 'nearest');
+            di2(Index2) = fcn_griddata3(Cel2(:,1), Cel2(:,2), Cel2(:,3), tmpd,x2,y2,z2, 'nearest');
             Index3=intersect(find(isnan(di)),Index2);
             di(Index3)=di2(Index3);
-            %         di(Index)=1;
             di=permute(di,[2 1 3]);
-            
-        V=spm_write_vol(V,di);
-%         V=spm_vol(V.fname);
-%         spm_smooth(V,V.fname,2);
+
+            V=spm_write_vol(V,di);
         end
         
-        
-        
-        
-        
-        if exist('d1')
+
+        if exist('d1', 'var')
             tmpd=mean(d1(:,win),2);
             di = NaN*zeros(n2,n1,n3);
             di = zeros(n2,n1,n3);
-            di(Index) = griddata3(Cel(:,1), Cel(:,2), Cel(:,3), tmpd,x,y,z, 'nearest');
+            di(Index) = fcn_griddata3(Cel(:,1), Cel(:,2), Cel(:,3), tmpd,x,y,z, 'nearest');
             %         di(Index)=1;
             di=permute(di,[2 1 3]);
             P=[bb(1,1),bb(1,2),bb(1,3),0,0,0,n,n,n];
@@ -498,14 +370,10 @@ for k = 1:Nsub
             Vtmp.dt=[64 0];
             Vtmp.dt=[16 0];
             Vtmp.fname=['pos_' V.fname];
-            Vtmp=spm_write_vol(Vtmp,di);
-%             Vtmp=spm_vol(Vtmp.fname);
-%             spm_smooth(Vtmp,Vtmp.fname,2);
+            spm_write_vol(Vtmp,di);
             tmpd=mean(d2(:,win),2);
-            di = NaN*zeros(n2,n1,n3);
             di = zeros(n2,n1,n3);
-            di(Index) = griddata3(Cel(:,1), Cel(:,2), Cel(:,3), tmpd,x,y,z, 'nearest');
-            %         di(Index)=1;
+            di(Index) = fcn_griddata3(Cel(:,1), Cel(:,2), Cel(:,3), tmpd,x,y,z, 'nearest');
             di=permute(di,[2 1 3]);
             P=[bb(1,1),bb(1,2),bb(1,3),0,0,0,n,n,n];
             Vtmp=V;
@@ -514,9 +382,7 @@ for k = 1:Nsub
             Vtmp.dt=[64 0];
             Vtmp.dt=[16 0];
             Vtmp.fname=['neg_' V.fname];
-            Vtmp=spm_write_vol(Vtmp,di);
-%             Vtmp=spm_vol(Vtmp.fname);
-%             spm_smooth(Vtmp,Vtmp.fname,2);
+            spm_write_vol(Vtmp,di);
         end
         if FlagSyn
             dsyn=(D{k}(:, :,:));
@@ -533,7 +399,6 @@ for k = 1:Nsub
             Vtmp=spm_write_vol(Vtmp,S);
         end
         disp(sprintf('Subject %d, time %d', k, J))
-%         disp(sprintf('Subject %d, sample %d', k, j))
     end
 
     cd ..

@@ -54,11 +54,6 @@ if iscell(D)
     DD=D;clear D
     switch Method
         case 'Mean'
-%             data=0;
-%             for i1=1:length(DD)
-%                 data=data+double(DD{i1}(:,:,:));
-%             end
-%             data=data./length(DD);
             data=zeros([size(DD{1}) length(DD)]);
             for i1=1:length(DD)
                D =DD{i1};
@@ -93,7 +88,7 @@ if iscell(D)
         Name=spm_input('Name of new file', '+1', 's');
     end
     D=DD{1};
-    % D=rmfield(D,'data');
+
     if isempty(Name)%Assume namefiles are numbered, have the same events
         for i1=1:length(D.fnamedat)
             if ~strcmp(DD{1}.fnamedat(i1),DD{2}.fnamedat(i1))
@@ -258,7 +253,7 @@ else
                         end
                         [D.Frequency_window, Ypos] = spm_input(str, Ypos, 'r', [], 2);
 
-                        inds=find(D.tf.frequencies>=D.Frequency_window(1) & D.tf.frequencies<=D.Frequency_window(2))
+                        inds = find(D.tf.frequencies>=D.Frequency_window(1) & D.tf.frequencies<=D.Frequency_window(2));
                         if ~isempty(inds) break, end
                         str = 'No data in range';
                     end
@@ -266,11 +261,7 @@ else
                 data=squeeze(mean(D(:,inds,:,:),2));
                 D=clone(D,['F' num2str(D.Frequency_window(1)) '_' num2str(D.Frequency_window(2)) '_' D.fnamedat], [size(D,1) size(D,3) 1]);
                 D(:,:)=data;
-                %          D(:,3)=[];
                 D=rmfield(D,'Nfrequencies');
-                %      probl          if isfield(D.tf,'time')
-                %                     D=time(D,D.tf.time);
-                %                 end
                 D=rmfield(D,'tf');
                 save(D);
 
@@ -299,11 +290,6 @@ else
                     end
                 end
                 data=squeeze(mean(D(:,:,:,:),4));
-%                Events.time=Events(1).time;
-%                 value=Events(i1).value;
-%                 D.events=rmfield(Events,'value');
-%                 Events(1).value=value;
-%                 Event.type='1';
                 D=clone(D,['m_' D.fnamedat], [D.nchannels D.Nfrequencies D.nsamples 1]);
                 D=events(D,1,Events);
                 D(:,:,:)=data;
@@ -313,3 +299,6 @@ else
         error('No time frequency data');
     end
 end
+
+
+
