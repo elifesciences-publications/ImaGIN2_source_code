@@ -52,11 +52,8 @@ end
 if ~isfield(S2, 'Atlas')
     S2.Atlas = spm_input('Select atlas', '+1','Human|Rat|Mouse');
 end
-
-% Get output file (if not defined in input)
-if ~isfield(S2, 'FileOut')
-    S2.FileOut = spm_str_manip(S.dataset(1:end-4),'t');
-end
+% Is output file defined
+isOutputSet = isfield(S2, 'FileOut') && ~isempty(S2.FileOut);
 
 % Processing starts
 spm('Pointer','Watch');
@@ -66,10 +63,15 @@ spm('Pointer','Watch');
 Nfiles = size(S.dataset, 1);
 D = cell(1,Nfiles);
 for i1 = 1:Nfiles
-    % Get file extension
+    % Input file
     S2.Fdata = deblank(S.dataset(i1, :));
+    % Get extension
     [fPath, fBase, fExt] = fileparts(S2.Fdata);
-               
+    % Default output filename
+    if ~isOutputSet
+        S2.FileOut = fullfile(fPath, fBase);
+    end
+    % Switch between file formats
     switch lower(fExt)
         case '.smr'
             S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Fchannels', 'Bipolar', 'Montage', 'epochlength', 'coarse', 'channel'});
@@ -82,8 +84,7 @@ for i1 = 1:Nfiles
                 D{i1} = ImaGIN_spm_eeg_rdata_elan(S2);
             % Nihon Kohden
             else
-                OutputFile = fullfile(fPath, [fBase, '.mat']);
-                D{i1} = ImaGIN_convert_nk(S2.Fdata, OutputFile);
+                D{i1} = ImaGIN_convert_nk(S2.Fdata, [S2.FileOut, '.mat']);
             end
 
         case {'.asc','.txt'}
@@ -96,8 +97,7 @@ for i1 = 1:Nfiles
             % D{i1} = ImaGIN_spm_eeg_rdata_micromed_mono(S2);
 
             % New version: Brainstorm
-            OutputFile = fullfile(fPath, [fBase, '.mat']);
-            D{i1} = ImaGIN_convert_micromed(S2.Fdata, OutputFile);
+            D{i1} = ImaGIN_convert_micromed(S2.Fdata, [S2.FileOut, '.mat']);
 
         case '.msm'
             S2 = ImaGIN_copy_fields(S2, S, {'Atlas', 'SEEG', 'Bipolar', 'coarse', 'SaveFile'});
