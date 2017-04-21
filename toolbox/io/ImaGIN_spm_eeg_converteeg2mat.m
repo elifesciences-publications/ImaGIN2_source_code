@@ -48,10 +48,6 @@ if ~isfield(S2, 'dataset')
     end
 end
 
-% Ask species (if not defined in input)
-if ~isfield(S2, 'Atlas')
-    S2.Atlas = spm_input('Select atlas', '+1','Human|Rat|Mouse');
-end
 % Is output file defined
 isOutputSet = isfield(S2, 'FileOut') && ~isempty(S2.FileOut);
 

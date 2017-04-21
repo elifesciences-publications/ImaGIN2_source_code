@@ -31,9 +31,9 @@ if isempty(iSel)
     error('No valid channel names were found.');
 end
 % Keep only these ones in the data
-ChannelMat.Channel = ChannelMat.Channel(iSel);
-F = F(iSel,:);
-sFileIn.channelflag = sFileIn.channelflag(iSel);
+ChannelMat.Channel = ChannelMat.Channel(iEEG(iSel));
+F = F(iEEG(iSel),:);
+sFileIn.channelflag = sFileIn.channelflag(iEEG(iSel));
 
 % Fix the names of some channels
 % Code copied from original function: ImaGIN_spm_eeg_rdata_micromed_mono
@@ -52,7 +52,6 @@ for i = 1:length(ChannelMat.Channel)
     end
     ChannelMat.Channel(i).Name = chName;
 end
-
 
 % Export to SPM format
 sFileOut = out_fopen_spm(OutputFile, sFileIn, ChannelMat);
