@@ -45,9 +45,9 @@ if isSEEG
         iTag = find(strcmpi(uniqueTags{i}, chTags));
         % Remove if more than 18
         if (length(iTag) >= 18)
-            chNames(iTag) = [];
-            chNamesClean(iTag) = [];
-            chTags(iTag) = [];
+            chNames(iTag) = {'XXXXX'};
+            chNamesClean(iTag) = {'XXXXX'};
+            chTags(iTag) = {'XXXXX'};
         end
     end
 end
@@ -67,13 +67,26 @@ for i = 1:length(chNames)
     if isNoInd(i) || ~ismember(chNames{i}(end), '0123456789')
         continue;
     % Does not start with a letter
-    elseif ~ismember(lower(chNames{i}(1)), 'abcdefghijklmopqrstuvwxyz')
+    elseif ~ismember(lower(chNames{i}(1)), 'abcdefghijklmnopqrstuvwxyz')
         continue;
     % Unwanted labels
     elseif ismember(lower(chTags{i}), {'mark', 'dc', 'emg', 'eog', 'veo', 'heo', 'veog', 'heog', 'myo', 'oc', 'dd', 'dg', 'el', 'ref', 'eegref', 'eref', 'vref', 'ref', 'pulse', 'mast', 'spo2'})
         continue;
     % Unwanted EEG labels
     elseif isSEEG && ismember(lower(chTags{i}), {'cz', 'fz', 'pz', 'oz', 'nz', 'fpz'})
+        continue;
+    % Unwanted FPx/Fx/Cx/Tx/Pz/Ox labels
+    elseif isSEEG && ismember(lower(chNames{i}), {'fp1','fp2'}) && ~any(ismember({'fp3','fp4'}, lower(chNames)))
+        continue;
+    elseif isSEEG && ismember(lower(chNames{i}), {'f3','f4','f7','f8'}) && ~any(ismember({'f1','f2'}, lower(chNames)))
+        continue;
+    elseif isSEEG && ismember(lower(chNames{i}), {'c3','c4'}) && ~any(ismember({'c1','c2'}, lower(chNames)))
+        continue;
+    elseif isSEEG && ismember(lower(chNames{i}), {'t3','t4','t5','t6'}) && ~any(ismember({'t1','t2'}, lower(chNames)))
+        continue;
+    elseif isSEEG && ismember(lower(chNames{i}), {'p3','p4'}) && ~any(ismember({'p1','p2'}, lower(chNames)))
+        continue;
+    elseif isSEEG && ismember(lower(chNames{i}), {'o1','o2'}) && ~any(ismember({'o3','o4'}, lower(chNames)))
         continue;
     % ECG: Accept (should be labelled as such)
     elseif ismember(lower(chTags{i}), {'ecg', 'ekg'})
