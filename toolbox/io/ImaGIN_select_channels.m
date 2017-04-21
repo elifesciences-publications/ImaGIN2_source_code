@@ -55,8 +55,9 @@ end
 % Get indices
 chInd = cellfun(@(c)c(ismember(c, '0123456789')), chNamesClean, 'UniformOutput', 0);
 isNoInd = cellfun(@isempty, chInd);
-% chInd(~isNoInd) = cellfun(@str2num, chInd(~isNoInd));
-
+% Convert indices from string to integers
+chInd(~isNoInd) = cellfun(@str2num, chInd(~isNoInd), 'UniformOutput', 0);
+isNoInd = isNoInd | cellfun(@isempty, chInd);
 
 % Process all the channels
 iSel = [];
@@ -83,8 +84,19 @@ for i = 1:length(chNames)
     end
 end
 
+% Sort channels by tag and index
+chTags = chTags(iSel);
+chInd = chInd(iSel);
+uniqueTags = unique(chTags);
+iOrderSel = [];
+for i = 1:length(uniqueTags)
+    iTag = find(strcmpi(chTags, uniqueTags{i}));
+    [tmp, iOrderInd] = sort([chInd{iTag}]);
+    iOrderSel = [iOrderSel, iTag(iOrderInd)];
+end
+
 % Add ECG channels at the end of the file
-iSel = [iSel, iEcg];
+iSel = [iSel(iOrderSel), iEcg];
 
 
 
