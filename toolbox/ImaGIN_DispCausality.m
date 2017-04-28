@@ -66,15 +66,19 @@ e=[e(1:tmp(1)+2) '2' e(tmp(1)+4:end)];
 t=fullfile(d,e);
 D2=spm_eeg_ldata(t);    %time lag
 
-%plot electrodes
-% tmp=spm_input('Plot electrodes ',1,'Yes|No');
-% if strcmp(tmp,'Yes')
-%     FlagElec=1;
+% Plot electrodes
 Fchannels=fullfile(spm('dir'), 'EEGtemplates',D1.channels.ctf);
 Template=load(Fchannels);
 Pos=Template.Cpos2(:,D1.ca.channels)';
 h.Pos=Pos;
 
+% Askthe atlas to the user
+try
+    Species=D1.Atlas;
+catch
+    Species=spm_input('Species ','+1','Human|Rat|Mouse');
+end
+    
 %Plot glass brain
 switch D1.Atlas
     case 'Human'
@@ -90,11 +94,6 @@ hMIPax = spm_mip_ui([],zeros(3,0),eye(4),[2 2 2]',hMIPax);
 
 %-Axis offsets for 3d MIPs:
 %=======================================================================
-try
-    Species=D1.Atlas;
-catch
-    Species=spm_input('Species ','+1','Human|Rat|Mouse');
-end
 %-MIP pane dimensions and Talairach origin offsets
 %-See spm_project.c for derivation
 % DMIP = [DXYZ(2)+DXYZ(1), DXYZ(1)+DXYZ(3)];
@@ -105,14 +104,11 @@ end
 % 4 voxel offsets in Y since using character '<' as a pointer.
 switch Species
     case{'Human'}
-        %             DXYZ = [182 218 182];
-        %             CXYZ = [091 127 073];
         DXYZ = [192 218 182];
         CXYZ = [096 132 078];
     case{'Rat','Mouse'}
         DXYZ = [189 211 175];
         CXYZ = [106 167 141];
-%         Pos=10*Pos;
 end
 Po(1)  =                  CXYZ(2) -2;
 Po(2)  = DXYZ(3)+DXYZ(1) -CXYZ(1) +2;
@@ -128,15 +124,10 @@ else
     mis=min(min(D1.data(:,:)));
     md=max(max(abs(D2.data(:,:))));
 end
-% Zmax = str2num(spm_input(sprintf('+ Threshold synchro (max=%0.3f) ',mas), '+1', 's',0));
-% Zmin = str2num(spm_input(sprintf('- Threshold synchro (min=%0.3f) ',mis), '+1', 's',0));
-% Zd = str2num(spm_input(sprintf('+ Threshold delay (max=%0.3f) ',mad), '+1', 's',0));
+
 Zmax=(mas+mis)/2;
 Zmin=(mas+mis)/2;
 Zd=md/2;
-% if Zmax<Zmin
-%     Zmin=Zmax;
-% end
 
 h.Pos=Pos;
 h.Zmax=Zmax;

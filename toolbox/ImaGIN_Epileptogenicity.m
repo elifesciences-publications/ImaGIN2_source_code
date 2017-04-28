@@ -44,9 +44,7 @@ try
     Atlas = S.Atlas;
 catch
     str   = 'Select atlas';
-% 	Sel   = spm_input(str, '+1', 'm', Ctype);
-% 	S.Atlas = Ctype{Sel};
-    Atlas=spm_input(str, '+1','Human|Rat|Mouse|PPN');
+    Atlas = spm_input(str, '+1','Human|Rat|Mouse|PPN');
 end
 
 try

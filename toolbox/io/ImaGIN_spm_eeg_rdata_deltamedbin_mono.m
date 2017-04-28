@@ -263,7 +263,7 @@ switch S.SEEG
 %         for i1=1:size(D.channels.label,1)
 %             D.channels.label{i1,1}(findstr(D.channels.label{i1,1},''''))='p';
 %         end
-end            
+end
 
 
 

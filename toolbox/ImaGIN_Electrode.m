@@ -94,20 +94,7 @@ for i0=1:size(t,1)
         end
     end
 
-%     try
-%         fid = fopen(FileTxtOut,'w');
-%         recording_output = (D.sensors('eeg').label);
-%         fprintf(fid,'%s\n',recording_output{:});
-%         fclose(fid);
-%     catch
-%         disp('recording sensors not saved.')
-%     end
-   
     D = sensors(D,'EEG',Sensors);
-%     newname = FileOut;
-%     D2 = clone(D,newname, [D.nchannels D.nsamples D.ntrials]);
-%     D2(:,:,:) = D(:,:,:);
-%     save(D2);
     save(D);
 end
 
