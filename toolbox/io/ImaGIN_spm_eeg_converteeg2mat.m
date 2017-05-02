@@ -171,6 +171,10 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
     if isempty(SelChannels)
         % Get channels classified as EEG
         iEEG = channel_find(ChannelMat.Channel, 'EEG,SEEG,ECOG');
+        % If there are no channels classified at EEG, take all the channels
+        if isempty(iEEG)
+            iEEG = 1:length(ChannelMat.Channel);
+        end
         % Detect channels of interest
         iSelEeg = ImaGIN_select_channels({ChannelMat.Channel(iEEG).Name});
         % Convert indices back to the original list of channels
