@@ -16,7 +16,7 @@ function [Stimulation,StimulationIndex,StimulationFreqU]=ImaGIN_StimDetect(S)
 % Authors: Olivier David
 
 try
-    Filename=S.Filename;
+    Filename = S.Fname;
 catch
     Filename = spm_select(1, '\.mat$', 'Select data file');
 end

@@ -445,9 +445,9 @@ for i0=17%[3 5 6]%2:length(Patient)
         
         %Longitudinal bipolar montage
         clear S
-        S.Filename=fullfile(Root,Patient{i0}.Name,[Patient{i0}.File{i1} '.mat']);
+        S.Fname=fullfile(Root,Patient{i0}.Name,[Patient{i0}.File{i1} '.mat']);
         S.SaveFile=Patient{i0}.File{i1};
-        S.FileOut=S.Filename;
+        S.FileOut=S.Fname;
         D = ImaGIN_BipolarMontage(S);
 
     end
@@ -476,7 +476,7 @@ for i0=17%[3 5 6]%2:length(Patient)
         clear S
         S.Fname=fullfile(Root,Patient{i0}.Name,[Patient{i0}.Baseline{i1} '.mat']);
         S.SaveFile=Patient{i0}.Baseline{i1};
-        S.FileOut=S.Filename;
+        S.FileOut=S.Fname;
         D = ImaGIN_BipolarMontage(S);
         
     end

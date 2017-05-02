@@ -87,7 +87,7 @@ for c=1:length(KeepEvent) % Navigate all stim events
     % Detect stimulations and stimulation indices & save in text file
     [pth,matFile,~]= fileparts(sFile);
     clear S
-    S.Filename = fullfile(pth, matFile);
+    S.Fname = fullfile(pth, matFile);
     S.Channels = [];
     S.StimStart= Time(1,KeepEvent(c))-0.5;
     if c < length(KeepEvent)
@@ -324,8 +324,8 @@ for c=1:length(KeepEvent) % Navigate all stim events
             
         % Add events
         clear S2
-        S2.Filename= S.FileOut;
-        S2.FileOut = S2.Filename;
+        S2.Fname   = S.FileOut;
+        S2.FileOut = S2.Fname;
         S2.Action  = 'Add';
         S2.Nevent  = 1;
         S2.EventName{1} = 'Stim';
@@ -334,8 +334,8 @@ for c=1:length(KeepEvent) % Navigate all stim events
         
         % Time origin
         clear S2
-        S2.Filename= S.FileOut;
-        S2.FileOut = S2.Filename;
+        S2.Fname   = S.FileOut;
+        S2.FileOut = S2.Fname;
         S2.EventRef= 'Stim';
         S2.Offset  = 0;
         D = ImaGIN_TimeZero(S2);

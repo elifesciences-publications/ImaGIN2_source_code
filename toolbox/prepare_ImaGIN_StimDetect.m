@@ -23,8 +23,8 @@ function prepare_ImaGIN_StimDetect(StimContinuous, FileIn, FileOut)
 %
 % Authors: ?
 
-S.Filename=FileIn;
-S.StimFreq=1;
+S.Fname = FileIn;
+S.StimFreq = 1;
 
 if strcmp(StimContinuous,'False')
     StimContinuous=false;

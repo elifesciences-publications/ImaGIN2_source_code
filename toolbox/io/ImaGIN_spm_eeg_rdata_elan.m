@@ -233,11 +233,6 @@ CreateTemplate='No';
         D.path = DirOut;
         D = meeg(D);
 
-%         if ~isempty(Evt)
-%             D = events(D, 1, Evt);
-%         end
-        %     D=timeonset(D,D.time(D.TimeZero));
-
         if ~isempty(m_events)
         evt=[];
 %                 D.trials(n).onset=m_events(tmp,1)/D.Fsample; %in sec

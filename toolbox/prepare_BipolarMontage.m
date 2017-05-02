@@ -19,8 +19,8 @@ function prepare_BipolarMontage(Save,FileIn, FileOut)
 [Root,file,ext]=fileparts(FileIn);
 %Longitudinal bipolar montage
 clear S
-S.Filename=FileIn;
-S.FileOut=FileOut;
+S.Fname   = FileIn;
+S.FileOut = FileOut;
 
 if strcmp(Save,'False')
     Save=false;

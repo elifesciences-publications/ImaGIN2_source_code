@@ -25,7 +25,7 @@ function prepare_ImaGIN_Events(Action, Nevent, EventName, FileDataIn, FileEventI
 %
 % Authors: ?
 
-S.Filename=FileDataIn;
+S.Fname = FileDataIn;
 
 S.Action=Action;
 if ischar(Nevent)

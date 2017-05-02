@@ -16,12 +16,13 @@ function ImaGIN_Events(S)
 % Authors: Olivier David
 
 try
-    t=S.Filename;
+    t = S.Fname;
 catch
     t = spm_select(1, '\.mat$', 'Select data file');
 end
-
-% Fi  = spm_figure('GetWin','Interactive');
+if isempty(t)
+    return;
+end
 
 try
     Action=S.Action;
@@ -29,20 +30,17 @@ catch
     Action = spm_input('Events ',1,'Add|Remove');
 end
 
-
-
 if strcmp(Action,'Add')
     try
         ImaGIN_EventsAdd(t,S);
     catch
         ImaGIN_EventsAdd(t);
     end
-    
 elseif strcmp(Action,'Remove')
     try
         ImaGIN_EventsRemove(t,S);
     catch
-         ImaGIN_EventsRemove(t);
+        ImaGIN_EventsRemove(t);
     end
 end
 
@@ -72,7 +70,7 @@ function ImaGIN_EventsAdd(Filename,S)
     end
 
     try
-        FileOut=S.FileOut;
+        FileOut = S.FileOut;
     catch
         FileOut = Filename;
     end
@@ -83,7 +81,6 @@ function ImaGIN_EventsAdd(Filename,S)
     File=spm_str_manip(Filename,'t');
     E=what(Direc);
     ok=0;
-
 
     D2=clone(D,FileOut, [D.nchannels D.nsamples D.ntrials]);
     D2(:,:,:)=D(:,:,:);
@@ -131,9 +128,11 @@ function D=ImaGIN_EventsAdd_Subfunction(Filename,NewName,Timing,NeventNew)
         for i1=1:length(Timing{i0})
             n=n+1;
             evt(n).type  = NewName{i0};
-            evt(n).time = Timing{i0}(i1);
-            evt(n).value= NeventOld+i0;
+            evt(n).time  = Timing{i0}(i1);
+            evt(n).value = NeventOld+i0;
         end
+        % Add log entry
+        ImaGIN_save_log(fullfile(D), sprintf('Added %dx event %s', length(Timing{i0}), NewName{i0}));
     end
     % This assigns these events to the first trials (the only one if you have continuous data)
     D = events(D, 1, evt);
@@ -142,37 +141,42 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ImaGIN_EventsRemove(Filename,S)
-
-    D=spm_eeg_load(Filename);
-
-    try
-        OutRep=S.Out;
-    catch
-        OutRep=[];
-    end
+    D = spm_eeg_load(Filename);
 
     try
-        EventRemove=S.EventName;
+        EventRemove = S.EventName;
     catch
-        EventRemove=spm_input('Type of events to remove', '+1', 's');
+        EventRemove = spm_input('Type of events to remove (*=ALL)', '+1', 's');
     end
 
-    Event=D.events;
-    nEvent=size(Event,2);
-    n=nEvent;
-    i1=1;
-    while n>0
-        if strcmp(EventRemove,Event(i1).type) || isempty(EventRemove)&&isempty(Event(i1).type)
-            Event(i1:nEvent-1)=Event(i1+1:nEvent);
-            Event(nEvent)=[];
-            i1=i1-1;
-            nEvent=nEvent-1;
+    % Get events in file
+    Event = D.events;
+    nEvent = size(Event,2);
+    % No events available
+    if (nEvent == 0)
+        disp('ImaGIN> Warning: No events available in the file');
+        return;
+    % Remove all events
+    elseif strcmp(EventRemove, '*')
+        Event(:) = [];
+        strLog = 'Removed all events';
+    % Remove selected events
+    else
+        % Find the events corresponding to the input
+        iEvt = find(strcmpi({Event.type}, EventRemove));
+        % Event not found
+        if isempty(iEvt)
+            disp(['ImaGIN> Warning: Event "' EventRemove '" not found.']);
+            return;
         end
-        n=n-1;
-        i1=i1+1;
+        % Remove event
+        Event(iEvt) = [];
+        strLog = ['Removed event: ' EventRemove];
     end
-
-    D=events(D,1,Event);
+    % Save modified events list in the file
+    D = events(D,1,Event);
     save(D);
+    % Add log entry
+    ImaGIN_save_log(fullfile(D), strLog);
 end
 

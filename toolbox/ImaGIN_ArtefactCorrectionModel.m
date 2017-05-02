@@ -16,7 +16,7 @@ function D=ImaGIN_ArtefactCorrectionModel(S)
 % Author: Olivier David
 
 try
-    t=S.Filename;
+    t=S.Fname;
 catch
     t=spm_select(Inf, '\.mat$', 'Select data file');
 end
@@ -98,7 +98,7 @@ end
 try
     FileOut=S.FileOut;
 catch
-    FileOut=S.Filename;
+    FileOut=S.Fname;
 end
 
 saveb=0;     %save the rc value chosed for the correction

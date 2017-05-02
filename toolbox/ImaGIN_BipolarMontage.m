@@ -18,7 +18,7 @@ function Dnew = ImaGIN_BipolarMontage(S)
 % Authors: Olivier David
 
 try
-    Filename=S.Filename;
+    Filename = S.Fname;
 catch
     Filename = spm_select(Inf, '\.mat$', 'Select data file');
 end
@@ -47,7 +47,6 @@ for i0=1:size(Filename,1)
     T=deblank(Filename(i0,:));
     D=spm_eeg_load(T);
     
-    %     Cnames=chanlabels(D);
     Sensors=sensors(D,'EEG');
     Name=Sensors.label;
     Position=Sensors.elecpos;
@@ -121,19 +120,17 @@ for i0=1:size(Filename,1)
         Dnew = badchannels(Dnew,BadChannelsBip,1); % add badchannel index in meeg object
     end
     
-%     for i1=1:size(Data,1)
-%         Dnew=chantype(Dnew,i1,chantype(D,bipole(1,i1)));
-%     end
     save(Dnew);
     
     if SaveChannels
-       [dir,name,~]=fileparts(newname);
-       fid = fopen(fullfile(dir, ['recordings_' name '.txt']),'w');
-       recording_output = (Dnew.sensors('eeg').label);
-       fprintf(fid,'%s\n',recording_output{:});
-       fclose(fid);
+        [dir,name,~]=fileparts(newname);
+        fid = fopen(fullfile(dir, ['recordings_' name '.txt']),'w');
+        recording_output = (Dnew.sensors('eeg').label);
+        fprintf(fid,'%s\n',recording_output{:});
+        fclose(fid);
     end
     
-    
+    % Save the list of channels in the output file
+    ImaGIN_save_log(fullfile(Dnew), 'Bipolar montage:', chanlabels(Dnew));
 end
 

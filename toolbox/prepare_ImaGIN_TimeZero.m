@@ -21,9 +21,8 @@ function prepare_ImaGIN_TimeZero(EventRef, Offset, FileIn,  FileOut)
 %
 % Authors: ?
 
-S.Filename=FileIn;
-
-S.EventRef=EventRef;
+S.Fname = FileIn;
+S.EventRef = EventRef;
 
 if ischar(Offset)
     Offset=str2num(Offset);

@@ -27,6 +27,11 @@ function LogFile = ImaGIN_save_log(FileName, Comment, ChanLabels)
 %
 % Authors: Francois Tadel, 2017
 
+% Parse inputs
+if (nargin < 3) || isempty(ChanLabels)
+    ChanLabels = [];
+end
+
 % Create log filename
 [fPath, fBase, fExt] = fileparts(FileName);
 LogFile = fullfile(fPath, [fBase, '_log.txt']);
@@ -39,15 +44,14 @@ if (fid < 0)
 end
 
 % Write time and date
-if ~isempty(Comment)
-    fprintf(fid, '[%s]\n', char(datetime));
-end
+fprintf(fid, '[%s]\n', char(datetime));
+
 % Write comment line
 if ~isempty(Comment)
     fprintf(fid, '%s\n', Comment);
 end
 % Write channel labels
-if ~isempty(Comment)
+if ~isempty(ChanLabels)
     fprintf(fid, '%s ', ChanLabels{:});
     fprintf(fid, '\n');
 end

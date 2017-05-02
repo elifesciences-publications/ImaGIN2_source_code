@@ -24,7 +24,7 @@ function prepare_ImaGIN_ArtefactCorrectionModel(tms, time_break, rc1, rc2, nb, m
 %
 % Authors: ?
 
-S.Filename=FileIn;
+S.Fname = FileIn;
 
 if ischar(tms)
     tms=str2num(tms);

@@ -17,14 +17,18 @@ function D = ImaGIN_Electrode(S)
 %
 % Authors: Olivier David
 
+% Get file to edit
 try
-    t=S.Fname;
+    t = S.Fname;
 catch
     t = spm_select(Inf, '\.mat$', 'Select data file');
 end
-
+if isempty(t)
+    return;
+end
 P = spm_str_manip(deblank(t(1,:)),'h');
 
+% Read sensor names
 try
     Name = S.Name;
 catch
@@ -37,6 +41,7 @@ catch
     end
 end
 
+% Read sensor positions
 try
     Position = S.Position;
 catch
@@ -49,20 +54,10 @@ catch
     end
 end
 
-% try
-%     FileOut=S.FileOut;
-% catch
-%     S.FileOut = spm_input('Name of output file', '+1', 's');
-% end
-
-% try
-%     FileTxtOut = S.FileTxtOut;
-% catch
-%     disp('do not save the recording sensors')
-% end
-
-
-for i0=1:size(t,1)
+% Set positions
+chFound = {};
+chNotFound = {};
+for i0 = 1:size(t,1)
     T = deblank(t(i0,:));
     D = spm_eeg_load(T);
 
@@ -86,16 +81,23 @@ for i0=1:size(t,1)
             if ~isempty(iChanPos)
                 Sensors.elecpos(i1,:) = Position(iChanPos,:);
                 Sensors.chanpos(i1,:) = Position(iChanPos,:);
+                chFound{end+1} = Sensors.label{i1};
             else
                 disp(['ImaGIN> WARNING: ' Sensors.label{i1} ' not assigned']);
+                chNotFound{end+1} = Sensors.label{i1};
             end
         elseif strcmpi(chantype(D,i1),'ecg')
             Sensors.chantype{i1}='ecg';
         end
     end
-
+    
+    % Update .mat file
     D = sensors(D,'EEG',Sensors);
     save(D);
+    
+    % Add entries in log file
+    ImaGIN_save_log(fullfile(D), 'Positions added for channels:', chFound);
+    ImaGIN_save_log(fullfile(D), 'Positions not found for channels:', chNotFound);
 end
 
 end

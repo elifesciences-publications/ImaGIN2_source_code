@@ -1,4 +1,5 @@
 function D = ImaGIN_BadChannel(S)
+% IMAGING_BADCHANNELS Bad channel detection using classifiers
 
 % -=============================================================================
 % This function is part of the ImaGIN software: 
@@ -14,7 +15,7 @@ function D = ImaGIN_BadChannel(S)
 % Copyright (c) 2000-2017 Inserm U1216
 % =============================================================================-
 %
-% Authors: Olivier David
+% Authors: Viateur Tuyisenge
 
 % Extract badchannels indices
 FileIn = S.dataset; % cropped seeg file .dat/.mat

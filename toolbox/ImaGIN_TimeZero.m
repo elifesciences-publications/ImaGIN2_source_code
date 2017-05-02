@@ -1,4 +1,4 @@
-function D=ImaGIN_TimeZero(S)
+function D = ImaGIN_TimeZero(S)
 % -=============================================================================
 % This function is part of the ImaGIN software: 
 % https://f-tract.eu/
@@ -16,7 +16,7 @@ function D=ImaGIN_TimeZero(S)
 % Authors: Olivier David
 
 try
-    Filename = S.Filename;
+    Filename = S.Fname;
 catch
     Filename = spm_select(1, '\.mat$', 'Select data file');
 end
@@ -60,12 +60,6 @@ catch
     Offset = spm_input('Duration [sec] before reference', '+1', 'r',0);
 end
 
-try
-    FileOut = S.FileOut;
-catch
-    FileOut = Filename;
-end
-
 D = timeonset(D,-(EventRef-Offset)+TimeOnset);
 
 for i0=1:length(Events)
@@ -79,8 +73,10 @@ end
 
 % This assigns these events to the first trials (the only one if you have continuous data)
 D = events(D, 1, Events);
-D2 = clone(D,FileOut, [D.nchannels D.nsamples D.ntrials]);
-D2(:,:,:) = D(:,:,:);
-save(D2);
+save(D);
+
+% Add log entry
+ImaGIN_save_log(fullfile(D), sprintf('TimeZero: Time offset %fs', -(EventRef-Offset)));
+
 
 

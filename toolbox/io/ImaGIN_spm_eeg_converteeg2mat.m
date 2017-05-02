@@ -165,10 +165,8 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
     % Read entire file with Brainstorm functions
     [F, TimeVector] = in_fread(sFileIn, ChannelMat, 1, []);
     
-    % Save the original list of channels in a log file
+    % Get list of available channel names
     ChanLabelsIn = {ChannelMat.Channel.Name};
-    ImaGIN_save_log(OutputFile, ['Available channels     (' InputFile ')'], ChanLabelsIn);
-
     % Auto-detect good SEEG channels
     if isempty(SelChannels)
         % Get channels classified as EEG
@@ -179,25 +177,8 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
         iSel = iEEG(iSelEeg);
     % Selected channels are passed in input
     else
-        % List of indices: use directly: [1 2 3 ...]
-        if isnumeric(SelChannels)
-            iSel = SelChannels;
-        % Cell array of channel labels: {'A1','A2',...}
-        elseif iscell(SelChannels)
-            iSel = [];
-            for i = 1:length(SelChannels)
-                iSel = [iSel, find(strcmpi(lower(SelChannels{i}), lower(ChanLabelsIn)))];
-            end
-        % String: 'A1 A2 ...'
-        elseif ischar(SelChannels)
-            SelChannels = str_split(SelChannels, sprintf(' ,;\t'));
-            iSel = [];
-            for i = 1:length(SelChannels)
-                iSel = [iSel, find(strcmpi(lower(SelChannels{i}), lower(ChanLabelsIn)))];
-            end
-        else
-            error('Invalid value for parameter "SelectChannels".');
-        end
+        % Find channels: string, cell array of strings, or array of indices
+        iSel = ImaGIN_find_channels(ChanLabelsIn, SelChannels);
     end
     % If no channels are selected
     if isempty(iSel)
@@ -214,11 +195,13 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
     % Load new file to return the D structure
     load(OutputFile);
 
+    % Save the original list of channels in a log file
+    ImaGIN_save_log(OutputFile, ['Convert: Available channels     (' InputFile ')'], ChanLabelsIn);
     % Save the list of channels in the output file
     ChanLabelsOut = {ChannelMat.Channel.Name};
-    ImaGIN_save_log(OutputFile, ['Selected channels     (' OutputFile ')'], ChanLabelsOut);
+    ImaGIN_save_log(OutputFile, ['Convert: Selected channels     (' OutputFile ')'], ChanLabelsOut);
     % Save the list of channels in the output file
-    ImaGIN_save_log(OutputFile, 'Removed channels:', sort(setdiff(ChanLabelsIn, ChanLabelsOut)));
+    ImaGIN_save_log(OutputFile, 'Convert: Removed channels:', sort(setdiff(ChanLabelsIn, ChanLabelsOut)));
 end
 
 
