@@ -91,8 +91,9 @@ sdip.n_seeds = 1;
 sdip.n_dip   = Nchannels;
 sdip.Mtb     = 1;
 sdip.j{1}    = zeros(3 * Nchannels, 1);
-sdip.loc{1}  = chLoc;
+sdip.loc{1}  = chLoc';
 sdip.Names   = chNames;
+sdip.fig     = spm_figure('GetWin','Graphics');
 % Render electrodes
 ImaGIN_DrawElectrodes('Init', sdip, P);
 
