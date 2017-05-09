@@ -88,10 +88,7 @@ end
 F  = spm_figure('GetWin','Interactive');
 figure(F);clf
 colormap('gray')
-% SelChan = ...
-%     spm_input('Select channels', 1, 'i', num2str([1:Nchannels]));
-SelChan = ...
-    spm_input('Select channels', 1, 'i', sprintf('1:%d',Nchannels));
+SelChan = spm_input('Select channels', 1, 'i', sprintf('1:%d',Nchannels));
 
 F  = spm_figure('GetWin','Graphics');
 figure(F);clf
