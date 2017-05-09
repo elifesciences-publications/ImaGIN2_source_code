@@ -40,7 +40,7 @@ end
 
 mesh.Msize        = Msize;
 
-spm('Pointer','Watch');
+spm('Pointer','Watch');  drawnow;
 
 % Canonical cortical mesh
 %--------------------------------------------------------------------------

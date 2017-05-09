@@ -61,8 +61,7 @@ end
 isOutputSet = isfield(S2, 'FileOut') && ~isempty(S2.FileOut);
 
 % Processing starts
-spm('Pointer','Watch');
-
+spm('Pointer','Watch'); drawnow;
 
 % Loop on input files
 Nfiles = size(S.dataset, 1);
