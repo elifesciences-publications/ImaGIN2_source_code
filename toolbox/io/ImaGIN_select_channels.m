@@ -37,7 +37,7 @@ chNamesClean = cellfun(@(c)c(~ismember(c, ' .,?!-_@#$%^&*+*=()[]{}|/')), chNames
 % Separate characters and numbers in the names
 chTags = cellfun(@(c)c(~ismember(c, '0123456789')), chNamesClean, 'UniformOutput', 0);
 
-% Remove all the channels with more than 18x the same tag (not SEEG)
+% Remove all the channels with more than 18x the same tag (this is not SEEG)
 if isSEEG
     uniqueTags = unique(chTags);
     for i = 1:length(uniqueTags)
@@ -52,19 +52,26 @@ if isSEEG
     end
 end
 
-% Get indices
-chInd = cellfun(@(c)c(ismember(c, '0123456789')), chNamesClean, 'UniformOutput', 0);
-isNoInd = cellfun(@isempty, chInd);
-% Convert indices from string to integers
-chInd(~isNoInd) = cellfun(@str2num, chInd(~isNoInd), 'UniformOutput', 0);
-isNoInd = isNoInd | cellfun(@isempty, chInd);
+% SEEG: Get the index of each channel
+if isSEEG
+    % Get indices
+    chInd = cellfun(@(c)c(ismember(c, '0123456789')), chNamesClean, 'UniformOutput', 0);
+    isNoInd = cellfun(@isempty, chInd);
+    % Convert indices from string to integers
+    chInd(~isNoInd) = cellfun(@str2num, chInd(~isNoInd), 'UniformOutput', 0);
+    isNoInd = isNoInd | cellfun(@isempty, chInd);
+% EEG: The separate name/index does not make sense
+else
+    chInd = num2cell(1:length(chNamesClean));
+    isNoInd = zeros(1,length(chNamesClean));
+end
 
 % Process all the channels
 iSel = [];
 iEcg = [];
 for i = 1:length(chNames)
     % No index or does not end with a digit
-    if isNoInd(i) || ~ismember(chNames{i}(end), '0123456789')
+    if isSEEG && (isNoInd(i) || ~ismember(chNames{i}(end), '0123456789'))
         continue;
     % Does not start with a letter
     elseif ~ismember(lower(chNames{i}(1)), 'abcdefghijklmnopqrstuvwxyz')
