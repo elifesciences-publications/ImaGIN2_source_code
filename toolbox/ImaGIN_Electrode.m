@@ -1,5 +1,5 @@
 function D = ImaGIN_Electrode(S)
-% Set electrode positions
+% Set electrode positions.
 
 % -=============================================================================
 % This function is part of the ImaGIN software: 
