@@ -91,7 +91,7 @@ for i1 = 1:Nfiles
         
         case '.eeg'  % BrainAmp or Nihon Kohden
             % BrainAmp: There is a header in the same folder (.vhdr or .ahdr)
-            if file_exist(fullfile(fPath, [fBase, '.vhdr'])) || file_exist(fullfile(fPath, [fBase, '.ahdr']))
+            if exist(fullfile(fPath, [fBase, '.vhdr']), 'file') || exist(fullfile(fPath, [fBase, '.ahdr']), 'file')
                 % Old version   => MISSING FUNCTION EEG2MAT
                 % S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Fchannels', 'Bipolar', 'Montage', 'epochlength', 'coarse', 'channel', 'SaveFile'});
                 % D{i1} = ImaGIN_spm_eeg_rdata_elan(S2);
