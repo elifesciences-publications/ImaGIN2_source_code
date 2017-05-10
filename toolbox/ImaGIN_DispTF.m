@@ -164,7 +164,7 @@ while ok
     end
 end
     
-[x,y]=meshgrid(D.tf.time,D.tf.frequencies);
+[x,y]=meshgrid(D.tf.time(1:size(D,3)),D.tf.frequencies);
 [xi,yi]=meshgrid(Temps,Freq);
 
 for i1=1:D.nchannels
