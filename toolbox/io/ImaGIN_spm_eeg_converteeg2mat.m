@@ -120,8 +120,12 @@ for i1 = 1:Nfiles
             D{i1} = ImaGIN_spm_eeg_rdata_deltamedbin_mono(S2);
        
         case '.edf'
-            S2 = ImaGIN_copy_fields(S2, S, {'channel', 'Atlas', 'SEEG', 'Bipolar', 'coarse', 'SizeMax'});
-            D = ImaGIN_spm_eeg_rdata_edf(S2);
+            % Old version
+            % S2 = ImaGIN_copy_fields(S2, S, {'channel', 'Atlas', 'SEEG', 'Bipolar', 'coarse', 'SizeMax'});
+            % D = ImaGIN_spm_eeg_rdata_edf(S2);
+            
+            % New version: Brainstorm
+            D{i1} = ImaGIN_convert_brainstorm(S2.Fdata, 'EEG-EDF', [S2.FileOut, '.mat'], SelectChannels, isSEEG);
 
         case '.e'
             S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Montage', 'coarse', 'SEEG', 'filenamePos', 'filenameName', 'MontageName', 'SaveFile', 'channel'});
@@ -165,6 +169,9 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
         % NIHON KOHDEN .EEG
         case 'EEG-NK'
             [sFileIn, ChannelMat] = in_fopen_nk(InputFile);
+        % EDF
+        case 'EEG-EDF'
+            [sFileIn, ChannelMat] = in_fopen_edf(InputFile);
         otherwise
             error(['Unsupported file format: ', FileFormat]);
     end
@@ -176,7 +183,7 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
     % Auto-detect good SEEG channels
     if isempty(SelChannels)
         % Get channels classified as EEG
-        iEEG = channel_find(ChannelMat.Channel, 'EEG,SEEG,ECOG');
+        iEEG = channel_find(ChannelMat.Channel, 'EEG,SEEG,ECOG,ECG');
         % If there are no channels classified at EEG, take all the channels
         if isempty(iEEG)
             disp('ImaGIN> Warning: Channel types are not defined: not selecting by types.');
@@ -184,6 +191,11 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
         end
         % Detect channels of interest
         iSelEeg = ImaGIN_select_channels({ChannelMat.Channel(iEEG).Name}, isSEEG);
+        % If no SEEG channels, read as EEG
+        if isempty(iSelEeg) && (isSEEG == 1)
+            disp('ImaGIN> No SEEG channels selected by name, reading as regular EEG instead.');
+            iSelEeg = ImaGIN_select_channels({ChannelMat.Channel(iEEG).Name}, 0);
+        end
         % Convert indices back to the original list of channels
         if isempty(iSelEeg)
             disp('ImaGIN> No channels selected by name, reading as regular EEG instead of SEEG.');

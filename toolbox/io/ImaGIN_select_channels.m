@@ -74,7 +74,7 @@ for i = 1:length(chNames)
     if isSEEG && (isNoInd(i) || ~ismember(chNames{i}(end), '0123456789'))
         continue;
     % Does not start with a letter
-    elseif ~ismember(lower(chNames{i}(1)), 'abcdefghijklmnopqrstuvwxyz')
+    elseif isSEEG && ~ismember(lower(chNames{i}(1)), 'abcdefghijklmnopqrstuvwxyz')
         continue;
     % Unwanted labels
     elseif ismember(lower(chTags{i}), {'mark', 'dc', 'emg', 'eog', 'veo', 'heo', 'veog', 'heog', 'myo', 'oc', 'dd', 'dg', 'el', 'ref', 'eegref', 'eref', 'vref', 'ref', 'pulse', 'mast', 'spo2'})
