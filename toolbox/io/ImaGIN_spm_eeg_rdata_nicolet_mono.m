@@ -19,9 +19,7 @@ function D = ImaGIN_spm_eeg_rdata_nicolet_mono(S)
 %
 % Authors: Olivier David
 
-
 D = [];
-
 
 try
     Fdata = S.Fdata;
@@ -29,8 +27,6 @@ catch
 	Fdata = spm_select(1, '\.e$', 'Select Nicolet .e file');
 end
 cd(spm_str_manip(Fdata,'h'))
-FdataName=spm_str_manip(Fdata,'t');
-FdataName=FdataName(1:end-2);
 
 try
     FileOut=S.FileOut;
@@ -52,8 +48,8 @@ catch
 end
 
 
-%Read Nicolet file
-obj=NicoletFile(Fdata);
+% Read Nicolet file
+obj = NicoletFile(Fdata);
 
 %find channels with EEG and annotations
 try
@@ -62,19 +58,20 @@ catch
     S.channel = str2num(spm_input('Index of channels to read', '+1', 's'));
 end
 if isempty(S.channel)  %for the moment reads only electrodes with -, assuming it's bipolar montage
-    Annotations=[];
     SEEGBip=[];
     for i1=1:length(obj.segments.chName)
-        if strcmp(obj.segments.chName{i1},'Annotations')
-            Annotations=i1;
-        end
         if ~isempty(strfind(obj.segments.chName{i1},'-'))
             SEEGBip=[SEEGBip i1];
         end
     end
-    S.channel=SEEGBip;
+    if ~isempty(SEEGBip)
+        S.channel = SEEGBip;
+    else
+        S.channel = 1:length(obj.segments.chName);
+    end
 end
 
+    
 %Save name of electrodes
 for i1=1:length(S.channel)
     D.channels.label{i1,1}=obj.segments.chName{S.channel(i1)};
