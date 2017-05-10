@@ -79,6 +79,9 @@ for i = 1:length(chNames)
     % Unwanted labels
     elseif ismember(lower(chTags{i}), {'mark', 'dc', 'emg', 'eog', 'veo', 'heo', 'veog', 'heog', 'myo', 'oc', 'dd', 'dg', 'el', 'ref', 'eegref', 'eref', 'vref', 'ref', 'pulse', 'mast', 'spo2'})
         continue;
+    % Unwanted labels
+    elseif ~isempty(strfind(lower(chTags{i}), 'eog')) || ~isempty(strfind(lower(chTags{i}), 'ref'))
+        continue;
     % Unwanted EEG labels
     elseif isSEEG && ismember(lower(chTags{i}), {'cz', 'fz', 'pz', 'oz', 'nz', 'fpz'})
         continue;
