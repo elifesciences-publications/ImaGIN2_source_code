@@ -44,7 +44,7 @@ if (fid < 0)
 end
 
 % Write time and date
-fprintf(fid, '[%s]\n', char(datetime));
+fprintf(fid, '[%s]\n', datestr(now, 0));
 
 % Write comment line
 if ~isempty(Comment)
