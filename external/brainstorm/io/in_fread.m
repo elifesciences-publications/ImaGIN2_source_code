@@ -66,7 +66,7 @@ end
 %     error(['The following file has been removed or is used by another program:' 10 sFile.filename]);
 % end
 % Open file (for some formats, it is open in the low-level function)
-if ismember(sFile.format, {'CTF', 'EEG-ANT-CNT', 'EEG-NEURALYNX', 'BST-DATA', 'EEG-NEURONE', 'EEG-BLACKROCK', 'EYELINK'}) 
+if ismember(sFile.format, {'CTF', 'EEG-ANT-CNT', 'EEG-NEURALYNX', 'BST-DATA', 'EEG-NEURONE', 'EEG-RIPPLE', 'EEG-BLACKROCK', 'EYELINK'}) 
     sfid = [];
 else
     sfid = fopen(sFile.filename, 'r', sFile.byteorder);
@@ -92,7 +92,7 @@ switch (sFile.format)
         if ~isempty(iChannels)
             F = F(iChannels,:);
         end
-    case 'EEG-BLACKROCK'
+    case {'EEG-BLACKROCK', 'EEG-RIPPLE'}
         F = in_fread_blackrock(sFile, SamplesBounds, iChannels);
     case 'EEG-BRAINAMP'
         F = in_fread_brainamp(sFile, sfid, SamplesBounds);
@@ -151,8 +151,10 @@ switch (sFile.format)
         if ~isempty(iChannels)
             F = F(iChannels,:);
         end
+    case 'EEG-NICOLET'
+        F = in_fread_nicolet(sFile, SamplesBounds, iChannels);
     case 'EEG-NK'
-        F = in_fread_nk(sFile, sfid, SamplesBounds, ChannelRange);
+        F = in_fread_nk(sFile, sfid, iEpoch, SamplesBounds, ChannelRange);
     case 'EYELINK'
         [F, TimeVector] = in_fread_eyelink(sFile, iEpoch, SamplesBounds, iChannels);
     case 'NIRS-BRS'

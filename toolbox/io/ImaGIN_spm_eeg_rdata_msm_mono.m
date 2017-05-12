@@ -531,7 +531,7 @@ end
 %     evt(n).time=str2num(evt(n).time)/header.Radc;
 %     [evt(n).type,ligne]=strtok(ligne,' ');
 %     evt(n).type=deblank(evt(n).type(2:end));
-%     if ~strcmp(evt(n).type,'Sélection')
+%     if ~strcmp(evt(n).type,'Selection')
 %         [ligne,evt(n).duration]=strtok(ligne,'=');
 %         evt(n).duration=str2num(evt(n).duration(2:end));
 %     else
