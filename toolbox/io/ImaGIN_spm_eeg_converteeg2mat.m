@@ -109,7 +109,7 @@ for i1 = 1:Nfiles
             S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Fchannels', 'coarse', 'Bipolar', 'channel', 'Radc', 'Nevent', 'filenamePos', 'filenameName', 'MontageName'});
             D{i1} = ImaGIN_spm_eeg_rdata_ascii(S2);
 
-        case '.msm'
+        case {'.msm', '.msr'}
             S2 = ImaGIN_copy_fields(S2, S, {'Atlas', 'SEEG', 'Bipolar', 'coarse', 'SaveFile'});
             D{i1} = ImaGIN_spm_eeg_rdata_msm_mono(S2);
 
