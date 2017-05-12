@@ -138,7 +138,7 @@ for i1 = 1:Nfiles
     
     % Read file with Brainstorm functions
     if ~isempty(BstFormat)
-        D{i1} = ImaGIN_convert_brainstorm(S2.Fdata, 'EEG-MICROMED', [S2.FileOut, '.mat'], SelectChannels, isSEEG);
+        D{i1} = ImaGIN_convert_brainstorm(S2.Fdata, BstFormat, [S2.FileOut, '.mat'], SelectChannels, isSEEG);
     end
 end
 % Processing stops
