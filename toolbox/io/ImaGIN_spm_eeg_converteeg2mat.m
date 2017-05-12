@@ -83,37 +83,31 @@ for i1 = 1:Nfiles
         S2.FileOut = fullfile(fPath, fBase);
     end
     
+    % Old versions of the readers
+    % BrainAmp .eeg
+        % S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Fchannels', 'Bipolar', 'Montage', 'epochlength', 'coarse', 'channel', 'SaveFile'}); % MISSING FUNCTION EEG2MAT
+        % D{i1} = ImaGIN_spm_eeg_rdata_elan(S2);
+    % Micromed .trc
+        % Old version: JPL & OD
+        % S2 = ImaGIN_copy_fields(S2, S, {'pts', 'System', 'CreateTemplate', 'Fchannels', 'channel', 'coarse', 'Montage', 'MontageName', 'NeventType', 'event_file' , 'Bipolar', 'bipole', 'loadevents'});
+        % D{i1} = ImaGIN_spm_eeg_rdata_micromed_mono(S2);
+    % EDF
+        % S2 = ImaGIN_copy_fields(S2, S, {'channel', 'Atlas', 'SEEG', 'Bipolar', 'coarse', 'SizeMax'});
+        % D = ImaGIN_spm_eeg_rdata_edf(S2);
+    % Nicolet .e
+        % S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Montage', 'coarse', 'SEEG', 'filenamePos', 'filenameName', 'MontageName', 'SaveFile', 'channel'});
+        % D = ImaGIN_spm_eeg_rdata_nicolet_mono(S2);
+            
     % Switch between file formats
+    BstFormat = [];
     switch lower(fExt)
         case '.smr'
             S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Fchannels', 'Bipolar', 'Montage', 'epochlength', 'coarse', 'channel'});
             D{i1} = ImaGIN_spm_eeg_rdata_spike2_mono(S2);
-        
-        case '.eeg'  % BrainAmp or Nihon Kohden
-            % BrainAmp: There is a header in the same folder (.vhdr or .ahdr)
-            if exist(fullfile(fPath, [fBase, '.vhdr']), 'file') || exist(fullfile(fPath, [fBase, '.ahdr']), 'file')
-                % Old version   => MISSING FUNCTION EEG2MAT
-                % S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Fchannels', 'Bipolar', 'Montage', 'epochlength', 'coarse', 'channel', 'SaveFile'});
-                % D{i1} = ImaGIN_spm_eeg_rdata_elan(S2);
-                
-                % New version: Brainstorm
-                D{i1} = ImaGIN_convert_brainstorm(S2.Fdata, 'EEG-BRAINAMP', [S2.FileOut, '.mat'], SelectChannels, isSEEG);
-            % Nihon Kohden
-            else
-                D{i1} = ImaGIN_convert_brainstorm(S2.Fdata, 'EEG-NK', [S2.FileOut, '.mat'], SelectChannels, isSEEG);
-            end
-
+            
         case {'.asc','.txt'}
             S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Fchannels', 'coarse', 'Bipolar', 'channel', 'Radc', 'Nevent', 'filenamePos', 'filenameName', 'MontageName'});
             D{i1} = ImaGIN_spm_eeg_rdata_ascii(S2);
-
-        case '.trc'
-            % Old version: JPL & OD
-            % S2 = ImaGIN_copy_fields(S2, S, {'pts', 'System', 'CreateTemplate', 'Fchannels', 'channel', 'coarse', 'Montage', 'MontageName', 'NeventType', 'event_file' , 'Bipolar', 'bipole', 'loadevents'});
-            % D{i1} = ImaGIN_spm_eeg_rdata_micromed_mono(S2);
-
-            % New version: Brainstorm
-            D{i1} = ImaGIN_convert_brainstorm(S2.Fdata, 'EEG-MICROMED', [S2.FileOut, '.mat'], SelectChannels, isSEEG);
 
         case '.msm'
             S2 = ImaGIN_copy_fields(S2, S, {'Atlas', 'SEEG', 'Bipolar', 'coarse', 'SaveFile'});
@@ -122,21 +116,29 @@ for i1 = 1:Nfiles
         case '.bin'
             S2 = ImaGIN_copy_fields(S2, S, {'Bipolar', 'Bipole', 'CreateTemplate', 'Montage', 'coarse', 'Nevent', 'SEEG', 'filenamePos', 'filenameName', 'MontageName', 'SaveFile'});
             D{i1} = ImaGIN_spm_eeg_rdata_deltamedbin_mono(S2);
-       
-        case '.edf'
-            % Old version
-            % S2 = ImaGIN_copy_fields(S2, S, {'channel', 'Atlas', 'SEEG', 'Bipolar', 'coarse', 'SizeMax'});
-            % D = ImaGIN_spm_eeg_rdata_edf(S2);
             
-            % New version: Brainstorm
-            D{i1} = ImaGIN_convert_brainstorm(S2.Fdata, 'EEG-EDF', [S2.FileOut, '.mat'], SelectChannels, isSEEG);
+        case '.eeg'  % BrainAmp or Nihon Kohden
+            % BrainAmp: There is a header in the same folder (.vhdr or .ahdr)
+            if exist(fullfile(fPath, [fBase, '.vhdr']), 'file') || exist(fullfile(fPath, [fBase, '.ahdr']), 'file')
+                BstFormat = 'EEG-BRAINAMP';
+            % Nihon Kohden
+            else
+                BstFormat = 'EEG-NK';
+            end
 
+        case '.trc'
+            BstFormat = 'EEG-MICROMED';
+        case '.edf'
+            BstFormat = 'EEG-EDF';
         case '.e'
-            S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Montage', 'coarse', 'SEEG', 'filenamePos', 'filenameName', 'MontageName', 'SaveFile', 'channel'});
-            D = ImaGIN_spm_eeg_rdata_nicolet_mono(S2);
-
+            BstFormat = 'EEG-NICOLET';
         otherwise
             error('Unknown format');
+    end
+    
+    % Read file with Brainstorm functions
+    if ~isempty(BstFormat)
+        D{i1} = ImaGIN_convert_brainstorm(S2.Fdata, 'EEG-MICROMED', [S2.FileOut, '.mat'], SelectChannels, isSEEG);
     end
 end
 % Processing stops
@@ -179,6 +181,9 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
         % BrainVision BrainAmp
         case 'EEG-BRAINAMP'
             [sFileIn, ChannelMat] = in_fopen_brainamp(InputFile);
+        % Nicolet
+        case 'EEG-NICOLET'
+            [sFileIn, ChannelMat] = in_fopen_nicolet(InputFile);
         otherwise
             error(['Unsupported file format: ', FileFormat]);
     end
