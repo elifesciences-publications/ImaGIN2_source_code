@@ -161,6 +161,10 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
                 chName = ChannelMat.Channel(i).Name;
                 % Lyon
                 chName = lower(chName(~isspace(chName)));
+                % Salpetriere: Can have both "C 4" and "c4" in the file: If a channel is duplicated, add a "s" after (the scalp EEG is always at the end)
+                if ismember(chName, {ChannelMat.Channel(1:i-1).Name})
+                    chName = [chName, 's'];
+                end
                 % Rennes
                 chName = chName(setdiff(1:length(chName), strfind(chName,'.')));
                 % Remove zeros
