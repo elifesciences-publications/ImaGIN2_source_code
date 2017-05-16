@@ -67,12 +67,12 @@ if isSEEG
         % Get channels of this tag
         iTag = find(strcmpi(uniqueTags{i}, AllTags));
         % Remove if more than 18 (except for Salpetriere electrodes with digits in the name)
-        % or if less than 2 (but only if not designating a bipolar montage, with '-' in the name)
-        if ((length(iTag) > 18) && (any(iTag < 10) || any(iTag >= 30))) || ...
-           ((length(iTag) < 2) && ~any(chNames{iTag(1)} == '-'))
+        if ((length(iTag) > 18) && (any(iTag < 10) || any(iTag >= 30)))
             AllNames(iTag) = {'XXXXX'};
             AllTags(iTag) = {'XXXXX'};
         end
+        % Removed: ((length(iTag) < 2) && ~any(chNames{iTag(1)} == '-'))   % less than 2 (but only if not designating a bipolar montage, with '-' in the name) 
+        % Keep electrodes with one contact only
     end
 end
 
@@ -83,7 +83,7 @@ for i = 1:length(AllNames)
     % No index or does not end with a digit
     if isSEEG && (isNoInd(i) || ~ismember(AllNames{i}(end), '0123456789'))
         continue;
-    % Does not contain at lease a letter
+    % Does not contain at least a letter
     elseif isSEEG && ~any(ismember(lower(AllNames{i}), 'abcdefghijklmnopqrstuvwxyz'))
         continue;
     % Unwanted labels
