@@ -57,12 +57,13 @@ for c=1:evsize % Navigate all available events
     xpr8  = '\w*SE1Hz\w*';
     xpr9  = '\w*SE 1Hz\w*';
     xpr10  = 'crise';
+    xpr11  = '\w*OFF\w*';
     [ds,di]=regexp(Notes{c},'\d*','Match');
     if ~isempty(di)
         if ~isempty(regexpi(Notes{c},xpr4)) || ~isempty(regexpi(Notes{c},xpr5)) || ...
                 ~isempty(regexpi(Notes{c},xpr6)) || ~isempty(regexpi(Notes{c},xpr7)) || ...
                 ~isempty(regexpi(Notes{c},xpr8)) || ~isempty(regexpi(Notes{c},xpr9)) || ...
-                strcmpi(Notes{c}(1:min([length(Notes{c}) 5])),xpr10)
+                ~isempty(regexpi(Notes{c},xpr11)) || strcmpi(Notes{c}(1:min([length(Notes{c}) 5])),xpr10)
         elseif ~isempty(regexpi(Notes{c},xpr1))
             KeepEvent=[KeepEvent c];
         elseif ~isempty(regexpi(Notes{c},xpr2))
@@ -101,6 +102,8 @@ for c=1:length(KeepEvent) % Navigate all stim events
     noteName(~ismember(double(noteName),['A':'Z' 'a':'z' '_' '.' '''' 'µ' '-' '0':'9'])) ='';
     noteName = regexprep(noteName,'_+','_'); noteName = regexprep(noteName,'µ','u');
     noteName = regexprep(noteName,'�','u'); %OD
+    noteName = regexprep(noteName,'MA','mA'); %OD
+    noteName = regexprep(noteName,'MS','mA'); %OD - errors in Milan notes
     noteName = strrep(noteName,'.0','');
     noteName = strrep(noteName,'.',''); noteName = strrep(noteName,',','');
     noteName = strrep(noteName,'sec','s');  noteName = strrep(noteName,'AA','A');
