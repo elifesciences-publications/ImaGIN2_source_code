@@ -207,11 +207,13 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
         if isempty(iSelEeg) && (isSEEG == 1)
             disp('ImaGIN> No SEEG channels selected by name, reading as regular EEG instead.');
             iSelEeg = ImaGIN_select_channels({ChannelMat.Channel(iEEG).Name}, 0);
+            isSEEG = 0;
         end
         % Convert indices back to the original list of channels
         if isempty(iSelEeg)
             disp('ImaGIN> No channels selected by name, reading as regular EEG instead of SEEG.');
             iSel = iEEG;
+            isSEEG = 0;
         else
             iSel = iEEG(iSelEeg);
         end
@@ -228,7 +230,7 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
     ChannelMat.Channel = ChannelMat.Channel(iSel);
     F = F(iSel,:);
     sFileIn.channelflag = sFileIn.channelflag(iSel);
-
+    
     % Export to SPM format
     sFileOut = out_fopen_spm(OutputFile, sFileIn, ChannelMat);
     out_fwrite_spm(sFileOut, [], [], F);
