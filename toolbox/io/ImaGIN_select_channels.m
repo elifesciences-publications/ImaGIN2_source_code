@@ -80,8 +80,11 @@ end
 iSel = [];
 iEcg = [];
 for i = 1:length(AllNames)
+    % ECG: Accept (should be labelled as such)
+    if ismember(lower(AllTags{i}), {'ecg', 'ekg'})
+        iEcg(end+1) = i;
     % No index or does not end with a digit
-    if isSEEG && (isNoInd(i) || ~ismember(AllNames{i}(end), '0123456789'))
+    elseif isSEEG && (isNoInd(i) || ~ismember(AllNames{i}(end), '0123456789'))
         continue;
     % Does not contain at least a letter
     elseif isSEEG && ~any(ismember(lower(AllNames{i}), 'abcdefghijklmnopqrstuvwxyz'))
@@ -112,9 +115,6 @@ for i = 1:length(AllNames)
         continue;
     elseif isSEEG && ismember(lower(AllNames{i}), {'o1','o2'}) && ~any(ismember({'o3','o4'}, lower(AllNames)))
         continue;
-    % ECG: Accept (should be labelled as such)
-    elseif ismember(lower(AllTags{i}), {'ecg', 'ekg'})
-        iEcg(end+1) = i;
     % Otherwise: accept
     else
         iSel(end+1) = i;
