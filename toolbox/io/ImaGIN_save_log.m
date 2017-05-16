@@ -52,7 +52,12 @@ if ~isempty(Comment)
 end
 % Write channel labels
 if ~isempty(ChanLabels)
-    fprintf(fid, '%s ', ChanLabels{:});
+    for i = 1:length(ChanLabels)
+        fprintf(fid, '%s ', ChanLabels{i});
+        if (mod(i,20) == 0)
+            fprintf(fid, '\n');
+        end
+    end
     fprintf(fid, '\n');
 end
 % Add an empty line to separate the entries
