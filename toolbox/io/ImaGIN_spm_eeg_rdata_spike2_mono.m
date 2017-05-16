@@ -56,7 +56,7 @@ ChanList = SONChanList(fid);
 fclose(fid);
 % By default: read all channels
 if isempty(S.channel)
-    S.channel = 1:length(ChanList);
+    S.channel = [ChanList.number];
 end
 % Read data
 [Data, iGoodChannels, Evt] = ImaGIN_ReadSMR(Fdata, S.channel, S.coarse);
