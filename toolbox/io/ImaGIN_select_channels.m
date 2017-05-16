@@ -1,11 +1,11 @@
-function [iSel, iEcg] = ImaGIN_select_channels(AllNames, isSEEG)
+function [iSel, iEcg] = ImaGIN_select_channels(chNames, isSEEG)
 % IMAGIN_SELECT_CHANNELS Keep only channels of interest.
 %
-% USAGE:  [iSel, iEcg] = ImaGIN_select_channels(AllNames, isSEEG=1)
+% USAGE:  [iSel, iEcg] = ImaGIN_select_channels(chNames, isSEEG=1)
 %
 % INPUT: 
-%    - AllNames : Cell-array of strings
-%    - isSEEG   : 1 if the data is SEEG, 0 if regular EEG
+%    - chNames : Cell-array of strings
+%    - isSEEG  : 1 if the data is SEEG, 0 if regular EEG
 %
 % OUTPUT:
 %    - iSel : Array of indices of the channels that are considered as valid
@@ -33,7 +33,7 @@ if (nargin < 2) || isempty(isSEEG)
 end
 
 % Get all names: remove special characters
-AllNames = cellfun(@(c)c(~ismember(c, ' .,?!-_@#$%^&*+*=()[]{}|/')), AllNames, 'UniformOutput', 0);
+AllNames = cellfun(@(c)c(~ismember(c, ' .,?!-_@#$%^&*+*=()[]{}|/')), chNames, 'UniformOutput', 0);
 AllTags  = cell(size(AllNames));
 AllInd   = cell(size(AllNames));
 isNoInd  = zeros(size(AllNames));
@@ -66,8 +66,10 @@ if isSEEG
     for i = 1:length(uniqueTags)
         % Get channels of this tag
         iTag = find(strcmpi(uniqueTags{i}, AllTags));
-        % Remove if more than 18 or less than 2
-        if ((length(iTag) > 18) && (any(iTag < 10) || any(iTag >= 30))) || (length(iTag) < 2)
+        % Remove if more than 18 (except for Salpetriere electrodes with digits in the name)
+        % or if less than 2 (but only if not designating a bipolar montage, with '-' in the name)
+        if ((length(iTag) > 18) && (any(iTag < 10) || any(iTag >= 30))) || ...
+           ((length(iTag) < 2) && ~any(chNames{iTag(1)} == '-'))
             AllNames(iTag) = {'XXXXX'};
             AllTags(iTag) = {'XXXXX'};
         end
