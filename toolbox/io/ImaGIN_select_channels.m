@@ -66,8 +66,8 @@ if isSEEG
     for i = 1:length(uniqueTags)
         % Get channels of this tag
         iTag = find(strcmpi(uniqueTags{i}, AllTags));
-        % Remove if more than 18 or less than 3
-        if ((length(iTag) > 18) && (any(iTag < 10) || any(iTag >= 30))) || (length(iTag) <= 2)
+        % Remove if more than 18 or less than 2
+        if ((length(iTag) > 18) && (any(iTag < 10) || any(iTag >= 30))) || (length(iTag) < 2)
             AllNames(iTag) = {'XXXXX'};
             AllTags(iTag) = {'XXXXX'};
         end
