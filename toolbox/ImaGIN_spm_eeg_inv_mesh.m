@@ -18,7 +18,8 @@ function mesh = spm_eeg_inv_mesh(sMRI, Msize)
 
 % SPM directory of canonical anatomy
 %--------------------------------------------------------------------------
-Cdir              = fullfile(spm('dir'), 'canonical');
+Cdir = fullfile(spm('dir'), 'canonical');
+ImaGINdir = fullfile(fileparts(mfilename('fullpath')), 'anat');
 
 if nargin == 0 || isempty(sMRI)
     % Use the template
@@ -52,9 +53,7 @@ switch mesh.Msize
     case 3
         filename  = fullfile(Cdir, 'cortex_20484.surf.gii');
     case 4
-        filename  = fullfile(Cdir, 'cortex_hip_5124.surf.gii');
-        filename  = fullfile(Cdir, 'SEEG_cortex_hip_amy_5124.surf.gii');
-        filename  = fullfile(Cdir, 'SEEG_cortex_hip_amy_8196.surf.gii');
+        filename  = fullfile(ImaGINdir, 'SEEG_cortex_hip_amy_8196.surf.gii');
 end
 
 mesh.tess_mni     = export(gifti(filename), 'spm');
