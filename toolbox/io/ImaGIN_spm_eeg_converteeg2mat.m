@@ -206,7 +206,7 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
             iEEG = 1:length(ChannelMat.Channel);
         end
         % Detect channels of interest
-        iSelEeg = ImaGIN_select_channels({ChannelMat.Channel(iEEG).Name}, isSEEG);
+        [iSelEeg, iEcg] = ImaGIN_select_channels({ChannelMat.Channel(iEEG).Name}, isSEEG);
         % If no SEEG channels, read as EEG
         if isempty(iSelEeg) && (isSEEG == 1)
             disp('ImaGIN> No SEEG channels selected by name, reading as regular EEG instead.');
@@ -225,10 +225,15 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
     else
         % Find channels: string, cell array of strings, or array of indices
         iSel = ImaGIN_find_channels(ChanLabelsIn, SelChannels);
+        iEcg = [];
     end
     % If no channels are selected
     if isempty(iSel)
         error('No valid channel names were found.');
+    end
+    % Set channels to ECG
+    if ~isempty(iEcg)
+        [ChannelMat.Channel(iEcg).Type] = deal('ECG');
     end
     % Keep only these ones in the data
     ChannelMat.Channel = ChannelMat.Channel(iSel);
