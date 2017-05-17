@@ -281,19 +281,19 @@ for k = 1:Nsub
     for j = timewindow % time bins
         J=round(1000*time(j));
         if tmp<1e1
-            V.fname = sprintf('sample_%d.img',J);
+            V.fname = sprintf('sample_%d.nii',J);
         elseif tmp<1e2
-            V.fname = sprintf('sample_%0.2d.img',J);
+            V.fname = sprintf('sample_%0.2d.nii',J);
         elseif tmp<1e3
-            V.fname = sprintf('sample_%0.3d.img',J);
+            V.fname = sprintf('sample_%0.3d.nii',J);
         elseif tmp<1e4
-            V.fname = sprintf('sample_%0.4d.img',J);
+            V.fname = sprintf('sample_%0.4d.nii',J);
         elseif tmp<1e5
-            V.fname = sprintf('sample_%0.5d.img',J);
+            V.fname = sprintf('sample_%0.5d.nii',J);
         elseif tmp<1e6
-            V.fname = sprintf('sample_%0.6d.img',J);
+            V.fname = sprintf('sample_%0.6d.nii',J);
         else
-            V.fname = sprintf('sample_%d.img',J);            
+            V.fname = sprintf('sample_%d.nii',J);            
         end                  
         
         win=j+ (-timewindowwidth:timewindowwidth);
