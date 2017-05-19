@@ -16,7 +16,7 @@ function ImaGIN_Crop(P)
 % Authors: Olivier David
 
 try
-    Job=P.Job;
+    Job = P.Job;
 catch
     Job = spm_input('Method ','1','Epoch|Manual');
 end
@@ -24,7 +24,7 @@ end
 switch Job
     case{'Epoch'}
         try
-            NewFile=P.NewFile;
+            NewFile = P.NewFile;
         catch
             NewFile = spm_input('Create a file per event ','1','Yes|No',[1 0]);
         end
@@ -48,11 +48,11 @@ switch Job
 
     case{'Manual'}
         try
-            t=P.Fname;
+            t = P.Fname;
         catch
             t = spm_select(1, '\.mat$', 'Select data file');
         end
-        D=spm_eeg_load(t);
+        D = spm_eeg_load(t);
         try
             ImaGIN_CropManual(D,t,P);
         catch
