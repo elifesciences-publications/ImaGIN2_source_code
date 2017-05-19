@@ -47,10 +47,10 @@ try
 catch
     try 
         filename = S.filenamePos;
-        Position=load(filename);
+        Position = load(filename);
     catch
         filename = spm_select(1, '\.txt$', 'Select txt file for electrode positions', {}, P);
-        Position=load(filename);
+        Position = load(filename);
     end
 end
 
@@ -96,8 +96,12 @@ for i0 = 1:size(t,1)
     save(D);
     
     % Add entries in log file
-    ImaGIN_save_log(fullfile(D), 'Positions added for channels:', chFound);
-    ImaGIN_save_log(fullfile(D), 'Positions not found for channels:', chNotFound);
+    if ~isempty(chFound)
+        ImaGIN_save_log(fullfile(D), 'Positions added for channels:', chFound);
+    end
+    if ~isempty(chNotFound)
+        ImaGIN_save_log(fullfile(D), 'Positions not found for channels:', chNotFound);
+    end
 end
 
 end
