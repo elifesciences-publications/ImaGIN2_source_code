@@ -1,4 +1,9 @@
-function ImaGIN_DispData(varargin)
+function ImaGIN_DispData(D, SelChan)
+%IMAGIN_DISPDATA Review .mat/.dat file
+%
+% USAGE:  ImaGIN_DispData(D,        SelChan=[Ask])
+%         ImaGIN_DispData(FileName, SelChan=[Ask])
+% 
 % -=============================================================================
 % This function is part of the ImaGIN software: 
 % https://f-tract.eu/
@@ -15,34 +20,37 @@ function ImaGIN_DispData(varargin)
 %
 % Authors: Olivier David
 
-% global defaults
-% spm_defaults
 
-FS1 = spm('FontSize', 14);
-FS2 = spm('FontSize', 12);
-FS3 = spm('FontSize', 9);
-
-
-% Select file
-t = spm_select(1, '\.mat$', 'Select data file');
-if isempty(t)
-    return;
+%% ===== PARSE INPUTS =====
+% Select file is not specified in input
+if (nargin < 1) || isempty(D) || ~isstruct(D)
+    if (nargin >= 1) && ischar(D) && ~isempty(D)
+        t = D;
+    else
+        t = spm_select(1, '\.mat$', 'Select data file');
+        if isempty(t)
+            return;
+        end
+    end
+    D = spm_eeg_load(t);
 end
-clear D
-D=spm_eeg_load(t);
-Nchannels=nchannels(D);
-Nsamples=nsamples(D);
-Time=time(D);
-Labels=chanlabels(D);
-if nchannels(D)==1
-    Labels={Labels};
+if (nargin < 2) || isempty(SelChan)
+    SelChan = [];
 end
-Events=events(D);
+
+Nchannels = nchannels(D);
+Nsamples = nsamples(D);
+Time = time(D);
+Labels = chanlabels(D);
+if (nchannels(D) == 1)
+    Labels = {Labels};
+end
+Events = events(D);
 if(~isempty(Events))
     try
         Events(1).type;
     catch
-        Events=Events{1};
+        Events = Events{1};
     end
 end
 Types={};
@@ -85,10 +93,18 @@ if isfield(D,'Seizure')
     Nchannels=Nchannels+length(D.Seizure);
 end
 
+
+%% ===== CREATE FIGURE =====
+FS1 = spm('FontSize', 14);
+FS2 = spm('FontSize', 12);
+FS3 = spm('FontSize', 9);
+
 F  = spm_figure('GetWin','Interactive');
 figure(F);clf
 colormap('gray')
-SelChan = spm_input('Select channels', 1, 'i', sprintf('1:%d',Nchannels));
+if isempty(SelChan)
+    SelChan = spm_input('Select channels', 1, 'i', sprintf('1:%d',Nchannels));
+end
 
 F  = spm_figure('GetWin','Graphics');
 figure(F);clf

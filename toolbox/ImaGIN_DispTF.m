@@ -1,4 +1,9 @@
-function ImaGIN_DispTF(varargin)
+function ImaGIN_DispTF(D)
+%IMAGIN_DISPTF Review .mat file containing time-frequency results
+%
+% USAGE:  ImaGIN_DispData(D,        SelChan=[Ask])
+%         ImaGIN_DispData(FileName, SelChan=[Ask])
+
 % -=============================================================================
 % This function is part of the ImaGIN software: 
 % https://f-tract.eu/
@@ -15,12 +20,20 @@ function ImaGIN_DispTF(varargin)
 %
 % Authors: Olivier David
 
-FS1 = spm('FontSize', 14);
-FS2 = spm('FontSize', 12);
-FS3 = spm('FontSize', 10);
 
-t = spm_select(1, '\.mat$', 'Select data file');
-D = spm_eeg_load(t);
+%% ===== PARSE INPUTS =====
+% Select file is not specified in input
+if (nargin < 1) || isempty(D) || ~isstruct(D)
+    if (nargin >= 1) && ischar(D) && ~isempty(D)
+        t = D;
+    else
+        t = spm_select(1, '\.mat$', 'Select data file');
+        if isempty(t)
+            return;
+        end
+    end
+    D = spm_eeg_load(t);
+end
 
 Events = events(D);
 if ~isempty(Events)
@@ -49,6 +62,12 @@ for i1 = 1:length(Events)
     end
 end
 Ntypes = length(Types);
+
+
+%% ===== CREATE FIGURE =====
+FS1 = spm('FontSize', 14);
+FS2 = spm('FontSize', 12);
+FS3 = spm('FontSize', 10);
 
 % Load and clear interactive window
 Fi  = spm_figure('GetWin','Interactive');
