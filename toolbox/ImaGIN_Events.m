@@ -61,12 +61,16 @@ function ImaGIN_EventsAdd(Filename,S)
         catch
             NewName{i1}=spm_input(sprintf('Type of event %d',i1), '+1', 's');
         end
-        try
-            tmp=S.EventFileName{i1};
-        catch
-            tmp = spm_select(1, '\.txt$', sprintf('Select txt file with the timing (sec) of event %d',i1));
+        if isfield(S, 'Timing') && ~isempty(S.Timing)
+            Timing{i1} = S.Timing{i1};
+        else
+            try
+                tmp = S.EventFileName{i1};
+            catch
+                tmp = spm_select(1, '\.txt$', sprintf('Select txt file with the timing (sec) of event %d',i1));
+            end
+            Timing{i1}=load(tmp);
         end
-        Timing{i1}=load(tmp);
     end
 
     try
