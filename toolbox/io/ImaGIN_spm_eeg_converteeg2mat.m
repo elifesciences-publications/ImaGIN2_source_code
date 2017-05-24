@@ -199,7 +199,7 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
     % Auto-detect good SEEG channels
     if isempty(SelChannels)
         % Get channels classified as EEG
-        iEEG = channel_find(ChannelMat.Channel, 'EEG,SEEG,ECOG,ECG');
+        iEEG = channel_find(ChannelMat.Channel, 'EEG,SEEG,ECOG,ECG,EKG');
         % If there are no channels classified at EEG, take all the channels
         if isempty(iEEG)
             disp('ImaGIN> Warning: Channel types are not defined: not selecting by types.');

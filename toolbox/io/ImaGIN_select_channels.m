@@ -81,7 +81,7 @@ iSel = [];
 iEcg = [];
 for i = 1:length(AllNames)
     % ECG: Accept (should be labelled as such)
-    if ismember(lower(AllTags{i}), {'ecg', 'ekg'})
+    if ismember(lower(AllTags{i}), {'ecg', 'ekg'}) || ~isempty(strfind(lower(AllNames{i}), 'ecg')) || ~isempty(strfind(lower(AllNames{i}), 'ekg'))
         iEcg(end+1) = i;
     % No index or does not end with a digit
     elseif isSEEG && (isNoInd(i) || ~ismember(AllNames{i}(end), '0123456789'))
