@@ -408,7 +408,7 @@ for i00=1:size(latency,2)
         ImaGIN_spm_eeg_convertmat2ana_3D(SS)
         
         %smooth images to get Gaussian fields
-        [files,dirs] = spm_select('List',fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'.img');
+        [files,dirs] = spm_select('List',fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'.nii');
         for i1=1:size(files,1)
             tmp=deblank(files(i1,:));
             Q = fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],tmp);
@@ -431,7 +431,7 @@ for i00=1:size(latency,2)
             movefile(fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],['s' tmp]),fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],tmp))
             movefile(fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],['s' tmp(1:end-3) 'hdr']),fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],[tmp(1:end-3) 'hdr']))
         end
-        [files,dirs] = spm_select('List',fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'.img');
+        [files,dirs] = spm_select('List',fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'.nii');
         for i1=1:size(files,1)
             tmp=deblank(files(i1,:));
             Q = fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],tmp);
@@ -471,12 +471,12 @@ for i00=1:size(latency,2)
         matlabbatch{1}.spm.stats.fmri_spec.timing.RT=TimeResolution;
         matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t=16;
         matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t0=1;
-        [files,dirs] = spm_select('List',fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'.img');
+        [files,dirs] = spm_select('List',fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'.nii');
         ntmp=size(files,1);
         for i1=1:size(files,1)
             matlabbatch{1}.spm.stats.fmri_spec.sess.scans{i1,1} = fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],[files(i1,:) ',1']);
         end
-        [files,dirs] = spm_select('List',fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'.img');
+        [files,dirs] = spm_select('List',fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'.nii');
         for i1=1:size(files,1)
             matlabbatch{1}.spm.stats.fmri_spec.sess.scans{ntmp+i1,1} = fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],[files(i1,:) ',1']);
         end
@@ -587,12 +587,12 @@ for i00=1:size(latency,2)
             D=spm_eeg_load(deblank(DD(i0,:)));
             Dinit=D;
             P=spm_str_manip(deblank(DD(i0,:)),'h');
-            [files,dirs] = spm_select('List',fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'.img');
+            [files,dirs] = spm_select('List',fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'.nii');
             ntmp=size(files,1);
             for i1=1:size(files,1)
                 matlabbatch{1}.spm.stats.fmri_spec.sess(i0).scans{i1,1} = fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],[files(i1,:) ',1']);
             end
-            [files,dirs] = spm_select('List',fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'.img');
+            [files,dirs] = spm_select('List',fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'.nii');
             for i1=1:size(files,1)
                 matlabbatch{1}.spm.stats.fmri_spec.sess(i0).scans{ntmp+i1,1} = fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],[files(i1,:) ',1']);
             end
@@ -724,7 +724,7 @@ for i0=1:size(DD,1)
         Delay(Q3)=mean(latency(:,i2));
     end
     P0=P1;
-    P0.fname=fullfile(P,['Delay_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s')  '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.img']);
+    P0.fname=fullfile(P,['Delay_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s')  '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']);
     P0 = spm_write_vol(P0,Delay);
     clear matlabbatch
     matlabbatch{1}.spm.spatial.smooth.data = {[P0.fname ',1']};
@@ -734,8 +734,8 @@ for i0=1:size(DD,1)
     matlabbatch{1}.spm.spatial.smooth.prefix = 's';
     spm('defaults', 'EEG');
     spm_jobman('run', matlabbatch);
-%     spm_smooth(P0,fullfile(P,['sDelay_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s')  '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.img']),[3 3 3]);
-    Q=fullfile(P,['sDelay_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s')  '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.img']);
+%     spm_smooth(P0,fullfile(P,['sDelay_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s')  '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']),[3 3 3]);
+    Q=fullfile(P,['sDelay_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s')  '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']);
     M=spm_vol(Q);
     I=spm_read_vols(M);
     I(find(isnan(Delay)))=NaN;
@@ -765,7 +765,7 @@ if size(DD,1)>1
         Delay(Q3)=latency(i2);
     end
     P0=P1;
-    P0.fname=fullfile(P,['Delay_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.img']);
+    P0.fname=fullfile(P,['Delay_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']);
     P0 = spm_write_vol(P0,Delay);
     clear matlabbatch
     matlabbatch{1}.spm.spatial.smooth.data = {[P0.fname ',1']};
@@ -775,8 +775,8 @@ if size(DD,1)>1
     matlabbatch{1}.spm.spatial.smooth.prefix = 's';
     spm('defaults', 'EEG');
     spm_jobman('run', matlabbatch);
-%     spm_smooth(P0,fullfile(P,['sDelay_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.img']),[3 3 3]);
-    Q=fullfile(P,['sDelay_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.img']);
+%     spm_smooth(P0,fullfile(P,['sDelay_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']),[3 3 3]);
+    Q=fullfile(P,['sDelay_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']);
     M=spm_vol(Q);
     I=spm_read_vols(M);
     I(find(isnan(Delay)))=NaN;
