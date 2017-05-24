@@ -24,34 +24,62 @@ function tutorial_epimap()
 
 
 %% ===== DATA DEFINITION =====
-% Get tutorial folder
-Root = fileparts(fileparts(fileparts(mfilename('fullpath'))));
+% Define tutorial folder
+% Root = fileparts(fileparts(fileparts(mfilename('fullpath'))));
+Root = 'C:\Work\Dev\Inserm';
+
 % Patient #1: Input files and processing options
 I = 1;
-Patient{I}.Name        = 'tutorial_epimap';  % Name of the subject, which must corresponds to subfolder in PatientsDir
-Patient{I}.File{1}     = 'SZ1';              % Name of the files with the seizure recordings (original Micromed have a .TRC extension)
-Patient{I}.File{2}     = 'SZ2';
-Patient{I}.File{3}     = 'SZ3';
-Patient{I}.Baseline    = {};
-% Patient{I}.Baseline{1} = 'Baseline_SZ1';   % Name of the files for the corresponding baseline recordings
-% Patient{I}.Baseline{2} = 'Baseline_SZ2';
-% Patient{I}.Baseline{3} = 'Baseline_SZ3';
-Patient{I}.BadChannel  = {[74], ...          % List of bad channels  - File #1 => v'1
-                          [74 28], ...         %  - File #2  => v'1, f'1
-                          [74 54]};            %  - File #3  => o'1
-% ====== TODO: weird to define bad channels after bipolar montage no?? =====
-Patient{I}.FreqBand    = [210 230];          % TODO: Or [100 180] ???
-Patient{I}.Latency     = 0;
-Patient{I}.TimeConstant= 2;
-Patient{I}.sMRI        = fullfile(Root, Patient{I}.Name, 'anat', 'processed', 'wBrainPre.nii');
-Patient{I}.Pre         = '';
+% Name of the patient, which must corresponds to subfolder in PatientsDir
+Patient{I}.Name = 'tutorial_epimap';
+% Patient anatomy: pre-op and per-op MRI scans
+Patient{I}.MRI.pre = fullfile(Root, Patient{I}.Name, 'anat', 'MRI', '3DT1pre_deface.nii');
+Patient{I}.MRI.per = fullfile(Root, Patient{I}.Name, 'anat', 'MRI', '3DT1post_deface.nii');
+Patient{I}.MRI.ref = 'pre';
+Patient{I}.MRI.out = fullfile(Root, Patient{I}.Name, 'anat', 'MRI');
+Patient{I}.MRI.out_pre = fullfile(Root, Patient{I}.Name, 'anat', 'MRI', 'wBrainPre.nii');
+% Name of the files with the seizure recordings (original Micromed have a .TRC extension)
+Patient{I}.File{1}     = 'SZ1';   % Short seizure, no propagation   
+Patient{I}.File{2}     = 'SZ2';   % Short seizure, propagation 
+Patient{I}.File{3}     = 'SZ3';   % Long seizure, generalized 
+% Seizure onset, from the beginning of the file (the events "Seizure" indicated in the .TRC files are not reliable)
+Patient{I}.Onset = [120.791, ...         % File #1:  414ms after the Seizure marker
+                    143.510, ...         % File #2: 2900ms after the Seizure marker
+                    120.287];            % File #3:   60ms after the Seizure marker
+% Baseline segment (20s), with respect to the Onset marker: Defined while reviewing the recordings as a bipolar montage
+Patient{I}.Baseline = {[-48, -28], ...   % File #1: From beginning of recordings 72.8s-92.8s
+                       [-40, -20], ...   % File #2: From beginning of recordings 103.5s-123.5s
+                       [-75, -55]};      % File #3: From beginning of recordings 45.3s-65.3s
+Patient{I}.BaselineFile = {[],[],[]};
+% List of bad channels: Defined while reviewing the recordings as a bipolar montage
+Patient{I}.BadChannel  = {[74 28], ...   % File #1: v'1, f'1
+                          [74], ...      % File #2: v'1
+                          [74 54]};      % File #3: o'1
 % Epileptogenicity options
+Patient{I}.FreqBand     = [120 200];  % Defined by looking at the TF maps (using the same for the three seizures)
+Patient{I}.TimeConstant = 3;          % Duration of the sliding window of interest: 3s
+Patient{I}.Latency      = 0:2:20;     % For files #2 and #3, will compute delay maps with sliding windows of 3s between 0s and 20s post-seizure
+Patient{I}.Pre          = '';
 ThDelay = 0.05;
 
 
-%% ===== IMPORT =====
+%% ===== PREPARE ANATOMY =====
+% Co-registration, segmentation and normalization of the pre-op and post-op MRI scans
+ImaGIN_anat_spm(Patient);
+
+
+%% ===== IMPORT SEEG =====
 % Loop on subjects (only on this example)
 for i0 = 1:length(Patient)
+    % Delete previously created files
+    fileMat = dir(fullfile(Root, Patient{i0}.Name, 'seeg', '*.mat'));
+    fileDat = dir(fullfile(Root, Patient{i0}.Name, 'seeg', '*.dat'));
+    fileTxt = dir(fullfile(Root, Patient{i0}.Name, 'seeg', '*.txt'));
+    if ~isempty(fileMat) || ~isempty(fileDat) || ~isempty(fileTxt)
+        AllFiles = cellfun(@(c)fullfile(Root, Patient{i0}.Name, 'seeg', c), {fileMat.name, fileDat.name, fileTxt.name}, 'UniformOutput', 0);
+        delete(AllFiles{:});
+    end
+    
     % Loop on seizure datasets
     for i1 = 1:length(Patient{i0}.File)
         % Convert Micromed .TRC to SPM .mat/.dat
@@ -73,7 +101,7 @@ for i0 = 1:length(Patient)
         S.SaveFile = Patient{i0}.File{i1};
         S.FileOut  = S.Fname;
         D = ImaGIN_BipolarMontage(S);
-    end    
+    end
 end
 
 
@@ -82,80 +110,65 @@ end
 %   - Mark the onset of the seizure (in these files, the start of the seizures is already marked in the original TRC files)
 %   - Identify bad channels.
 
+% % Example file and channels to display
+% FilaName = fullfile(Root, Patient{1}.Name, 'seeg', [Patient{1}.File{1} '.mat']);
+% % ImaGIN viewer
+% SelChan = 1:5;
+% ImaGIN_DispData(FilaName, SelChan);
+% % SPM viewer
+% D = spm_eeg_load(FilaName);
+% spm_eeg_review(D);
+
 
 %% ===== AFTER REVIEW =====
 for i0 = 1:length(Patient)
     for i1 = 1:length(Patient{i0}.File)
+        FileName = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.File{i1} '.mat']);
+        
+        % ===== SET ONSET EVENTS =====
+        clear S
+        S.Fname        = FileName;
+        S.Action       = 'Add';
+        S.Nevent       = 1;
+        S.EventName{1} = 'Onset';
+        S.Timing{1}    = Patient{I}.Onset(i1);
+        ImaGIN_Events(S);
+        
         % ===== SET TIME ORIGIN =====
         clear S
-        S.Fname    = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.File{i1} '.mat']);
-        S.EventRef = 'Seizure';
+        S.Fname    = FileName;
+        S.EventRef = 'Onset';
         S.Offset   = 0;
         ImaGIN_TimeZero(S);
         
         % ===== SET BAD CHANNELS =====
         if ~isempty(Patient{i0}.BadChannel)
-            D = spm_eeg_load(fullfile(Root,Patient{i0}.Name, 'seeg', [Patient{i0}.File{i1} '.mat']));
+            D = spm_eeg_load(FileName);
             D = badchannels(D, Patient{i0}.BadChannel{i1}, 1);
             save(D);
         end
         
         % ===== IMPORT BASELINE ======
-        clear S
-        S.Fname       = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.File{i1} '.mat']);
-        S.Job         = 'Manual';
-        S.EventStart  = [];
-        S.EventEnd    = [];
-        S.OffsetStart = 0;
-        S.OffsetEnd   = 20;
-        S.NewFile     = 1;
-        S.Prefix      = 'Baseline_';
-        ImaGIN_Crop(S);
-        % Save name of the output file
-        Patient{i0}.Baseline{i1} = [S.Prefix, Patient{i0}.File{i1}];
+        if ~isfield(Patient{i0}, 'BaselineFile') || (length(Patient{i0}.BaselineFile) < i1) || isempty(Patient{i0}.BaselineFile{i1})
+            clear S
+            S.Fname       = FileName;
+            S.Job         = 'Manual';
+            S.EventStart  = 'Onset';
+            S.EventEnd    = 'Onset';
+            S.OffsetStart = -Patient{i0}.Baseline{i1}(1);
+            S.OffsetEnd   = Patient{i0}.Baseline{i1}(2);
+            S.NewFile     = 1;
+            S.Prefix      = 'Baseline_';
+            ImaGIN_Crop(S);
+            % Save name of the output file
+            Patient{i0}.BaselineFile{i1} = [S.Prefix, Patient{i0}.File{i1}];
+        end
     end
 end
 
 
-% %% ===== TIME-FREQUENCY: WAVELET =====
-% for i0 = 1:length(Patient)
-%     for i1=1:length(Patient{i0}.File)
-%         % Wavelet decomposition
-%         clear SS
-%         SS.D = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.File{i1} '.mat']);
-%         D = spm_eeg_load(SS.D);
-%         SS.Synchro         = 'No';
-%         SS.Pre             = '';
-%         SS.Method          = 'Morlet wavelet';
-%         SS.frequencies     = 10:3:230;
-%         SS.FactMod         = 0;
-%         SS.Mfactor         = 20;
-%         SS.Width           = 0;
-%         SS.TimeWindow      = -10:.2:10;
-%         SS.TimeWindowWidth = SS.TimeWindow(2) - SS.TimeWindow(1);
-%         SS.Coarse          = 0;
-%         SS.channels        = 1:D.nchannels;
-%         SS.TimeResolution  = 0.05;
-%         ImaGIN_spm_eeg_tf(SS);
-%         % Baseline normalization of the TF maps
-%         clear SS2
-%         SS2.D=fullfile(D.path,['w1_' SS.Pre '_' D.fname]);
-%         SS2.B=[-10 -1];
-%         ImaGIN_NormaliseTF(SS2);
-%     end
-%     % Average the TF maps
-%     [files,dirs] = spm_select('List', fullfile(Root, Patient{i0}.Name, 'seeg'), '^nw1.*\.mat$');
-%     if (size(files,1) > 1)
-%         clear S;
-%         S.D       = [repmat([fullfile(Root, Patient{i0}.Name, 'seeg'), filesep], size(files,1), 1), files];
-%         S.Method  = 'Mean';
-%         S.NewName = 'mean_tf_wavelet';
-%         D = ImaGIN_AverageTF(S);
-%     end
-% end
-
-
 %% ===== TIME-FREQUENCY: MULTITAPER =====
+% Averaging the three seizures together
 for i0 = 1:length(Patient)
     % Get time window to process (at most 10s before and after t=0)
     minTime = -10;
@@ -199,41 +212,57 @@ for i0 = 1:length(Patient)
         S.Method  = 'Mean';
         S.NewName = 'mean_tf_multitaper';
         D = ImaGIN_AverageTF(S);
+        % Display results
+        % ImaGIN_DispTF(D);
+        % ImaGIN_DispTF(fullfile(Root, Patient{i0}.Name, 'seeg', [S.NewName, '.mat']));
     end
 end
 
 
-%% ===== EPILEPTOGENICITY =====
-for i0 = 1:length(Patient)
-    % Prepare list of input files
-    clear S
-    for i1 = 1:length(Patient{i0}.File)
-        if i1 ==1
-            S.D = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.File{i1} '.mat']);
-            S.B = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.Baseline{i1} '.mat']);
-        else
-            S.D = char(S.D, fullfile(Root,Patient{i0}.Name, 'seeg', [Patient{i0}.File{i1} '.mat']));
-            S.B = char(S.B, fullfile(Root,Patient{i0}.Name, 'seeg', [Patient{i0}.Baseline{i1} '.mat']));
-        end
-    end
-    S.TimeWindow = (0 : 0.01 : Patient{i0}.TimeConstant+1+max(Patient{i0}.Latency));
-    S.FreqBand   = Patient{i0}.FreqBand;
-    S.HorizonT   = Patient{i0}.TimeConstant;
-    S.BadChannel = Patient{i0}.BadChannel{i1};
-    S.Latency        = Patient{i0}.Latency;
-    S.TimeResolution = 0.1;
-    S.ThDelay        = ThDelay;
-    S.Atlas          = 'Human';
-    S.AR             = 0;
-    S.Latency        = 0;
-    S.sMRI           = Patient{i0}.sMRI;
-    S.CorticalMesh   = 1;
-    try
-        S.FileName = Patient{i0}.Pre;
-    catch
-        S.FileName = '';
-    end
-    ImaGIN_Epileptogenicity(S);
-end
+%% ===== EPILEPTOGENICITY: SEIZURE #1 =====
+% Process separately seizure #1 (no propagation) and seizures #2 and #3 (generalized)
+i0 = 1;
+clear S;
+% List of input files
+S.D = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.File{1} '.mat']);            % Seizure data
+S.B = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.BaselineFile{1} '.mat']);    % Baseline data
+% Process options
+S.TimeWindow     = (0 : 0.01 : Patient{i0}.TimeConstant+1+max(Patient{i0}.Latency));
+S.FreqBand       = Patient{i0}.FreqBand;
+S.HorizonT       = Patient{i0}.TimeConstant;
+S.BadChannel     = Patient{i0}.BadChannel{1};
+S.Latency        = 0;        % No propagation: Studyong only the first 3s (TimeConstant) after the Onset marker
+S.TimeResolution = 0.1;
+S.ThDelay        = ThDelay;
+S.Atlas          = 'Human';
+S.AR             = 0;
+S.sMRI           = Patient{i0}.MRI.pre;
+S.CorticalMesh   = 1;
+S.FileName       = Patient{i0}.Pre;
+ImaGIN_Epileptogenicity(S);
+
+    
+%% ===== EPILEPTOGENICITY: SEIZURE #2-3 =====
+clear S;
+% List of input files
+S.D = char(fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.File{2} '.mat']), ...          % Seizure data
+           fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.File{3} '.mat'])); 
+S.B = char(fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.BaselineFile{2} '.mat']), ...  % Baseline data
+           fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.BaselineFile{3} '.mat']));
+% Process options
+S.TimeWindow     = (0 : 0.01 : Patient{i0}.TimeConstant+1+max(Patient{i0}.Latency));
+S.FreqBand       = Patient{i0}.FreqBand;
+S.HorizonT       = Patient{i0}.TimeConstant;
+S.BadChannel     = [Patient{i0}.BadChannel{2:3}];
+S.Latency        = Patient{i0}.Latency;        % Use the sliding windows defined for this subject
+S.TimeResolution = 0.1;
+S.ThDelay        = ThDelay;
+S.Atlas          = 'Human';
+S.AR             = 0;
+S.sMRI           = Patient{I}.MRI.out_pre;
+S.CorticalMesh   = 1;
+S.FileName       = Patient{i0}.Pre;
+ImaGIN_Epileptogenicity(S);
+
 
 
