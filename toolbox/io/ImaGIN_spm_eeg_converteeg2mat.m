@@ -191,8 +191,6 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
         otherwise
             error(['Unsupported file format: ', FileFormat]);
     end
-    % Read entire file with Brainstorm functions
-    [F, TimeVector] = in_fread(sFileIn, ChannelMat, 1, []);
     
     % Get list of available channel names
     ChanLabelsIn = {ChannelMat.Channel.Name};
@@ -237,22 +235,55 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
     end
     % Keep only these ones in the data
     ChannelMat.Channel = ChannelMat.Channel(iSel);
-    F = F(iSel,:);
-    sFileIn.channelflag = sFileIn.channelflag(iSel);
-    
-    % Export to SPM format
-    sFileOut = out_fopen_spm(OutputFile, sFileIn, ChannelMat);
-    out_fwrite_spm(sFileOut, [], [], F);
-    % Load new file to return the D structure
-    load(OutputFile);
+   
+    % Get number of epochs
+    if isempty(sFileIn.epochs)
+        nEpochs = 1;
+    else
+        nEpochs = length(sFileIn.epochs);
+    end
+    % Loop on the epochs
+    for iEpoch = 1:nEpochs
+        % Read entire segment with Brainstorm functions
+        F = in_fread(sFileIn, ChannelMat, iEpoch, []);
+        F = F(iSel,:);
 
-    % Save the original list of channels in a log file
-    ImaGIN_save_log(OutputFile, ['Convert: Available channels     (' InputFile ')'], ChanLabelsIn);
-    % Save the list of channels in the output file
-    ChanLabelsOut = {ChannelMat.Channel.Name};
-    ImaGIN_save_log(OutputFile, ['Convert: Selected channels     (' OutputFile ')'], ChanLabelsOut);
-    % Save the list of channels in the output file
-    ImaGIN_save_log(OutputFile, 'Convert: Removed channels:', sort(setdiff(ChanLabelsIn, ChanLabelsOut)));
+        % File pointer to the output SPM file: keep only on epoch and a subset of the channels
+        sFileInSpm = sFileIn;
+        sFileInSpm.channelflag  = sFileIn.channelflag(iSel);
+        % Remove all the events that are not in this segment
+        if (nEpochs > 1)
+            sFileInSpm.prop.samples = sFileIn.epochs(iEpoch).samples;
+            sFileInSpm.prop.times   = sFileIn.epochs(iEpoch).times;
+            for iEvt = 1:length(sFileInSpm.events)
+                iEvtEpoch = find(sFileInSpm.events(iEvt).epochs == iEpoch);
+                sFileInSpm.events(iEvt).times   = sFileInSpm.events(iEvt).times(iEvtEpoch);
+                sFileInSpm.events(iEvt).samples = sFileInSpm.events(iEvt).samples(iEvtEpoch);
+                sFileInSpm.events(iEvt).epochs  = sFileInSpm.events(iEvt).epochs(iEvtEpoch);
+            end
+            sFileInSpm.epochs = [];
+        end
+        
+        % Output name of the SPM .mat/.dat file
+        if (nEpochs == 1)
+            SpmFile = OutputFile;
+        else
+            SpmFile = strrep(OutputFile, '.mat', sprintf('-%d.mat', iEpoch));
+        end
+        % Export to SPM format
+        sFileOut = out_fopen_spm(SpmFile, sFileInSpm, ChannelMat);
+        out_fwrite_spm(sFileOut, [], [], F);
+        % Load new file to return the D structure
+        load(SpmFile);
+
+        % Save the original list of channels in a log file
+        ImaGIN_save_log(SpmFile, ['Convert: Available channels     (' InputFile ')'], ChanLabelsIn);
+        % Save the list of channels in the output file
+        ChanLabelsOut = {ChannelMat.Channel.Name};
+        ImaGIN_save_log(SpmFile, ['Convert: Selected channels     (' SpmFile ')'], ChanLabelsOut);
+        % Save the list of channels in the output file
+        ImaGIN_save_log(SpmFile, 'Convert: Removed channels:', sort(setdiff(ChanLabelsIn, ChanLabelsOut)));
+    end
 end
 
 
