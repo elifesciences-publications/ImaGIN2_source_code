@@ -1,7 +1,9 @@
 function tutorial_epimap()
-% TUTORIAL_EPIMAP Script correponding to the ImaGIN/epileptogenicity tutorial.
+% TUTORIAL_EPIMAP Script corresponding to the ImaGIN/epileptogenicity tutorial.
 %
 % DESCRIPTION:
+%     Corresponding online tutorial: [URL]
+%
 %     This example script processes only one subject, but illustrates the 
 %     structure corresponding to a study with multiple subjects.
 

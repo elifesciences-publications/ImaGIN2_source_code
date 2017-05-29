@@ -429,7 +429,6 @@ for i00=1:size(latency,2)
             spm('defaults', 'EEG');
             spm_jobman('run', matlabbatch);
             movefile(fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],['s' tmp]),fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],tmp))
-            movefile(fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],['s' tmp(1:end-3) 'hdr']),fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],[tmp(1:end-3) 'hdr']))
         end
         [files,dirs] = spm_select('List',fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'.nii');
         for i1=1:size(files,1)
@@ -452,7 +451,6 @@ for i00=1:size(latency,2)
             spm('defaults', 'EEG');
             spm_jobman('run', matlabbatch);
             movefile(fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],['s' tmp]),fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],tmp))
-            movefile(fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],['s' tmp(1:end-3) 'hdr']),fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],[tmp(1:end-3) 'hdr']))
         end
 
 %         %whiten data
