@@ -1,26 +1,10 @@
 function prepare_Electrodes(source, polarity, FileIn, implantationFile, FileOut, FileTxtOut)
-% Add electrode position
-%
+
+%Add electrode position
 %source : 'classic' (a file with the electrodes names and another one with
 %the MNI positions), implantationFile is the source directory of the 2
 %files
 %      or 'intranat' (a file -implantationFile- with electrodes names, position, atlas,...)
-
-% -=============================================================================
-% This function is part of the ImaGIN software: 
-% https://f-tract.eu/
-%
-% This software is distributed under the terms of the GNU General Public License
-% as published by the Free Software Foundation. Further details on the GPLv3
-% license can be found at http://www.gnu.org/copyleft/gpl.html.
-%
-% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
-% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
-%
-% Copyright (c) 2000-2017 Inserm U1216
-% =============================================================================-
-%
-% Authors: ?
 
 [Root,file,~] = fileparts(FileIn);
 
@@ -55,17 +39,24 @@ if strcmp(source, 'intranat')
             if isempty(strfind(nametmp{i},'-'))
                 ind1 = regexp(lower(nametmp{i}),'[a-z\'']');
                 ind2 = regexp(lower(nametmp{i}),'[0-9]');
-                num = num2str(str2num(nametmp{i}(ind2)));
-                num2 = nametmp{i}(ind2);
-                name = [lower(nametmp{i}(ind1)) num];
-                name2 = [lower(nametmp{i}(ind1)) num2];
+                select_ind=[];
+                for i0=1:length(ind2)
+                    if ind2(i0)>ind1(length(ind1))
+                        select_ind=cat(1,select_ind,ind2(i0));
+                    end
+                end
+                num = num2str(str2num(nametmp{i}(select_ind)));
+                num2 = nametmp{i}(select_ind);
+                name = [lower(nametmp{i}(ind1(1):ind1(length(ind1)))) num];
+                name2 = [lower(nametmp{i}(ind1(1):ind1(length(ind1)))) num2];
                 Name{1} = cat(1,Name{1},{name});
                 Name{2} = cat(1,Name{2},{name2});
                 Position = cat(1,Position,str2num(positiontmp{i}));
             end
         end
+        
     else
-        if strcmp(polarity, 'bipolar')
+        if strcmp(polarity, 'bipolar')  %has to be fixed for the case where the electrode name includes numbers
         bip=[];
         for i=4:length(nametmp)
             if ~isempty(strfind(nametmp{i},'-')) 
