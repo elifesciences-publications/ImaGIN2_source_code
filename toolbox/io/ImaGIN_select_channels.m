@@ -90,13 +90,16 @@ for i = 1:length(AllNames)
     elseif isSEEG && ~any(ismember(lower(AllNames{i}), 'abcdefghijklmnopqrstuvwxyz'))
         continue;
     % Unwanted labels
-    elseif ismember(lower(AllTags{i}), {'xxxxx', 'mark', 'dc', 'emg', 'eog', 'veo', 'heo', 'veog', 'heog', 'myo', 'oc', 'dd', 'dg', 'el', 'ref', 'eegref', 'eref', 'vref', 'ref', 'pulse', 'mast', 'spo2', 'lpar', 'rpar'})
+    elseif ismember(lower(AllTags{i}), {'xxxxx', 'mark', 'dc', 'emg', 'eog', 'veo', 'heo', 'veog', 'heog', 'myo', 'oc', 'dd', 'dg', 'el', 'ref', 'eegref', 'eref', 'vref', 'ref', 'pulse', 'mast', 'spo2', 'lpar', 'rpar','tib'})
         continue;
     % Unwanted labels
     elseif ~isempty(strfind(lower(AllTags{i}), 'eog')) || ~isempty(strfind(lower(AllTags{i}), 'ref'))
         continue;
     % Unwanted EEG labels
     elseif isSEEG && ismember(lower(AllTags{i}), {'cz', 'fz', 'pz', 'oz', 'nz', 'fpz'})
+        continue;
+    % Unwanted electrodes that are explicitely scalp electrodes (case sensitive)
+    elseif isSEEG && ismember(AllNames{i}, {'sFp1','sFp2','sF4','sF3','sC3','sC4','sP4','sP3','sO2','sO1','sF8','sF7','sT8/T4','sT7/T3','sP8/T6','sP7/T5','sPz','sFz','sIO1','sIO2','sAF9','sAF10','sF9','sF10','sCB1','sCB2','sTP7','sTP9','sTP10','sTP8','sOz','sIz','sPO4','sPO3','sCP5','sCP6','sCP1','sCP2','sFT9','sFT10','sFC2','sFC1','sAF3','sAF4','sFC6','sFC5','sCPz','sP1','sPOz','sP2','sP6','sC6','sP5','sC1','sC2','sC5','sF2','sF6','sF1','sAF8','sF5','sAF7','sFpz','sFCz','sCz'})
         continue;
     % Unwanted FPx/Fx/Cx/Tx/Pz/Ox labels
     elseif isSEEG && ismember(lower(AllNames{i}), {'fp1','fp2'}) && ~any(ismember({'fp3','fp4'}, lower(AllNames)))
