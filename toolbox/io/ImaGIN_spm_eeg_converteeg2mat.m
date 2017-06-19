@@ -97,6 +97,9 @@ for i1 = 1:Nfiles
     % Nicolet .e
         % S2 = ImaGIN_copy_fields(S2, S, {'CreateTemplate', 'Montage', 'coarse', 'SEEG', 'filenamePos', 'filenameName', 'MontageName', 'SaveFile', 'channel'});
         % D = ImaGIN_spm_eeg_rdata_nicolet_mono(S2);
+    % Deltamed .bin
+        % S2 = ImaGIN_copy_fields(S2, S, {'Bipolar', 'Bipole', 'CreateTemplate', 'Montage', 'coarse', 'Nevent', 'SEEG', 'filenamePos', 'filenameName', 'MontageName', 'SaveFile'});
+        % D{i1} = ImaGIN_spm_eeg_rdata_deltamedbin_mono(S2);
             
     % Switch between file formats
     BstFormat = [];
@@ -113,10 +116,6 @@ for i1 = 1:Nfiles
             S2 = ImaGIN_copy_fields(S2, S, {'Atlas', 'SEEG', 'Bipolar', 'coarse', 'SaveFile'});
             D{i1} = ImaGIN_spm_eeg_rdata_msm_mono(S2);
 
-        case '.bin'
-            S2 = ImaGIN_copy_fields(S2, S, {'Bipolar', 'Bipole', 'CreateTemplate', 'Montage', 'coarse', 'Nevent', 'SEEG', 'filenamePos', 'filenameName', 'MontageName', 'SaveFile'});
-            D{i1} = ImaGIN_spm_eeg_rdata_deltamedbin_mono(S2);
-            
         case '.eeg'  % BrainAmp or Nihon Kohden
             % BrainAmp: There is a header in the same folder (.vhdr or .ahdr)
             if exist(fullfile(fPath, [fBase, '.vhdr']), 'file') || exist(fullfile(fPath, [fBase, '.ahdr']), 'file')
@@ -125,7 +124,9 @@ for i1 = 1:Nfiles
             else
                 BstFormat = 'EEG-NK';
             end
-
+            
+        case '.bin'
+            BstFormat = 'EEG-DELTAMED';
         case '.trc'
             BstFormat = 'EEG-MICROMED';
         case '.edf'
@@ -176,6 +177,9 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
                 end
                 ChannelMat.Channel(i).Name = chName;
             end
+        % DELTAMED .bin
+        case 'EEG-DELTAMED'
+            [sFileIn, ChannelMat] = in_fopen_deltamed(InputFile);
         % NIHON KOHDEN .EEG
         case 'EEG-NK'
             [sFileIn, ChannelMat] = in_fopen_nk(InputFile);
