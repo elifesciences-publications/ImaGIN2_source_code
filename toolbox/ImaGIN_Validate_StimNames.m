@@ -1,14 +1,17 @@
 function ImaGIN_Validate_StimNames(S)
 sFile = S.dataset;
-fileOut = S.DirFileOut;
-pulseDefault = S.defaultPulseDuration;
-clear D; clear D2;
+
+pulseDefault = str2double(S.defaultPulseDuration);
+
+fprintf('ImaGIN_Validate_StimNames gots default pulse duration of %d \n', pulseDefault);
+
 try
     D = spm_eeg_load(sFile); % Load the converted file .mat
 catch
-    fprintf('%s file NOT loaded\n', sFile)
+    fprintf('%s NOT loaded, select the data file \n', sFile)
+    sFile = spm_select(1, '\.mat$', 'Select data file');
+    D=spm_eeg_load(sFile);
 end
-
 evt = events(D);
 evsize = size(evt,2);        % Number of events
 Notes  = cell(1,evsize);     % Events labels
@@ -50,9 +53,10 @@ end
 
 for j=1:length(KeepEvent) % Navigate all stim events
     noteName = strrep(char(Notes{KeepEvent(j)}), ' ','_');
+    noteName = regexprep(noteName,'�','u'); %OD
     noteName(~ismember(double(noteName),['A':'Z' 'a':'z' '_' '.' '''' 'µ' '-' '0':'9'])) ='';
     noteName = regexprep(noteName,'_+','_'); noteName = regexprep(noteName,'µ','u');
-    noteName = regexprep(noteName,'�','u'); %OD
+    
     noteName = strrep(noteName,'.0','');
     noteName = strrep(noteName,'.',''); noteName = strrep(noteName,',','');
     noteName = strrep(noteName,'sec','s');  noteName = strrep(noteName,'AA','A');
@@ -65,7 +69,7 @@ for j=1:length(KeepEvent) % Navigate all stim events
             noteName = strrep(noteName,keepN,'CHNAME');
         end
     end
-    
+    Notes{KeepEvent(j)} = noteName;
 end
 
 rxp3  = '[-+]?(\d*[.])?\d+us'; rxp4  = '[-+]?(\d*[.])?\d+s'; % find available pulse duration values 
@@ -87,61 +91,67 @@ for k = 1:length(KeepEvent)
 end
 pIdx = find(pVals);
 
-if ~isempty(pIdx)
-    pval = unique(pVals(pIdx));
+if numel(pIdx) == numel(KeepEvent)
+    disp('All Notes include pulse duration !')
 else
-    pval = pulseDefault;
-end
-
-if pval == 0
-    fprintf('Pulse duration value not found');
-else  
-    pval = strcat(num2str(pval),'us');
-    for c = 1:length(KeepEvent)
-        
-        [numb,idx] = regexp(Notes{KeepEvent(c)},'\d*','Match');
-        
-        if numel(numb) >=2
-            cnbre1 = numel(numb{1});
-            cnbre2 = numel(numb{2});
-            if str2double(numb(1)) == str2double(numb(2))-1||str2double(numb(1)) == str2double(numb(2))+1
-                if isempty(strfind(Notes{KeepEvent(c)},pval))
-                    Notes{KeepEvent(c)}=[Notes{KeepEvent(c)} '_' pval]; % add pulse duration
-                end
-            elseif str2double(numb(1)) < str2double(numb(2))-1
-                Notes{KeepEvent(c)}(idx(2):idx(2)+cnbre2-1) = '_';
-                Notes{KeepEvent(c)}(idx(2)) =  num2str(str2double(numb(1))+1);
-                Notes{KeepEvent(c)}(idx(1):idx(1)+cnbre1-1) = '_';
-                Notes{KeepEvent(c)}(idx(1)) =  num2str(str2double(numb(1)));
-                if isempty(strfind(Notes{KeepEvent(c)},pval))
-                    Notes{KeepEvent(c)}=[Notes{KeepEvent(c)} '_' pval ]; % add pulse duration
-                end
-            elseif str2double(numb(1)) > str2double(numb(2))+1
-                Notes{KeepEvent(c)}(idx(1):idx(1)+cnbre1-1) = '_';
-                Notes{KeepEvent(c)}(idx(1)) = num2str(str2double(numb(2))+1);
-                Notes{KeepEvent(c)}(idx(2):idx(2)+cnbre2-1) = '_';
-                Notes{KeepEvent(c)}(idx(2)) =num2str(str2double(numb(2)));
-                if isempty(strfind(Notes{KeepEvent(c)},pval))
-                    Notes{KeepEvent(c)}=[Notes{KeepEvent(c)} '_' pval]; % add  pulse duration
+    
+    if ~isempty(pIdx)
+        pval = unique(pVals(pIdx));
+    else
+        fprintf('Pulse duration in stim Notes not found, ... default value is %d \n',pulseDefault);
+        pval = pulseDefault;
+    end
+    
+    if pval == 0
+        fprintf('... and searching in Centre no pulse duration found \n');
+    else
+        pval = strcat(num2str(pval),'us');
+        for c = 1:length(KeepEvent)
+            
+            [numb,idx] = regexp(Notes{KeepEvent(c)},'\d*','Match');
+            
+            if numel(numb) >=2
+                cnbre1 = numel(numb{1});
+                cnbre2 = numel(numb{2});
+                if str2double(numb(1)) == str2double(numb(2))-1||str2double(numb(1)) == str2double(numb(2))+1
+                    if isempty(strfind(Notes{KeepEvent(c)},pval))
+                        Notes{KeepEvent(c)}=[Notes{KeepEvent(c)} '_' pval]; % add pulse duration
+                    end
+                elseif str2double(numb(1)) < str2double(numb(2))-1
+                    Notes{KeepEvent(c)}(idx(2):idx(2)+cnbre2-1) = '_';
+                    Notes{KeepEvent(c)}(idx(2)) =  num2str(str2double(numb(1))+1);
+                    Notes{KeepEvent(c)}(idx(1):idx(1)+cnbre1-1) = '_';
+                    Notes{KeepEvent(c)}(idx(1)) =  num2str(str2double(numb(1)));
+                    if isempty(strfind(Notes{KeepEvent(c)},pval))
+                        Notes{KeepEvent(c)}=[Notes{KeepEvent(c)} '_' pval ]; % add pulse duration
+                    end
+                elseif str2double(numb(1)) > str2double(numb(2))+1
+                    Notes{KeepEvent(c)}(idx(1):idx(1)+cnbre1-1) = '_';
+                    Notes{KeepEvent(c)}(idx(1)) = num2str(str2double(numb(2))+1);
+                    Notes{KeepEvent(c)}(idx(2):idx(2)+cnbre2-1) = '_';
+                    Notes{KeepEvent(c)}(idx(2)) =num2str(str2double(numb(2)));
+                    if isempty(strfind(Notes{KeepEvent(c)},pval))
+                        Notes{KeepEvent(c)}=[Notes{KeepEvent(c)} '_' pval]; % add  pulse duration
+                    end
                 end
             end
+            Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'MA','mA');
+            Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'ma','mA');
+            Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'Ma','mA');
+            Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'HZ','Hz');
+            Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'hz','Hz');
+            Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'hZ','Hz');
+            Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'1_HA','1Hz');
+            Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'_mA','mA');
+            Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'_Hz','Hz');
+            clear numb; clear cnbre1; clear cnbre2
+            evt(KeepEvent(c)).type = Notes{KeepEvent(c)};
         end
-        Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'MA','mA');
-        Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'ma','mA');
-        Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'Ma','mA');
-        Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'HZ','Hz');
-        Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'hz','Hz');
-        Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'hZ','Hz');
-        Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'1_HA','1Hz');
-        Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'_mA','mA');
-        Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'_Hz','Hz');
-        clear numb; clear cnbre1; clear cnbre2
-        evt(KeepEvent(c)).type = Notes{KeepEvent(c)};
+        D = events(D,1,evt);
+        D2 = clone(D, D.fnamedat, [D.nchannels D.nsamples D.ntrials]);
+        D2(:,:,:) = D(:,:,:);
+        save(D2);
     end
-    D = events(D,1,evt);
-    D2 = clone(D, fileOut, [D.nchannels D.nsamples D.ntrials]);
-    D2(:,:,:) = D(:,:,:);
-    save(D2);
 end
 
 

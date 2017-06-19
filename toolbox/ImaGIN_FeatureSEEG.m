@@ -1,19 +1,4 @@
 function T =  ImaGIN_FeatureSEEG(S)
-% -=============================================================================
-% This function is part of the ImaGIN software: 
-% https://f-tract.eu/
-%
-% This software is distributed under the terms of the GNU General Public License
-% as published by the Free Software Foundation. Further details on the GPLv3
-% license can be found at http://www.gnu.org/copyleft/gpl.html.
-%
-% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
-% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
-%
-% Copyright (c) 2000-2017 Inserm U1216
-% =============================================================================-
-%
-% Authors: Olivier David
 
 sFile = S.FileName;
 [pth, fName, ~] = fileparts(sFile);
@@ -59,7 +44,7 @@ elec= sensors(D,'eeg');
 pos = elec.elecpos; 
 pos = pos(sens,:);
 nx  = size(sens,2);
-nn  = 12;
+nn  = 10;
 nt  = find((time(D)>= -0.5));
 ny  = D.nsamples;
 data= D(1:nx,nt(1):ny);
@@ -69,7 +54,7 @@ rawVar  = var(data, [], 2);       % Compute raw data variance
 ch_mean = mean(data,2);           
 ch_ampl = range(data,2);
 ch_grad = mean(diff(data,1,2),2); % Channel median gradient
-ch_kurt = oc_kurtosis(data,1,2);     % kurtosis
+ch_kurt = kurtosis(data,1,2);     % kurtosis
 
 rawVar  = nonzero_noninf(rawVar); % Check that there is no zero variance channels
 ch_mean = nonzero_noninf(ch_mean);
