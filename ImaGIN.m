@@ -37,6 +37,14 @@ for i = 1:length(toolboxDir)
     % Add directory and subdirectories
     addpath(P, '-BEGIN');
 end
+% Check installation of SPM
+if ~exist('spm', 'file')
+    disp([10 '====================================================================']);
+    disp('ImaGIN requires SPM12:');
+    disp(' - Download SPM: <a href="http://www.fil.ion.ucl.ac.uk/spm/software/download/">http://www.fil.ion.ucl.ac.uk/spm/software/download/</a>');
+    disp(' - Add the SPM folder to your Matlab path');
+    disp(['====================================================================' 10]);
+end
 
 
 %-Switch for specific commands
