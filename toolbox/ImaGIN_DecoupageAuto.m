@@ -31,7 +31,7 @@ endTime = zeros(1,evsize); % End of event
 %%
 % Read notes to keep only those related to a stimulation
 KeepEvent=[];
-for c=21:evsize % Navigate all available events
+for c=1:evsize % Navigate all available events
     
     xpr1  = '\w*hz_\w*';
     xpr2  = '\w*stim\w*';
@@ -277,9 +277,6 @@ for c=1:length(KeepEvent) % Navigate all stim events
     %}
     [stimTime,~,StimulationFreqU] = ImaGIN_StimDetect(S);
     disp(KeepEvent(c)), disp(S.EvtName);
-    
-    if StimulationFreqU >20
-    end
     stimFq = StimFreq;
     
     % if numel(stimTime) >= seuilHz         %OD
@@ -287,12 +284,12 @@ for c=1:length(KeepEvent) % Navigate all stim events
         
         [~, stimTimeOut, ~] = fileparts(S.FileOut);
         
-        if StimulationFreqU>20  %ugly fix to try to detect 50 Hz stimulation
-            stimFq = round(StimulationFreqU);
-        else        
+%         if StimulationFreqU>20  %OD ugly fix to try to  detect 50 Hz stimulation
+%             stimFq = round(StimulationFreqU);
+%         else        
             stimStep = stimTime(2:end) - stimTime(1:end-1);
             stimFq   = round(median(stimStep)); % median frequency within event : %OD corrected to median
-        end
+%         end
         
         
         % This is already done in ImaGIN_StimDetect
@@ -886,15 +883,51 @@ for c=1:length(KeepEvent) % Navigate all stim events
        %} 
     end
 end
-f = dir(fullfile(DirOut,'*.txt')); %Delete all text file
+%%
+f = dir(fullfile(DirOut,'*.mat')); %Delete all cropped text file
 f = {f.name};
 for k=1:numel(f);
-    delete(f{k})
+    [~, matFileName, ~] = fileparts(f{k});
+    nbrSc = strfind(matFileName,'_');
+    txtFileName = matFileName(1:nbrSc(end)-1);
+    if exist(fullfile(DirOut,strcat(txtFileName,'.txt')),'file')== 2
+        delete(fullfile(DirOut,strcat(txtFileName,'.txt')));
+    end
 end
-%%
-% cropSize = dir(fullfile(DirOut,'*.mat'));
-% realCrops = numel({cropSize.name});
-% expCrops = length(KeepEvent);
-% 
-% msgbox(strcat(sFile, '  :: Nombre de Stims  = ',    num2str(expCrops),   '   :: Nombre de crops  =  ', num2str(realCrops)), sFile)
-disp('Done');
+nf = dir(fullfile(DirOut,'*.txt'));
+nf = {nf.name};
+
+realStims = length(KeepEvent);
+
+fprintf('Number of existing stimulations:  %d \n',realStims);
+
+if ~isempty(nf)
+    misCrop = 0;
+    for k2 = 1:numel(nf)
+        fID = fopen(fullfile(DirOut, nf{k2}));
+        res = {};
+        while ~feof(fID)
+            res{end+1,1} =fgetl(fID);
+        end
+        fclose(fID);
+        nbrLines = numel(res);
+        if nbrLines > minStim
+            misCrop = misCrop + 1;
+            fprintf(' %s   not cropped\n',nf{k2});
+        end
+    end
+    if misCrop > 0
+        fprintf('Number of uncropped Stims:  %d \n',misCrop);
+    else
+        disp('Crop done completely');
+    end
+else
+    disp('Crop done completely');
+end
+
+txtf = dir(fullfile(DirOut,'*.txt')); % delete all .txt file after cropping
+txtf = {txtf.name};
+for k3 = 1:numel(txtf)
+    delete(fullfile(DirOut, txtf{k3}))
+end
+

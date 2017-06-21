@@ -1,22 +1,4 @@
 function D = ImaGIN_BadChannel(S)
-% IMAGING_BADCHANNELS Bad channel detection using classifiers
-
-% -=============================================================================
-% This function is part of the ImaGIN software: 
-% https://f-tract.eu/
-%
-% This software is distributed under the terms of the GNU General Public License
-% as published by the Free Software Foundation. Further details on the GPLv3
-% license can be found at http://www.gnu.org/copyleft/gpl.html.
-%
-% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
-% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
-%
-% Copyright (c) 2000-2017 Inserm U1216
-% =============================================================================-
-%
-% Authors: Viateur Tuyisenge
-
 % Extract badchannels indices
 FileIn = S.dataset; % cropped seeg file .dat/.mat
 badDir = S.DirFileOut; % Dir with badchannels
@@ -60,7 +42,6 @@ Dbad = clone(D, bPrefix, [D.nchannels D.nsamples D.ntrials]); % save meeg with b
 Dbad(:,:,:) = D(:,:,:);
 save(Dbad);
 % Channel plots and ScreenShots
-elec = sensors(D,'EEG');
 figDir = strcat(badDir, '/ScreenShot');
 if ~exist(figDir, 'dir')
     mkdir(figDir);
@@ -81,7 +62,7 @@ for i2 = 1:tmp
         end
         subplot(Size,1,i3)
         plot(time(D),D(i3+(i2-1)*Size,:),color);
-        ylabel([num2str(i3+(i2-1)*Size) ' : ' elec.label{i3+(i2-1)*Size}])
+        ylabel([num2str(i3+(i2-1)*Size) ' : ' D.chanlabels{i3+(i2-1)*Size}])
         if i3 == 1
             figName = char(strcat(cutName,'_',num2str(i3+(i2-1)*Size),'-', ...
                 num2str(i2*Size)));
@@ -107,7 +88,7 @@ if rmd ~= 0
         end
         subplot(rmd,1,i4)
         plot(time(D),D(i3+(i2-1)*Size+i4,:),color);
-        ylabel([num2str(i3+(i2-1)*Size+i4) ' : ' elec.label{i3+(i2-1)*Size+i4}])
+        ylabel([num2str(i3+(i2-1)*Size+i4) ' : ' D.chanlabels{i3+(i2-1)*Size+i4}])
         if i4 == 1
             figName = char(strcat(cutName,'_',num2str(i3+(i2-1)*Size + 1),'-',num2str(size(D,1))));
             title(figName,'interpreter','none');
@@ -119,3 +100,4 @@ if rmd ~= 0
     print(fig, fullfile(figDir,figName), '-dpng');
     close
 end
+disp('Badchannels completed !\n');

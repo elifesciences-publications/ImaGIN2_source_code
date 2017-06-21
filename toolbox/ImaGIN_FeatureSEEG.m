@@ -42,7 +42,6 @@ D = spm_eeg_load(lpf_nFile);
 sens= indchantype(D,'eeg');
 elec= sensors(D,'eeg');
 pos = elec.elecpos; 
-pos = pos(sens,:);
 nx  = size(sens,2);
 nn  = 10;
 nt  = find((time(D)>= -0.5));
