@@ -49,6 +49,10 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ImaGIN_EventsAdd(Filename,S)
+    if (nargin < 2)
+        S = [];
+    end
+    
     try
         NeventNew=S.Nevent;
     catch
@@ -57,19 +61,25 @@ function ImaGIN_EventsAdd(Filename,S)
 
     for i1=1:NeventNew
         try
-            NewName{i1}=S.EventName{i1};
+            NewName{i1} = S.EventName{i1};
         catch
-            NewName{i1}=spm_input(sprintf('Type of event %d',i1), '+1', 's');
+            NewName{i1} = spm_input(sprintf('Type of event %d',i1), '+1', 's');
         end
-        if isfield(S, 'Timing') && ~isempty(S.Timing)
+        if isempty(NewName{i1})
+            error('Invalid event name.');
+        end
+        if ~isempty(S) && isfield(S, 'Timing') && ~isempty(S.Timing)
             Timing{i1} = S.Timing{i1};
+        elseif ~isempty(S) && isfield(S, 'EventFileName') && ~isempty(S.EventFileName)
+            Timing{i1} = load(S.EventFileName{i1});
         else
-            try
-                tmp = S.EventFileName{i1};
-            catch
+            Action = spm_input('How to specifiy the timing ', '+1', 'Manual|File');
+            if strcmp(Action,'File')
                 tmp = spm_select(1, '\.txt$', sprintf('Select txt file with the timing (sec) of event %d',i1));
+                Timing{i1} = load(tmp);
+            else
+                Timing{i1} = spm_input('Timing of the event [sec]', '+1', 'r');
             end
-            Timing{i1}=load(tmp);
         end
     end
 

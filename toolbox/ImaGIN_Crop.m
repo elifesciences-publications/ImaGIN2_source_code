@@ -70,7 +70,7 @@ function ImaGIN_CropManual(D,t,S)
     catch
         allEvt = unique({D.events.type});
         disp(['Available event types: ', sprintf('%s ', allEvt{:})]);
-        EventRefName=spm_input('Type of start event', 1, 's');
+        EventRefName=spm_input('Type of start event', '+1', 's');
     end
     if isempty(EventRefName)
         EventStart=0;
@@ -99,7 +99,7 @@ function ImaGIN_CropManual(D,t,S)
     try
         EventRefNameEnd=S.EventEnd;
     catch
-        EventRefNameEnd=spm_input('Type of end event', 1, 's');
+        EventRefNameEnd=spm_input('Type of end event', '+1', 's');
     end
     if isempty(EventRefNameEnd)
         EventEnd=0;
@@ -159,7 +159,7 @@ function ImaGIN_CropEpoch(D)
     catch
         allEvt = unique({D.events.type});
         disp(['Available event types: ', sprintf('%s ', allEvt{:})]);
-        EventRefName=spm_input('Type of reference event', 1,'s');
+        EventRefName=spm_input('Type of reference event', '+1','s');
     end
     Events=D.events;
     n=1;

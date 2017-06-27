@@ -27,7 +27,7 @@ function D = ImaGIN_spm_eeg_tf(S)
 try
     DD = S.D;
 catch
-    DD = spm_select(inf, 'mat', 'Select EEG mat file');
+    DD = spm_select(inf, '\.mat', 'Select EEG mat file');
 end
 
 if size(DD,1)>1
@@ -244,9 +244,16 @@ if size(DD,1)>1
             catch
                 S.TimeResolution = spm_input('Time resolution [sec]', '+1', 'r');
             end
-            
+
+            try
+                S.Taper;
+            catch
+                Ctype = {'DPSS', 'Hanning'};
+                str   = 'Taper ';
+                Sel   = spm_input(str, '+1', 'm', Ctype);
+                S.Taper = lower(Ctype{Sel});
+            end
             S.Synchro=0;
-            
             
         case{'Coherence'}
             try
@@ -267,7 +274,7 @@ if size(DD,1)>1
     try
         S.channels;
     catch
-        S.channels = spm_input('Select channels', '+1', 'i');
+        S.channels = spm_input('Select channels', '+1', 'i', '[]');
     end
 end
 
@@ -536,7 +543,7 @@ function [D, TimeWindow, TimeWindowWidth] = ImaGIN_spm_eeg_tf_main(D,S)
             catch
                 Ctype = {'DPSS', 'Hanning'};
                 str   = 'Taper ';
-                Sel   = spm_input(str, 2, 'm', Ctype);
+                Sel   = spm_input(str, '+1', 'm', Ctype);
                 D.tf.Taper = lower(Ctype{Sel});
             end
 
@@ -597,7 +604,11 @@ function [D, TimeWindow, TimeWindowWidth] = ImaGIN_spm_eeg_tf_main(D,S)
 
     % NB: D.tf.channels maps directly into the data. To retrieve the position of the channel, use D.channels.order
     try
-        D.tf.channels = S.channels;
+        if isempty(S.channels)
+            D.tf.channels = 1:D.nchannels;
+        else
+            D.tf.channels = S.channels;
+        end
     catch
         D.tf.channels = spm_input('Select channels', '+1', 'i', sprintf('1:%d',D.nchannels));
     end
