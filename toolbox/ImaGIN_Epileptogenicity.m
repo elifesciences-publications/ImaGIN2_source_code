@@ -108,42 +108,44 @@ catch
     FileName = spm_input('File name', '+1', 's');
 end
 
-%Bad channels
-try
-    BadChannel=S.BadChannel;
-catch
-    BadChannel = spm_input('Bad channels', '+1', 'i','0');
-end
-if sum(BadChannel)==0
-    BadChannel=[];
-end
+% %Bad channels
+% try
+%     BadChannel=S.BadChannel;
+% catch
+%     BadChannel = spm_input('Bad channels', '+1', 'i','0');
+% end
+% if sum(BadChannel)==0
+%     BadChannel=[];
+% end
 
 %Time window
 if length(Horizon)==1
     TimeWindow=[0:TimeResolution:Horizon+1+max(latency(:))];
-    Start=min(TimeWindow)-1/0.05;
-    End=max(TimeWindow)+1/0.05;
+%     Start=min(TimeWindow)-1/0.05;
+%     End=max(TimeWindow)+1/0.05;
 end
 % TimeWindowStart=TimeWindow(1);
 Freq50=[48:52 98:102 148:152 198:202 248:252 298:302 348:352 398:402 448:452 498:502];
 
-%Transform BadChannels into cells
-if ~iscell(BadChannel)
-    tmp=BadChannel;
-    BadChannel={};
-    for i0=1:size(DD,1)
-        BadChannel{i0}=tmp;
-    end
-end
+% %Transform BadChannels into cells
+% if ~iscell(BadChannel)
+%     tmp=BadChannel;
+%     BadChannel={};
+%     for i0=1:size(DD,1)
+%         BadChannel{i0}=tmp;
+%     end
+% end
     
 
 %find common Channels and define as bad the missing ones over files
-Labels={};
-N=zeros(1,size(DD,1));
+N = zeros(1,size(DD,1));
+Labels = cell(1,size(DD,1));
+BadChannel = cell(1,size(DD,1));
 for i0=1:size(DD,1)
     D=spm_eeg_load(deblank(DD(i0,:)));
     Labels{i0}=chanlabels(D);
     N(i0)=length(Labels{i0});
+    BadChannel{i0}=badchannels(D);
 end
 L=zeros(size(DD,1),max(N));
 for i0=1:size(DD,1)
@@ -212,7 +214,7 @@ for i00=1:size(latency,2)
             Binit=B;
             timebaseline=time(B);
             TimeWindowBaseline=[timebaseline(1):(TimeWindow(2)-TimeWindow(1)):(timebaseline(end)-1)];
-        end        
+        end
         
         %Downsample data in time
         Coarse=1;
@@ -694,90 +696,92 @@ for i00=1:size(latency,2)
     
 end
 
+% Compute map of propagation delay (only if more than one latency)
+if length(latency) > 1
 
-%Compute map of propagation delay
-for i0=1:size(DD,1)
-    Delay=NaN*zeros(53,63,46);
-    Delay=NaN*zeros(V.dim(1),V.dim(2),V.dim(3));
-    D=spm_eeg_load(deblank(DD(i0,:)));
-    Dinit=D;
-    P=spm_str_manip(deblank(DD(i0,:)),'h');
-    for i2=1:size(latency,2)
-        Latency=mean(latency(:,i2));
-        SPMFile=fullfile(P,['SPM_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s') '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))], 'SPM.mat');
-        load(SPMFile)
-        % Load spmT map
-        P1 = spm_vol(fullfile(P,['SPM_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s') '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],'spmT_0001.nii'));
-        Vb1 = spm_read_vols(P1);
-        % Calcule threshold for statistical map
-        df = [SPM.xCon(1).eidf SPM.xX.erdf];
-        S    = SPM.xVol.S;                  %-search Volume {voxels}
-        R    = SPM.xVol.R;                  %-search Volume {resels}
-%         u = spm_uc_FDR(0.001,df,'T',1,P1);
-        u = spm_uc(ThDelay,df,'T',R,1,S);
-        % Activated voxels
-        Q1=find(Vb1>=u);
-        Q2=find(isnan(Delay));
-        Q3=intersect(Q2,Q1);
-        Delay(Q3)=mean(latency(:,i2));
+    for i0=1:size(DD,1)
+        Delay=NaN*zeros(53,63,46);
+        Delay=NaN*zeros(V.dim(1),V.dim(2),V.dim(3));
+        D=spm_eeg_load(deblank(DD(i0,:)));
+        Dinit=D;
+        P=spm_str_manip(deblank(DD(i0,:)),'h');
+        for i2=1:size(latency,2)
+            Latency=mean(latency(:,i2));
+            SPMFile=fullfile(P,['SPM_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s') '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))], 'SPM.mat');
+            load(SPMFile)
+            % Load spmT map
+            P1 = spm_vol(fullfile(P,['SPM_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s') '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],'spmT_0001.nii'));
+            Vb1 = spm_read_vols(P1);
+            % Calcule threshold for statistical map
+            df = [SPM.xCon(1).eidf SPM.xX.erdf];
+            S    = SPM.xVol.S;                  %-search Volume {voxels}
+            R    = SPM.xVol.R;                  %-search Volume {resels}
+    %         u = spm_uc_FDR(0.001,df,'T',1,P1);
+            u = spm_uc(ThDelay,df,'T',R,1,S);
+            % Activated voxels
+            Q1=find(Vb1>=u);
+            Q2=find(isnan(Delay));
+            Q3=intersect(Q2,Q1);
+            Delay(Q3)=mean(latency(:,i2));
+        end
+        P0=P1;
+        P0.fname=fullfile(P,['Delay_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s')  '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']);
+        P0 = spm_write_vol(P0,Delay);
+        clear matlabbatch
+        matlabbatch{1}.spm.spatial.smooth.data = {[P0.fname ',1']};
+        matlabbatch{1}.spm.spatial.smooth.fwhm = [5 5 5];
+        matlabbatch{1}.spm.spatial.smooth.dtype = 0;
+        matlabbatch{1}.spm.spatial.smooth.im = 1;
+        matlabbatch{1}.spm.spatial.smooth.prefix = 's';
+        spm('defaults', 'EEG');
+        spm_jobman('run', matlabbatch);
+    %     spm_smooth(P0,fullfile(P,['sDelay_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s')  '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']),[3 3 3]);
+        Q=fullfile(P,['sDelay_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s')  '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']);
+        M=spm_vol(Q);
+        I=spm_read_vols(M);
+        I(find(isnan(Delay)))=NaN;
+        I=(max(Delay(:))./max(I(:)))*I;
+        M = spm_write_vol(M,I);
     end
-    P0=P1;
-    P0.fname=fullfile(P,['Delay_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s')  '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']);
-    P0 = spm_write_vol(P0,Delay);
-    clear matlabbatch
-    matlabbatch{1}.spm.spatial.smooth.data = {[P0.fname ',1']};
-    matlabbatch{1}.spm.spatial.smooth.fwhm = [5 5 5];
-    matlabbatch{1}.spm.spatial.smooth.dtype = 0;
-    matlabbatch{1}.spm.spatial.smooth.im = 1;
-    matlabbatch{1}.spm.spatial.smooth.prefix = 's';
-    spm('defaults', 'EEG');
-    spm_jobman('run', matlabbatch);
-%     spm_smooth(P0,fullfile(P,['sDelay_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s')  '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']),[3 3 3]);
-    Q=fullfile(P,['sDelay_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s')  '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']);
-    M=spm_vol(Q);
-    I=spm_read_vols(M);
-    I(find(isnan(Delay)))=NaN;
-    I=(max(Delay(:))./max(I(:)))*I;
-    M = spm_write_vol(M,I);
+    if size(DD,1)>1
+        Delay=NaN*zeros(53,63,46);
+        Delay=NaN*zeros(V.dim(1),V.dim(2),V.dim(3));
+        for i2=1:size(latency,2)
+            Latency=mean(latency(:,i2));
+            SPMFile=fullfile(P,['SPM_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(Latency))], 'SPM.mat');
+            load(SPMFile)
+            % Load spmT map
+            P1 = spm_vol(fullfile(P,['SPM_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(Latency))],'spmT_0001.nii'));
+            Vb1 = spm_read_vols(P1);
+            % Calcule threshold for statistical map
+            df = [SPM.xCon(1).eidf SPM.xX.erdf];
+            S    = SPM.xVol.S;                  %-search Volume {voxels}
+            R    = SPM.xVol.R;                  %-search Volume {resels}
+    %         u = spm_uc_FDR(0.001,df,'T',1,P1);
+            u = spm_uc(ThDelay,df,'T',R,1,S);
+            % Activated voxels
+            Q1=find(Vb1>=u);
+            Q2=find(isnan(Delay));
+            Q3=intersect(Q2,Q1);
+            Delay(Q3)=latency(i2);
+        end
+        P0=P1;
+        P0.fname=fullfile(P,['Delay_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']);
+        P0 = spm_write_vol(P0,Delay);
+        clear matlabbatch
+        matlabbatch{1}.spm.spatial.smooth.data = {[P0.fname ',1']};
+        matlabbatch{1}.spm.spatial.smooth.fwhm = [5 5 5];
+        matlabbatch{1}.spm.spatial.smooth.dtype = 0;
+        matlabbatch{1}.spm.spatial.smooth.im = 1;
+        matlabbatch{1}.spm.spatial.smooth.prefix = 's';
+        spm('defaults', 'EEG');
+        spm_jobman('run', matlabbatch);
+    %     spm_smooth(P0,fullfile(P,['sDelay_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']),[3 3 3]);
+        Q=fullfile(P,['sDelay_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']);
+        M=spm_vol(Q);
+        I=spm_read_vols(M);
+        I(find(isnan(Delay)))=NaN;
+        I=(max(Delay(:))./max(I(:)))*I;
+        M = spm_write_vol(M,I);
+    end    
 end
-if size(DD,1)>1
-    Delay=NaN*zeros(53,63,46);
-    Delay=NaN*zeros(V.dim(1),V.dim(2),V.dim(3));
-    for i2=1:size(latency,2)
-        Latency=mean(latency(:,i2));
-        SPMFile=fullfile(P,['SPM_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(Latency))], 'SPM.mat');
-        load(SPMFile)
-        % Load spmT map
-        P1 = spm_vol(fullfile(P,['SPM_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(Latency))],'spmT_0001.nii'));
-        Vb1 = spm_read_vols(P1);
-        % Calcule threshold for statistical map
-        df = [SPM.xCon(1).eidf SPM.xX.erdf];
-        S    = SPM.xVol.S;                  %-search Volume {voxels}
-        R    = SPM.xVol.R;                  %-search Volume {resels}
-%         u = spm_uc_FDR(0.001,df,'T',1,P1);
-        u = spm_uc(ThDelay,df,'T',R,1,S);
-        % Activated voxels
-        Q1=find(Vb1>=u);
-        Q2=find(isnan(Delay));
-        Q3=intersect(Q2,Q1);
-        Delay(Q3)=latency(i2);
-    end
-    P0=P1;
-    P0.fname=fullfile(P,['Delay_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']);
-    P0 = spm_write_vol(P0,Delay);
-    clear matlabbatch
-    matlabbatch{1}.spm.spatial.smooth.data = {[P0.fname ',1']};
-    matlabbatch{1}.spm.spatial.smooth.fwhm = [5 5 5];
-    matlabbatch{1}.spm.spatial.smooth.dtype = 0;
-    matlabbatch{1}.spm.spatial.smooth.im = 1;
-    matlabbatch{1}.spm.spatial.smooth.prefix = 's';
-    spm('defaults', 'EEG');
-    spm_jobman('run', matlabbatch);
-%     spm_smooth(P0,fullfile(P,['sDelay_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']),[3 3 3]);
-    Q=fullfile(P,['sDelay_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']);
-    M=spm_vol(Q);
-    I=spm_read_vols(M);
-    I(find(isnan(Delay)))=NaN;
-    I=(max(Delay(:))./max(I(:)))*I;
-    M = spm_write_vol(M,I);
-end    
