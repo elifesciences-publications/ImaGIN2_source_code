@@ -279,7 +279,18 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
         out_fwrite_spm(sFileOut, [], [], F);
         % Load new file to return the D structure
         load(SpmFile);
-
+        
+        %For Xltek files, assumes conversion of edf + a txt file that
+        %contains the events
+        if exist([SpmFile(1:end-3) 'txt'],'file')
+            %read events
+            evt=ImaGIN_ReadXltekEvents([SpmFile(1:end-3) 'txt']);
+            %import events
+            DD=spm_eeg_load(SpmFile);
+            DD = events(DD, 1, evt);
+            save(DD)
+        end
+                    
         % Save the original list of channels in a log file
         ImaGIN_save_log(SpmFile, ['Convert: Available channels     (' InputFile ')'], ChanLabelsIn);
         % Save the list of channels in the output file
