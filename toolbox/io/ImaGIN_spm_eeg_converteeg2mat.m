@@ -183,9 +183,27 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
         % NIHON KOHDEN .EEG
         case 'EEG-NK'
             [sFileIn, ChannelMat] = in_fopen_nk(InputFile);
-        % EDF
+        % EDF / XLTEK
         case 'EEG-EDF'
             [sFileIn, ChannelMat] = in_fopen_edf(InputFile);
+            
+            % For XLTEK files exported as EDF + events in .txt file: reading the events
+            XltekEvtFile = [InputFile(1:end-3) 'txt'];
+            if exist(XltekEvtFile, 'file')
+                % Read events
+                sFileIn.events = in_events_xltek(sFileIn, XltekEvtFile);
+                % If there are more than 3 events: do some cleaning
+                if (length(sFileIn.events) > 3)
+                    % Remove the first 3 event types
+                    sFileIn.events(1:3) = [];
+                    % Remove some other event types based on their names
+                    iDel = find(ismember({sFileIn.events.label}, {'XLEvent','XLSpike','Gain/Changement de filtre','e','h','s','Opened relay','Closed relay'}) | ...
+                                ~cellfun(@(c)isempty(strfind(c, 'Closed relay')), {sFileIn.events.label}));
+                    if ~isempty(iDel)
+                        sFileIn.events(iDel) = [];
+                    end
+                end
+            end
         % BrainVision BrainAmp
         case 'EEG-BRAINAMP'
             [sFileIn, ChannelMat] = in_fopen_brainamp(InputFile);
@@ -279,18 +297,7 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
         out_fwrite_spm(sFileOut, [], [], F);
         % Load new file to return the D structure
         load(SpmFile);
-        
-        %For Xltek files, assumes conversion of edf + a txt file that
-        %contains the events
-        if exist([SpmFile(1:end-3) 'txt'],'file')
-            %read events
-            evt=ImaGIN_ReadXltekEvents([SpmFile(1:end-3) 'txt']);
-            %import events
-            DD=spm_eeg_load(SpmFile);
-            DD = events(DD, 1, evt);
-            save(DD)
-        end
-                    
+
         % Save the original list of channels in a log file
         ImaGIN_save_log(SpmFile, ['Convert: Available channels     (' InputFile ')'], ChanLabelsIn);
         % Save the list of channels in the output file
