@@ -44,7 +44,7 @@ Patient{I}.File{1}     = 'SZ1';   % Short seizure, no propagation
 Patient{I}.File{2}     = 'SZ2';   % Short seizure, propagation 
 Patient{I}.File{3}     = 'SZ3';   % Long seizure, generalized 
 % Seizure onset, from the beginning of the file (the events "Seizure" indicated in the .TRC files are not reliable)
-Patient{I}.Onset = [120.791, ...         % File #1:  414ms after the Seizure marker
+Patient{I}.Onset = [120.800, ...         % File #1:  423ms after the Seizure marker
                     143.510, ...         % File #2: 2900ms after the Seizure marker
                     120.287];            % File #3:   60ms after the Seizure marker
                 
@@ -59,9 +59,9 @@ Patient{I}.Baseline = {[-48, -43], ...   % File #1: From beginning of recordings
 Patient{I}.BaselineFile = {[],[],[]};
 
 % List of bad channels: Defined while reviewing the recordings as a bipolar montage
-Patient{I}.BadChannel  = {[74 28], ...   % File #1: v'1, f'1
-                          [74], ...      % File #2: v'1
-                          [74 54]};      % File #3: o'1
+Patient{I}.BadChannel  = {[74 28], ...   % File #1: v'2v'1, f'2f'1
+                          [74], ...      % File #2: v'2v'1
+                          [74 54]};      % File #3: v'2v'1, o'2o'1
 % Epileptogenicity options
 Patient{I}.FreqBand     = [120 200];  % Defined by looking at the TF maps (using the same for the three seizures)
 Patient{I}.TimeConstant = 3;          % Duration of the sliding window of interest: 3s
@@ -107,7 +107,7 @@ for i0 = 1:length(Patient)
         S.Fname    = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.File{i1} '.mat']);
         S.FileOut  = fullfile(Root, Patient{i0}.Name, 'seeg', ['b' Patient{i0}.File{i1} '.mat']);
         D = ImaGIN_BipolarMontage(S);
-        Patient{i0}.FileBipolar{i1} = S.FileOut;
+        [tmp, Patient{i0}.FileBipolar{i1}] = fileparts(S.FileOut);
     end
 end
 
@@ -140,6 +140,19 @@ end
 for i0 = 1:length(Patient)
     for i1 = 1:length(Patient{i0}.FileBipolar)
         FileName = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.FileBipolar{i1} '.mat']);
+
+        % ===== SET BAD CHANNELS =====
+        if ~isempty(Patient{i0}.BadChannel)
+            % % SPM version
+            % D = spm_eeg_load(FileName);
+            % D = badchannels(D, Patient{i0}.BadChannel{i1}, 1);
+            % save(D);
+            % ImaGIN version
+            clear S
+            S.Fname       = FileName;
+            S.BadChannels = Patient{i0}.BadChannel{i1};
+            ImaGIN_BadChannelSet(S);
+        end
         
         % ===== SET ONSET EVENTS =====
         clear S
@@ -149,20 +162,13 @@ for i0 = 1:length(Patient)
         S.EventName{1} = 'Onset';
         S.Timing{1}    = Patient{I}.Onset(i1);
         ImaGIN_Events(S);
-        
+
         % ===== SET TIME ORIGIN =====
         clear S
         S.Fname    = FileName;
         S.EventRef = 'Onset';
         S.Offset   = 0;
         ImaGIN_TimeZero(S);
-        
-        % ===== SET BAD CHANNELS =====
-        if ~isempty(Patient{i0}.BadChannel)
-            D = spm_eeg_load(FileName);
-            D = badchannels(D, Patient{i0}.BadChannel{i1}, 1);
-            save(D);
-        end
         
         % ===== IMPORT BASELINE ======
         if ~isfield(Patient{i0}, 'BaselineFile') || (length(Patient{i0}.BaselineFile) < i1) || isempty(Patient{i0}.BaselineFile{i1})
@@ -205,14 +211,14 @@ for i0 = 1:length(Patient)
         D = spm_eeg_load(SS.D);
         SS.Pre             = '';
         SS.Method          = 'Multitaper';
-        SS.Taper           = 'Hanning';
-        SS.TimeResolution  = 0.1;
         SS.frequencies     = 10:3:230;
         SS.FactMod         = 10;
-        SS.TimeWindow      = [minTime maxTime];
         SS.TimeWindowWidth = 1;
-        SS.channels        = 1:D.nchannels;
+        SS.TimeWindow      = [minTime maxTime];
+        SS.TimeResolution  = 0.1;
         SS.NSegments       = 1;
+        SS.Taper           = 'Hanning';
+        SS.channels        = 1:D.nchannels;
         ImaGIN_spm_eeg_tf(SS);
         % Baseline normalization of the TF maps
         clear SS2
