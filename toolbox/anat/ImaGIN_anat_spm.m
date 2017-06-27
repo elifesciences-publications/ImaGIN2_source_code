@@ -427,8 +427,7 @@ for I = 1:length(Patient)
     matlabbatch{iNB}.spm.spatial.normalise.write.woptions.vox = [1 1 1];
     
     % Save SPM batch
-    % save('anat_spm_batch.mat', 'matlabbatch')
-    
+    save(fullfile(Patient{I}.MRI.out, 'ImaGIN_spm_batch.mat'), 'matlabbatch');
     % Run SPM batch
     spm_jobman('initcfg');
     % spm_jobman('interactive', matlabbatch)
