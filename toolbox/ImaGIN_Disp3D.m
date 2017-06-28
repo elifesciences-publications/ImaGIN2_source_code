@@ -19,7 +19,7 @@ Fgraph  = spm_figure('GetWin','Graphics');
 Finter  = spm_figure('GetWin','Interactive');
 spm_figure('Clear',Finter)
 
-tmp=spm_input('Image of p-values ',1,'Yes|No');
+tmp=spm_input('Image of p-values ','+1','Yes|No');
 if strcmp(tmp,'Yes')
     FlagStat=1;
 else
@@ -31,13 +31,13 @@ V = spm_select(1, 'image', 'Select 3D data file');
 tmp=spm_str_manip(V,'h');
 cd(tmp)
 
-tmp=spm_input('Select another 3D data file ',1,'Yes|No');
+tmp=spm_input('Select another 3D data file ','+1','Yes|No');
 if strcmp(tmp,'Yes')
     V2 = spm_select(1, 'image', 'Select 3D data file');
 end
 
 %check if synchrony
-tmp=spm_input('Connections associated ',1,'Yes|No');
+tmp=spm_input('Connections associated ','+1','Yes|No');
 if strcmp(tmp,'Yes')
     FlagSyn=1;
     FileSyn = spm_select(1, '.syn', 'Select synchrony file (.syn)');
@@ -65,10 +65,10 @@ if FlagSyn
 end
 
 %plot electrodes
-tmp=spm_input('Plot electrodes ',1,'Yes|No');
+tmp=spm_input('Plot electrodes ','+1','Yes|No');
 if strcmp(tmp,'Yes')
     FlagElec=1;
-    FileElec = spm_select(inf, '.txt', 'Select electrode positions file (.txt)');
+    FileElec = spm_select(inf, '.*\.(mat|txt)$', 'Select electrode positions file (.txt or .mat/.dat)');
 else
     FlagElec=0;
 end
@@ -123,50 +123,106 @@ if FlagStat
         xSPM.XYZmm=xSPM.M(1:3,:)*[xSPM.XYZ; ones(1,size(xSPM.XYZ,2))];
     end
 else
-    ma=max(W(:));
-    mi=min(W(:));
-    Zmax=0;
-    Zmin=0;
-    if ma>0
-        Zmax = str2num(spm_input(sprintf('+ threshold im (max=%0.3f) ',ma), '+1', 's'));
+    ma = max(W(:));
+    mi = min(W(:));
+    % If we have only positive or negative value: already know what to do
+    if (ma <= 0)
+        threshSign = 'Negative';
+    elseif (mi >= 0)
+        threshSign = 'Positive';
+    else
+        threshSign = spm_input('Sign of the values', '+1', 'Positive|Negative|Both');
     end
-    if mi<0
-        Zmin = str2num(spm_input(sprintf('- threshold im (min=%0.3f) ',mi), '+1', 's'));
+    % Get maximum amplitude
+    switch (threshSign)
+        case 'Negative',  strMax = sprintf('min=%0.3f', mi);
+        case 'Positive',  strMax = sprintf('max=%0.3f', ma);
+        case 'Both',      strMax = sprintf('max=%0.3f', max(abs(ma), abs(mi)));
     end
+    % Threshold
+    thresh = str2num(spm_input(['Amplitude threshold (' strMax ') '], '+1', 's'));
+    if isempty(thresh)
+        thresh = 0;
+    end
+    
+    % Create clusters
     xSPM.Z=zeros(1,0);
     xSPM.XYZ=zeros(3,0);
     xSPM.XYZmm=zeros(3,0);
-    if ma>Zmax&mi>=Zmin
-        i=find(W>Zmax);
-        xSPM.Z=W(i)';
-        [i,j,k]=ind2sub(V.dim,i);
-        xSPM.XYZ=[i j k]';
-        xSPM.XYZmm=xSPM.M(1:3,:)*[xSPM.XYZ; ones(1,size(xSPM.XYZ,2))];
-    elseif ma<=Zmax&mi<Zmin
-        i=find(W<Zmin);
-        xSPM.Z=W(i)';
-        [i,j,k]=ind2sub(V.dim,i);
-        xSPM.XYZ=[i j k]';
-        xSPM.XYZmm=xSPM.M(1:3,:)*[xSPM.XYZ; ones(1,size(xSPM.XYZ,2))];
-    elseif ma>Zmax&mi<Zmin
-        i1=find(W>Zmax);
-        i2=find(W<Zmin);
-        i=[i1;i2];
-        xSPM1=xSPM;
-        xSPM2=xSPM;
-        xSPM.Z=W(i)';
-        [i,j,k]=ind2sub(V.dim,i);
-        xSPM.XYZ=[i j k]';
-        xSPM.XYZmm=xSPM.M(1:3,:)*[xSPM.XYZ; ones(1,size(xSPM.XYZ,2))];
-        xSPM1.Z=W(i1)';
-        [i,j,k]=ind2sub(V.dim,i1);
-        xSPM1.XYZ=[i j k]';
-        xSPM1.XYZmm=xSPM1.M(1:3,:)*[xSPM1.XYZ; ones(1,size(xSPM1.XYZ,2))];
-        xSPM2.Z=W(i2)';
-        [i,j,k]=ind2sub(V.dim,i2);
-        xSPM2.XYZ=[i j k]';
-        xSPM2.XYZmm=xSPM2.M(1:3,:)*[xSPM2.XYZ; ones(1,size(xSPM2.XYZ,2))];
+    switch (threshSign)
+        case 'Negative'
+            i = find(W < thresh);
+            xSPM.Z = W(i)';
+            [i,j,k] = ind2sub(V.dim,i);
+            xSPM.XYZ = [i j k]';
+            xSPM.XYZmm = xSPM.M(1:3,:) * [xSPM.XYZ; ones(1,size(xSPM.XYZ,2))];
+        case 'Positive'
+            i = find(W > thresh);
+            xSPM.Z=W(i)';
+            [i,j,k]=ind2sub(V.dim,i);
+            xSPM.XYZ=[i j k]';
+            xSPM.XYZmm=xSPM.M(1:3,:)*[xSPM.XYZ; ones(1,size(xSPM.XYZ,2))];
+        case 'Both'
+            i1 = find(W > thresh);
+            i2 = find(W < -thresh);
+            i = [i1;i2];
+            xSPM1 = xSPM;
+            xSPM2 = xSPM;
+            xSPM.Z = W(i)';
+            [i,j,k] = ind2sub(V.dim,i);
+            xSPM.XYZ = [i j k]';
+            xSPM.XYZmm = xSPM.M(1:3,:)*[xSPM.XYZ; ones(1,size(xSPM.XYZ,2))];
+            xSPM1.Z = W(i1)';
+            [i,j,k] = ind2sub(V.dim,i1);
+            xSPM1.XYZ = [i j k]';
+            xSPM1.XYZmm = xSPM1.M(1:3,:)*[xSPM1.XYZ; ones(1,size(xSPM1.XYZ,2))];
+            xSPM2.Z = W(i2)';
+            [i,j,k] = ind2sub(V.dim,i2);
+            xSPM2.XYZ = [i j k]';
+            xSPM2.XYZmm = xSPM2.M(1:3,:)*[xSPM2.XYZ; ones(1,size(xSPM2.XYZ,2))];
     end
+    
+%     if ma>0
+%         Zmax = str2num(spm_input(sprintf('+ threshold im (max=%0.3f) ',ma), '+1', 's'));
+%     end
+%     if mi<0
+%         Zmin = str2num(spm_input(sprintf('- threshold im (min=%0.3f) ',mi), '+1', 's'));
+%     end
+%     
+%     xSPM.Z=zeros(1,0);
+%     xSPM.XYZ=zeros(3,0);
+%     xSPM.XYZmm=zeros(3,0);
+%     if ma>Zmax&mi>=Zmin
+%         i=find(W>Zmax);
+%         xSPM.Z=W(i)';
+%         [i,j,k]=ind2sub(V.dim,i);
+%         xSPM.XYZ=[i j k]';
+%         xSPM.XYZmm=xSPM.M(1:3,:)*[xSPM.XYZ; ones(1,size(xSPM.XYZ,2))];
+%     elseif ma<=Zmax&mi<Zmin
+%         i=find(W<Zmin);
+%         xSPM.Z=W(i)';
+%         [i,j,k]=ind2sub(V.dim,i);
+%         xSPM.XYZ=[i j k]';
+%         xSPM.XYZmm=xSPM.M(1:3,:)*[xSPM.XYZ; ones(1,size(xSPM.XYZ,2))];
+%     elseif ma>Zmax&mi<Zmin
+%         i1=find(W>Zmax);
+%         i2=find(W<Zmin);
+%         i=[i1;i2];
+%         xSPM1=xSPM;
+%         xSPM2=xSPM;
+%         xSPM.Z=W(i)';
+%         [i,j,k]=ind2sub(V.dim,i);
+%         xSPM.XYZ=[i j k]';
+%         xSPM.XYZmm=xSPM.M(1:3,:)*[xSPM.XYZ; ones(1,size(xSPM.XYZ,2))];
+%         xSPM1.Z=W(i1)';
+%         [i,j,k]=ind2sub(V.dim,i1);
+%         xSPM1.XYZ=[i j k]';
+%         xSPM1.XYZmm=xSPM1.M(1:3,:)*[xSPM1.XYZ; ones(1,size(xSPM1.XYZ,2))];
+%         xSPM2.Z=W(i2)';
+%         [i,j,k]=ind2sub(V.dim,i2);
+%         xSPM2.XYZ=[i j k]';
+%         xSPM2.XYZmm=xSPM2.M(1:3,:)*[xSPM2.XYZ; ones(1,size(xSPM2.XYZ,2))];
+%     end
 end
 
 tmp=spm_input('T1 template overlay ','+1','Yes|No');
@@ -314,7 +370,17 @@ if FlagElec
     Po(4)  = DXYZ(2)         +CXYZ(1) -2;
 
     for i0=1:size(FileElec,1)
-        PosElec=load(deblank(FileElec(i0,:)));
+        % Get file extension
+        [tmp,tmp,fExt] = fileparts(FileElec);
+        % Load file
+        switch (fExt)
+            case '.txt'
+                PosElec=load(deblank(FileElec(i0,:)));
+            case '.mat'
+                D = spm_eeg_load(deblank(FileElec(i0,:)));
+                PosElec = struct(D).sensors.eeg.elecpos;
+        end
+        % Ask for color
         col=spm_input(sprintf('Color for electrode set %d ',i0),'+1','b|g|r|c|m|y|k');
 
         axes(hMIPax)
