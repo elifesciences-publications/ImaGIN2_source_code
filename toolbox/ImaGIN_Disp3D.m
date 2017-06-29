@@ -157,7 +157,13 @@ else
             xSPM.XYZ = [i j k]';
             xSPM.XYZmm = xSPM.M(1:3,:) * [xSPM.XYZ; ones(1,size(xSPM.XYZ,2))];
         case 'Positive'
-            i = find(W > thresh);
+            % When displaying delay maps, the background is NaN and 0 means t=0, so we need to include the zero in the threshold
+            if (thresh == 0) && (nnz(isnan(W(:))) > 0.2 * numel(W))
+                i = find(W >= 0);
+            % Otherwise: regular thresholding
+            else
+                i = find(W > thresh);
+            end
             xSPM.Z=W(i)';
             [i,j,k]=ind2sub(V.dim,i);
             xSPM.XYZ=[i j k]';

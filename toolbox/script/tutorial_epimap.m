@@ -53,9 +53,9 @@ Patient{I}.Onset = [120.800, ...         % File #1:  423ms after the Seizure mar
 %                        [-40, -20], ...   % File #2: From beginning of recordings 103.5s-123.5s
 %                        [-75, -55]};      % File #3: From beginning of recordings 45.3s-65.3s
 % Shorter baseline for faster execution: 5s
-Patient{I}.Baseline = {[-48, -43], ...   % File #1: From beginning of recordings 72.8s-92.8s
-                       [-40, -35], ...   % File #2: From beginning of recordings 103.5s-123.5s
-                       [-75, -70]};      % File #3: From beginning of recordings 45.3s-65.3s
+Patient{I}.Baseline = {[-48, -43], ...   % File #1: From beginning of recordings 72.8s-77.8s
+                       [-40, -35], ...   % File #2: From beginning of recordings 103.5s-108.5s
+                       [-75, -70]};      % File #3: From beginning of recordings 45.3s-50.3s
 Patient{I}.BaselineFile = {[],[],[]};
 
 % List of bad channels: Defined while reviewing the recordings as a bipolar montage
@@ -261,9 +261,6 @@ S.sMRI           = fullfile(Patient{I}.MRI.out, 'wBrainPre.nii');
 S.CorticalMesh   = 1;
 S.FileName       = Patient{i0}.Prefix;
 ImaGIN_Epileptogenicity(S);
-
-% Display of epileptogenicity map
-
 
     
 %% ===== EPILEPTOGENICITY: SEIZURE #2-3 =====

@@ -19,6 +19,8 @@ function ImaGIN_Epileptogenicity(S)
 %
 % Authors: Olivier David
 
+
+%% ===== INPUTS =====
 warning off
 NameEpileptogenicity='EI';
 
@@ -108,36 +110,13 @@ catch
     FileName = spm_input('File name', '+1', 's');
 end
 
-% %Bad channels
-% try
-%     BadChannel=S.BadChannel;
-% catch
-%     BadChannel = spm_input('Bad channels', '+1', 'i','0');
-% end
-% if sum(BadChannel)==0
-%     BadChannel=[];
-% end
-
-%Time window
+% Time window
 if length(Horizon)==1
-    TimeWindow=[0:TimeResolution:Horizon+1+max(latency(:))];
-%     Start=min(TimeWindow)-1/0.05;
-%     End=max(TimeWindow)+1/0.05;
+    TimeWindow = 0 : TimeResolution : Horizon+1+max(latency(:));
 end
-% TimeWindowStart=TimeWindow(1);
-Freq50=[48:52 98:102 148:152 198:202 248:252 298:302 348:352 398:402 448:452 498:502];
+Freq50 = [48:52 98:102 148:152 198:202 248:252 298:302 348:352 398:402 448:452 498:502];
 
-% %Transform BadChannels into cells
-% if ~iscell(BadChannel)
-%     tmp=BadChannel;
-%     BadChannel={};
-%     for i0=1:size(DD,1)
-%         BadChannel{i0}=tmp;
-%     end
-% end
-    
-
-%find common Channels and define as bad the missing ones over files
+% Find common Channels and define as bad the missing ones over files
 N = zeros(1,size(DD,1));
 Labels = cell(1,size(DD,1));
 BadChannel = cell(1,size(DD,1));
@@ -162,81 +141,47 @@ for i0=1:size(DD,1)
 end
 M=max(L(:));
 for i0=1:size(DD,1)
-    BadChannel{i0}=unique([BadChannel{i0} find(L(i0,:)<M)]);
-    BadChannel{i0}=BadChannel{i0}(find(BadChannel{i0}<=N(i0)));
+    BadChannel{i0} = unique([BadChannel{i0} find(L(i0,:)<M)]);
+    BadChannel{i0} = BadChannel{i0}(find(BadChannel{i0}<=N(i0)));
 end
 
-                    
-        
 
-
-
-
+%% ===== EPILEPTOGENICITY MAPS =====
 for i00=1:size(latency,2)
     
-    Latency=mean(latency(:,i00));
+    Latency = mean(latency(:,i00));
     
-    for i0=1:size(DD,1)
+    for i0 = 1:size(DD,1)
         
-        if length(Horizon)==1
-            TimeWindow=[0:TimeResolution:Horizon+1+max(latency(:))];
-        elseif length(Horizon)>1
-            TimeWindow=[0:TimeResolution:Horizon(i0)+1+max(latency(:))];
-%             Start=min(TimeWindow)-1/0.05;
-%             End=max(TimeWindow)+1/0.05;
+        if (length(Horizon) == 1)
+            TimeWindow = 0 : TimeResolution : Horizon+1+max(latency(:));
+        elseif (length(Horizon) > 1)
+            TimeWindow = 0 : TimeResolution : Horizon(i0)+1+max(latency(:));
         end
         
-        D=spm_eeg_load(deblank(DD(i0,:)));
-        Dinit=D;
-        P=spm_str_manip(deblank(DD(i0,:)),'h');
+        D = spm_eeg_load(deblank(DD(i0,:)));
+        Dinit = D;
+        P = spm_str_manip(deblank(DD(i0,:)),'h');
         cd(P)
-        time8=time(D);
         
-%         for i2=1:D.ntrials
-%             try
-%                 Events=D.events{i2};
-%             catch
-%                 Events=D.events;
-%             end
-%             for i1=1:size(Events,2)
-%                 if strcmp(Events(i1).type,'Start')
-%                     TimeWindowStart=Events(i1).time-30;
-%                 end
-%                 if strcmp(Events(i1).type,'End')
-%                     TimeWindowEnd=DEvents(i1).time;
-%                 end
-%             end
-%         end
-                
-        %Baseline
+        % Baseline
         if ~isempty(BB)
-            B=spm_eeg_load(deblank(BB(i0,:)));
-            Binit=B;
-            timebaseline=time(B);
-            TimeWindowBaseline=[timebaseline(1):(TimeWindow(2)-TimeWindow(1)):(timebaseline(end)-1)];
+            B = spm_eeg_load(deblank(BB(i0,:)));
+            timebaseline = time(B);
+            TimeWindowBaseline = timebaseline(1) : (TimeWindow(2)-TimeWindow(1)) : (timebaseline(end)-1);
         end
         
-        %Downsample data in time
-        Coarse=1;
+        % Downsample data in time
+        Coarse = 1;
         while D.fsample/Coarse>2*max(FreqBand)
-            Coarse=Coarse+1;
+            Coarse = Coarse+1;
         end
-        Coarse=Coarse-1;
-        Data=D(:,1:Coarse:D.nsamples);
-        time8=time8(1:Coarse:end);
+        Coarse = Coarse-1;
         if ~isempty(BB)
-            databaseline=B(:,1:Coarse:end);
-            timebaseline=timebaseline(1:Coarse:end);
+            timebaseline = timebaseline(1:Coarse:end);
         end
         
-%         %Crop the data
-%         Start=unique(find(abs(time8-Start)==min(abs(time8-Start))));
-%         End=unique(find(abs(time8-End)==min(abs(time8-End))));
-%         Data=Data(:,Start:End);
-%         Time=time8(Start:End);
-        
-        %compute power using multitaper
-        
+        % Compute power using multitaper
         clear SS
         SS.D=deblank(DD(i0,:));
         SS.Pre=['Epi_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' FileName];
@@ -252,7 +197,6 @@ for i00=1:size(latency,2)
         SS.Taper='hanning';
         try
             DPower=spm_eeg_load(fullfile(D.path,['m1_' SS.Pre '_' D.fname]));
-            DPowerNorm=spm_eeg_load(fullfile(D.path,['nm1_' SS.Pre '_' D.fname]));
             if ~isempty(BB)
                 DPowerBaseline=spm_eeg_load(fullfile(B.path,['m1_' SS.Pre '_' B.fname]));
             end
@@ -274,7 +218,6 @@ for i00=1:size(latency,2)
                 SS2.B=fullfile(B.path,['m1_' SSB.Pre '_' B.fname]);
                 ImaGIN_NormaliseTF(SS2);
             end
-            DPowerNorm=spm_eeg_load(fullfile(D.path,['nm1_' SS.Pre '_' D.fname]));
         end
         
 %         clear SS
@@ -293,7 +236,6 @@ for i00=1:size(latency,2)
 %         SS.TimeResolution=TimeResolutionTF;
 %         try
 %             DPower=spm_eeg_load(fullfile(D.path,['w1_' SS.Pre '_' D.fname]));
-%             DPowerNorm=spm_eeg_load(fullfile(D.path,['nw1_' SS.Pre '_' D.fname]));
 %             if ~isempty(BB)
 %                 DPowerBaseline=spm_eeg_load(fullfile(B.path,['w1_' SS.Pre '_' B.fname]));
 %             end
@@ -315,66 +257,54 @@ for i00=1:size(latency,2)
 %                 SS2.B=fullfile(B.path,['w1_' SSB.Pre '_' B.fname]);
 %                 ImaGIN_NormaliseTF(SS2);
 %             end
-%             DPowerNorm=spm_eeg_load(fullfile(D.path,['nw1_' SS.Pre '_' D.fname]));
 %         end
         
+        Power = DPower(:,:,:);
+        PowerBaseline = DPowerBaseline(:,:,:);
+        TimeWindow = DPower.tf.time;
         
-        Power=DPower(:,:,:);
-        PowerNorm=DPowerNorm(:,:,:);
-        PowerBaseline=DPowerBaseline(:,:,:);
-        TimeWindow=DPower.tf.time;
-        
-        %Find frequency band
-        IndexFreq1=min(find(SS.frequencies>=min(FreqBand))):max(find(SS.frequencies<=max(FreqBand)));
+        % Find frequency band
+        IndexFreq1 = min(find(SS.frequencies>=min(FreqBand))):max(find(SS.frequencies<=max(FreqBand)));
                 
-        %Compute power within frequencies of interest
+        % Compute power within frequencies of interest
         Epileptogenicity=squeeze(mean(Power(:,IndexFreq1,:),2));
         EpileptogenicityBaseline=squeeze(mean(PowerBaseline(:,IndexFreq1,:),2));
-%         if ~isempty(BadChannel)
-%             Epileptogenicity(BadChannel(find(BadChannel<=size(Epileptogenicity,1))),:)=NaN;
-%             EpileptogenicityBaseline(BadChannel(find(BadChannel<=size(EpileptogenicityBaseline,1))),:)=NaN;
-%         end
         if ~isempty(BadChannel{i0})
-            Epileptogenicity(BadChannel{i0},:)=NaN;
-            EpileptogenicityBaseline(BadChannel{i0},:)=NaN;
+            Epileptogenicity(BadChannel{i0},:) = NaN;
+            EpileptogenicityBaseline(BadChannel{i0},:) = NaN;
         end
         Epileptogenicity=log(Epileptogenicity);
         EpileptogenicityBaseline=log(EpileptogenicityBaseline);
-        %Add offset to have only positive values as for fMRI
-        %(otherwise problem with globals calculation)
+        % Add offset to have only positive values as for fMRI (otherwise problem with globals calculation)
         tmp=min([Epileptogenicity(:);EpileptogenicityBaseline(:)]);
         Epileptogenicity=Epileptogenicity-tmp;
         EpileptogenicityBaseline=EpileptogenicityBaseline-tmp;
                 
-        %Save Log Power
-%         D1=D;
-%         D1=path(D,P);
-        D1=clone(D,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency))) '.mat'],[D.nchannels size(Epileptogenicity,2) 1]);
-        D1(:,:,:)=Epileptogenicity;
-        D1=fsample(D1,1/(DPower.tf.time(2)-DPower.tf.time(1)));
-        D1=timeonset(D1,min(DPower.tf.time));
+        % Save Log Power: Seizure
+        D1 = clone(D,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency))) '.mat'],[D.nchannels size(Epileptogenicity,2) 1]);
+        D1(:,:,:) = Epileptogenicity;
+        D1 = fsample(D1,1/(DPower.tf.time(2)-DPower.tf.time(1)));
+        D1 = timeonset(D1,min(DPower.tf.time));
         save(D1);
-%         D1=B;
-%         D1=path(B,P);
-        D1=clone(B,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency))) '.mat'],[B.nchannels size(EpileptogenicityBaseline,2) 1]);
-        D1(:,:,:)=EpileptogenicityBaseline;
-        D1=fsample(D1,1/(DPowerBaseline.tf.time(2)-DPowerBaseline.tf.time(1)));
-        D1=timeonset(D1,min(DPowerBaseline.tf.time));
+        % Save Log Power: Baseline
+        D1 = clone(B,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency))) '.mat'],[B.nchannels size(EpileptogenicityBaseline,2) 1]);
+        D1(:,:,:) = EpileptogenicityBaseline;
+        D1 = fsample(D1,1/(DPowerBaseline.tf.time(2)-DPowerBaseline.tf.time(1)));
+        D1 = timeonset(D1,min(DPowerBaseline.tf.time));
         save(D1);
         
-        %Write 3D images of log power for statistics
+        % Write 3D images of log power for statistics
         clear SS
         SS.n=3;
         try
-            SS.TimeWindow=latency(i0,i00)+[0:TimeResolution:Horizon];
+            SS.TimeWindow = latency(i0,i00) + (0:TimeResolution:Horizon);
         catch
-            SS.TimeWindow=Latency+[0:TimeResolution:Horizon];
+            SS.TimeWindow = Latency + (0:TimeResolution:Horizon);
         end
         SS.TimeWindowWidth=0;
         SS.interpolate_bad=0;
         SS.SizeSphere=5;
         SS.SizeHorizon=10;
-%         SS.SizeHorizon=15;
         SS.CorticalMesh=CorticalMesh;
         if CorticalMesh
             SS.sMRI=sMRI;
@@ -389,13 +319,11 @@ for i00=1:size(latency,2)
         ImaGIN_spm_eeg_convertmat2ana_3D(SS)
         clear SS
         SS.n=3;
-%         SS.TimeWindow=min(DPowerBaseline.tf.time):(TimeResolution*(max(DPowerBaseline.tf.time)-min(DPowerBaseline.tf.time))/(2*Horizon)):max(DPowerBaseline.tf.time);
         SS.TimeWindow=min(DPowerBaseline.tf.time):TimeResolution:max(DPowerBaseline.tf.time);
         SS.TimeWindowWidth=0;
         SS.interpolate_bad=0;
         SS.SizeSphere=5;
         SS.SizeHorizon=10;
-%         SS.SizeHorizon=15;
         SS.CorticalMesh=CorticalMesh;
         if CorticalMesh
             SS.sMRI=sMRI;
@@ -414,14 +342,6 @@ for i00=1:size(latency,2)
         for i1=1:size(files,1)
             tmp=deblank(files(i1,:));
             Q = fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],tmp);
-%             M=spm_vol(Q);
-%             I=spm_read_vols(M);
-%             spm_smooth(M,M.fname,[5 5 5]);
-%             M2=spm_vol(Q);
-%             I2=spm_read_vols(M2);
-%             I2(find(isnan(I)))=NaN;
-%             I2=(max(I(:))./max(I2(:)))*I2;
-%             spm_write_vol(M2,I2);
             clear matlabbatch
             matlabbatch{1}.spm.spatial.smooth.data = {[Q ',1']};
             matlabbatch{1}.spm.spatial.smooth.fwhm = [5 5 5];
@@ -436,14 +356,6 @@ for i00=1:size(latency,2)
         for i1=1:size(files,1)
             tmp=deblank(files(i1,:));
             Q = fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],tmp);
-%             M=spm_vol(Q);
-%             I=spm_read_vols(M);
-%             spm_smooth(M,M.fname,[5 5 5]);
-%             M2=spm_vol(Q);
-%             I2=spm_read_vols(M2);
-%             I2(find(isnan(I)))=NaN;
-%             I2=(max(I(:))./max(I2(:)))*I2;
-%             spm_write_vol(M2,I2);
             clear matlabbatch
             matlabbatch{1}.spm.spatial.smooth.data = {[Q ',1']};
             matlabbatch{1}.spm.spatial.smooth.fwhm = [5 5 5];
@@ -455,11 +367,7 @@ for i00=1:size(latency,2)
             movefile(fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],['s' tmp]),fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))],tmp))
         end
 
-%         %whiten data
-%         %baseline
-%         [xX] = whiten_data(TimeResolution*(max(DPowerBaseline.tf.time)-min(DPowerBaseline.tf.time))/(2*Horizon),Inf,ones(1,size(files,1)),fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(round(mean(Horizon))) '_' num2str(round(Latency))]),files);
-        
-        %SPMs
+        % SPMs
         if isdir(fullfile(P,['SPM_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s') '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]))
             cd(P)
             rmdir(fullfile(P,['SPM_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s') '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'s')
@@ -499,13 +407,13 @@ for i00=1:size(latency,2)
         matlabbatch{2}.spm.stats.fmri_est.method.Classical = 1;
         matlabbatch{3}.spm.stats.con.spmmat = {fullfile(matlabbatch{1}.spm.stats.fmri_spec.dir{1},'SPM.mat')};
         matlabbatch{3}.spm.stats.con.consess{1}.tcon.name = '+';
-        matlabbatch{3}.spm.stats.con.consess{1}.tcon.convec = [1];
+        matlabbatch{3}.spm.stats.con.consess{1}.tcon.convec = 1;
         matlabbatch{3}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
         matlabbatch{3}.spm.stats.con.delete = 0;
         spm_get_defaults('mask.thresh', 0) %no implicit masking of SPM-Ts
         spm_jobman('run',matlabbatch)
         
-        %Write T values for each electrode
+        % Write T values for each electrode
         load(fullfile(matlabbatch{1}.spm.stats.fmri_spec.dir{1},'SPM.mat'));
         V=spm_vol(fullfile(matlabbatch{1}.spm.stats.fmri_spec.dir{1},'spmT_0001.nii'));
         VV=spm_read_vols(V);
@@ -521,13 +429,9 @@ for i00=1:size(latency,2)
         catch
             PosElec=tmp.pnt';
         end
-        IndElec=zeros(size(PosElec,2),1);
         EIGamma=zeros(size(PosElec,2),1);
         for i1=1:size(PosElec,2)
             dist=(x(:)-PosElec(1,i1)).^2+(y(:)-PosElec(2,i1)).^2+(z(:)-PosElec(3,i1)).^2;
-%             [tmp1,tmp2]=min(dist);
-%             IndElec(i1)=tmp2(1);
-%             EIGamma(i1)=VV2(IndElec(i1));
             IndElec=find(dist<100);      %interpolate up to 10 mm (SizeHorizon when creating images)
             tmp1=VV2(IndElec);
             EIGamma(i1)=mean(tmp1(tmp1~=0));
@@ -639,26 +543,19 @@ for i00=1:size(latency,2)
         catch
             PosElec=tmp.pnt';
         end
-        IndElec=zeros(size(PosElec,2),1);
         EIGamma=zeros(size(PosElec,2),1);
         for i1=1:size(PosElec,2)
             dist=(x(:)-PosElec(1,i1)).^2+(y(:)-PosElec(2,i1)).^2+(z(:)-PosElec(3,i1)).^2;
-%             [tmp1,tmp2]=min(dist);
-%             IndElec(i1)=tmp2(1);
-%             EIGamma(i1)=VV2(IndElec(i1));
             IndElec=find(dist<100);      %interpolate up to 10 mm (SizeHorizon when creating images)
             tmp1=VV2(IndElec);
             EIGamma(i1)=mean(tmp1(tmp1~=0));
         end
-%         D1=D;
-%         D1=path(D,P);
-        D1=clone(D,[NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency))) '.mat'],[size(PosElec,2) 1 1]);
-        D1(:,:,:)=EIGamma;
-        %   D=dtype(D,'float32');
-        D1=timeonset(D1,0);
+        D1 = clone(D,[NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency))) '.mat'],[size(PosElec,2) 1 1]);
+        D1(:,:,:) = EIGamma;
+        D1 = timeonset(D1,0);
         save(D1);
         
-        %Write text file
+        % Write text file
         E=spm_eeg_load(deblank(DD(1,:)));
         Montage=sensors(E,'EEG');
         Montage.Nchannels=length(Montage.label);
@@ -693,14 +590,14 @@ for i00=1:size(latency,2)
         rmdir(fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'s')
         rmdir(fullfile(P,[FileName spm_str_manip(Dinit.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]),'s')
     end
-    
 end
 
+
+%% ===== PROPAGATION MAPS =====
 % Compute map of propagation delay (only if more than one latency)
 if length(latency) > 1
 
     for i0=1:size(DD,1)
-        Delay=NaN*zeros(53,63,46);
         Delay=NaN*zeros(V.dim(1),V.dim(2),V.dim(3));
         D=spm_eeg_load(deblank(DD(i0,:)));
         Dinit=D;
@@ -735,7 +632,6 @@ if length(latency) > 1
         matlabbatch{1}.spm.spatial.smooth.prefix = 's';
         spm('defaults', 'EEG');
         spm_jobman('run', matlabbatch);
-    %     spm_smooth(P0,fullfile(P,['sDelay_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s')  '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']),[3 3 3]);
         Q=fullfile(P,['sDelay_' NameEpileptogenicity '_' FileName spm_str_manip(Dinit.fname,'s')  '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']);
         M=spm_vol(Q);
         I=spm_read_vols(M);
@@ -744,7 +640,6 @@ if length(latency) > 1
         M = spm_write_vol(M,I);
     end
     if size(DD,1)>1
-        Delay=NaN*zeros(53,63,46);
         Delay=NaN*zeros(V.dim(1),V.dim(2),V.dim(3));
         for i2=1:size(latency,2)
             Latency=mean(latency(:,i2));
@@ -776,7 +671,6 @@ if length(latency) > 1
         matlabbatch{1}.spm.spatial.smooth.prefix = 's';
         spm('defaults', 'EEG');
         spm_jobman('run', matlabbatch);
-    %     spm_smooth(P0,fullfile(P,['sDelay_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']),[3 3 3]);
         Q=fullfile(P,['sDelay_' NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(1000*ThDelay) '.nii']);
         M=spm_vol(Q);
         I=spm_read_vols(M);
