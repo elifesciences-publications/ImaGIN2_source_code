@@ -13,7 +13,7 @@ function ImaGIN_trainBaseUpdate(S)
 % Copyright (c) 2000-2017 Inserm U1216
 % =============================================================================-
 %
-% Authors: Olivier David
+% Authors: Viateur Tuyisenge & Olivier David
 
 badDir= S.DirIn;
 

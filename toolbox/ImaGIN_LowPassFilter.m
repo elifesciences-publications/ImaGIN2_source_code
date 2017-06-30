@@ -13,7 +13,7 @@ function ImaGIN_LowPassFilter(P)
 % Copyright (c) 2000-2017 Inserm U1216
 % =============================================================================-
 %
-% Authors: Olivier David
+% Authors: Viateur Tuyisenge & Olivier David
 
 try
     t=P.LFname;
