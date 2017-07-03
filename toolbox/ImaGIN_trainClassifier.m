@@ -61,7 +61,7 @@ function [trainedClassifier, validationAccuracy] = ImaGIN_trainClassifier(traini
 % This code processes the data into the right shape for training the
 % classifier.
 inputTable = trainingData;
-predictorNames = {'rankXcorr', 'rankVal', 'ch_dev', 'ch_ampl', 'ch_grad', 'ch_kurt', 'ch_hurs'};
+predictorNames = {'ch_xcorr', 'ch_var', 'ch_dev', 'ch_ampl', 'ch_grad', 'ch_kurt', 'ch_hurs'};
 predictors = inputTable(:, predictorNames);
 response = inputTable.Note;
 
@@ -82,7 +82,7 @@ ensemblePredictFcn = @(x) predict(classificationEnsemble, x);
 trainedClassifier.predictFcn = @(x) ensemblePredictFcn(predictorExtractionFcn(x));
 
 % Add additional fields to the result struct
-trainedClassifier.RequiredVariables = {'rankXcorr', 'rankVal', 'ch_dev', 'ch_ampl', 'ch_grad', 'ch_kurt', 'ch_hurs'};
+trainedClassifier.RequiredVariables = {'ch_xcorr', 'ch_var', 'ch_dev', 'ch_ampl', 'ch_grad', 'ch_kurt', 'ch_hurs'};
 trainedClassifier.ClassificationEnsemble = classificationEnsemble;
 trainedClassifier.About = 'This struct is a trained classifier exported from Classification Learner R2016a.';
 trainedClassifier.HowToPredict = sprintf('To make predictions on a new table, T, use: \n  yfit = c.predictFcn(T) \nreplacing ''c'' with the name of the variable that is this struct, e.g. ''trainedClassifier''. \n \nThe table, T, must contain the variables returned by: \n  c.RequiredVariables \nVariable formats (e.g. matrix/vector, datatype) must match the original training data. \nAdditional variables are ignored. \n \nFor more information, see <a href="matlab:helpview(fullfile(docroot, ''stats'', ''stats.map''), ''appclassification_exportmodeltoworkspace'')">How to predict using an exported model</a>.');
@@ -91,7 +91,7 @@ trainedClassifier.HowToPredict = sprintf('To make predictions on a new table, T,
 % This code processes the data into the right shape for training the
 % classifier.
 inputTable = trainingData;
-predictorNames = {'rankXcorr', 'rankVal', 'ch_dev', 'ch_ampl', 'ch_grad', 'ch_kurt', 'ch_hurs'};
+predictorNames = {'ch_xcorr', 'ch_var', 'ch_dev', 'ch_ampl', 'ch_grad', 'ch_kurt', 'ch_hurs'};
 predictors = inputTable(:, predictorNames);
 response = inputTable.Note;
 

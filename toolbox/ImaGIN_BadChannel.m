@@ -116,4 +116,4 @@ if rmd ~= 0
     print(fig, fullfile(figDir,figName), '-dpng');
     close
 end
-disp('Badchannels completed !\n');
+disp('Badchannels completed !');

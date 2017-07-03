@@ -77,8 +77,8 @@ ch_kurt = nonzero_noninf(ch_kurt);
 bandVar = rawVar;
 ch_dev  = ch_mean - mean(ch_mean); % deviation 
 
-rankXcorr= zeros(nx, 1);   
-rankIdx  = zeros(nx, 1); 
+ch_xcorr= zeros(nx, 1);   
+noIdx  = zeros(nx, 1); 
 ch_hurs  = zeros(nx, 1);
 
 m_var  = zeros(nx, 1);
@@ -98,10 +98,10 @@ for i = 1:nx
             % NaN due to one of either of the two channels being flat
             continue;
         end
-        rankXcorr(i) = rankXcorr(i) + abs(thisCorr);
+        ch_xcorr(i) = ch_xcorr(i) + abs(thisCorr);
     end
-    rankIdx(i) = i;
-    rankXcorr(i) = rankXcorr(i)/numel(idx); 
+    noIdx(i) = i;
+    ch_xcorr(i) = ch_xcorr(i)/numel(idx); 
 end
 
 m_var(m_var   < 1e-3) = median(m_var);
@@ -112,13 +112,13 @@ if ~isempty(nn) && ~isinf(nn)
 
 end
 if logScale 
-    rankVal = 10*log10(bandVar);
+    ch_var = 10*log10(bandVar);
 else
-    rankVal = bandVar;
+    ch_var = bandVar;
 end
 %%
 
-T = table(rankIdx, rankXcorr, rankVal, ch_dev, ch_ampl, ch_grad, ch_kurt, ch_hurs);
+T = table(noIdx, ch_xcorr, ch_var, ch_dev, ch_ampl, ch_grad, ch_kurt, ch_hurs);
 
 delete([lpf_nFile,'.*']); % clean all temporal files
 
