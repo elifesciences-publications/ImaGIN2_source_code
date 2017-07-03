@@ -1,5 +1,5 @@
 function D = ImaGIN_BadChannel(S)
-
+% Extract badchannels indices
 % -=============================================================================
 % This function is part of the ImaGIN software: 
 % https://f-tract.eu/
@@ -11,12 +11,11 @@ function D = ImaGIN_BadChannel(S)
 % FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
 % DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
 %
-% Copyright (c) 2000-2017 Inserm U1216
+% Copyright (c) 2017 Inserm U1216
 % =============================================================================-
 %
 % Authors: Viateur Tuyisenge & Olivier David
 
-% Extract badchannels indices
 FileIn = S.dataset; % name of cropped iEEG file .dat/.mat
 badDir = S.DirFileOut; % directory where iEEG file .dat/.mat with badchannels indices will be stored
 trainDir = S.trainBase;  % directory where training set is stored
