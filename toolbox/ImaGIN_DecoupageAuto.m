@@ -1,4 +1,20 @@
 function D = ImaGIN_DecoupageAuto(S)
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
+% Copyright (c) 2017 Inserm U1216
+% =============================================================================-
+%
+% Authors: Viateur Tuyisenge & Olivier David
+
 sFile = S.dataset;
 DirOut= S.DirFileOut;
 thisN = S.StimName; % stim event to crop individually 
@@ -19,15 +35,13 @@ Notes  = cell(1,evsize);     % Events labels
 Time   = zeros(1,evsize);
 totTime= max(time(D));
 Time0  = min(time(D));
-elec   = sensors(D,'EEG');
 % Extract events properties (label and time in sampling)
 for i = 1: evsize
     Notes{i}  = evt(i).type;
     Time(1,i) = evt(i).time;
 end
-%%
 nHz  = 5;  % Accepted stim frequency
-minStim = 3; 
+minStim = 3; % minimum number of stimulations for a crop
 bgnTime = zeros(1,evsize); % Beginning of event
 endTime = zeros(1,evsize); % End of event
 
@@ -321,7 +335,7 @@ for c=1:length(KeepEvent) % Navigate all stim events
         FileName = strcat(stimTimeOut,'_1.mat');
         stimHz = regexp(FileName,rxp2,'match');
         strFq = strcat(num2str(stimFq),'Hz');
-        if ~strcmp(stimHz,strFq);
+        if ~strcmp(stimHz,strFq) && ~strcmp(strFq,'0Hz')
             FileName = char(strrep(FileName,stimHz,strFq));
         end
         % Check if the file exists i.e repeated stim

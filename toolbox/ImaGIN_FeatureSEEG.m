@@ -1,12 +1,26 @@
 function T =  ImaGIN_FeatureSEEG(S)
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
+% Copyright (c) 2017 Inserm U1216
+% =============================================================================-
+%
+% Authors: Viateur Tuyisenge & Olivier David
 
-sFile = S.FileName;
+sFile = S.FileName; % Name of  dataset 
 [pth, fName, ~] = fileparts(sFile);
 clear S
 S.Fname = sFile;
 S.EventType = 'Stim';
-%S.StartInterpolation= -0.015;
-%S.EndInterpolation  = 0.015;
+
 S.StartInterpolation = -0.008;
 S.EndInterpolation   = 0.008;
 
@@ -24,31 +38,30 @@ P.Freq  = 100;
 ImaGIN_NotchFilter(P) % notch filter 100Hz
 clear P.Freq;
 delete([nFile '.*']);
-delete([iFile '.*']);
+delete([iFile '.*']); % delete all temporal created file
 nnFile  =  [pth '/nni' fName];
 P.Fname =  nnFile;
 P.Freq  = 150;
 ImaGIN_NotchFilter(P) % notch filter 150Hz
 clear P.Freq;
-delete([nnFile,'.*']);
+delete([nnFile,'.*']); %delete all temporal created file
 
 nnnFile  =  [pth '/nnni' fName];
 P.LFname = nnnFile;
 ImaGIN_LowPassFilter(P) % lowpass filter 0.2Hz
 lpf_nFile = [pth '/lpf_nnni' fName];
-delete([nnnFile,'.*'])
+delete([nnnFile,'.*']) % delete all temporal created file
 
 D = spm_eeg_load(lpf_nFile);
 sens= indchantype(D,'eeg');
 elec= sensors(D,'eeg');
 pos = elec.elecpos; 
 nx  = size(sens,2);
-nn  = 10;
+nn  = 10; % number of neigbor channels 
 nt  = find((time(D)>= -0.5));
 ny  = D.nsamples;
 data= D(1:nx,nt(1):ny);
-logScale = 1;
-%% 
+logScale = 1; 
 rawVar  = var(data, [], 2);       % Compute raw data variance
 ch_mean = mean(data,2);           
 ch_ampl = range(data,2);
@@ -64,8 +77,8 @@ ch_kurt = nonzero_noninf(ch_kurt);
 bandVar = rawVar;
 ch_dev  = ch_mean - mean(ch_mean); % deviation 
 
-rankXcorr= zeros(nx, 1);   
-rankIdx  = zeros(nx, 1); 
+ch_xcorr= zeros(nx, 1);   
+noIdx  = zeros(nx, 1); 
 ch_hurs  = zeros(nx, 1);
 
 m_var  = zeros(nx, 1);
@@ -85,10 +98,10 @@ for i = 1:nx
             % NaN due to one of either of the two channels being flat
             continue;
         end
-        rankXcorr(i) = rankXcorr(i) + abs(thisCorr);
+        ch_xcorr(i) = ch_xcorr(i) + abs(thisCorr);
     end
-    rankIdx(i) = i;
-    rankXcorr(i) = rankXcorr(i)/numel(idx); 
+    noIdx(i) = i;
+    ch_xcorr(i) = ch_xcorr(i)/numel(idx); 
 end
 
 m_var(m_var   < 1e-3) = median(m_var);
@@ -99,18 +112,15 @@ if ~isempty(nn) && ~isinf(nn)
 
 end
 if logScale 
-    rankVal = 10*log10(bandVar);
+    ch_var = 10*log10(bandVar);
 else
-    rankVal = bandVar;
+    ch_var = bandVar;
 end
 %%
 
-T = table(rankIdx, rankXcorr, rankVal, ch_dev, ch_ampl, ch_grad, ch_kurt, ch_hurs);
+T = table(noIdx, ch_xcorr, ch_var, ch_dev, ch_ampl, ch_grad, ch_kurt, ch_hurs);
 
-% csvfilename = ['-csv_' fName '.csv'];
-% writetable(T,csvfilename,'Delimiter',',');
-
-delete([lpf_nFile,'.*']);
+delete([lpf_nFile,'.*']); % clean all temporal files
 
 end
 
