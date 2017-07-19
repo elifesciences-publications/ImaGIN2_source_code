@@ -1,7 +1,7 @@
-function ImaGIN_DispData(FileName)
+function ImaGIN_DispDataBst(FileName)
 %IMAGIN_DISPDATABST Review .mat/.dat file with Brainstorm
 %
-% USAGE:  ImaGIN_DispData(FileName)
+% USAGE:  ImaGIN_DispDataBst(FileName)
 % 
 % -=============================================================================
 % This function is part of the ImaGIN software: 

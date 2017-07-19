@@ -1,4 +1,3 @@
-function tutorial_epimap()
 % TUTORIAL_EPIMAP Script corresponding to the ImaGIN/epileptogenicity tutorial.
 %
 % DESCRIPTION:
@@ -68,11 +67,30 @@ Patient{I}.TimeConstant = 3;          % Duration of the sliding window of intere
 Patient{I}.Latency      = 0:2:20;     % For files #2 and #3, will compute delay maps with sliding windows of 3s between 0s and 20s post-seizure
 Patient{I}.Prefix       = '';
 ThDelay = 0.05;
+% Output epileptogenicity maps as volume (.nii) or surface (.gii)
+% OutputType = 'Volume';  
+OutputType = 'Surface';
 
 
 %% ===== PREPARE ANATOMY =====
-% Co-registration, segmentation and normalization of the pre-op and post-op MRI scans
-ImaGIN_anat_spm(Patient);
+% Prepare the cortex surface
+for i0 = 1:length(Patient)
+    % Normalized MRI
+    Patient{i0}.wMriFile = fullfile(Patient{i0}.MRI.out, 'wBrainPre.nii');
+    % Co-registration, segmentation and normalization of the pre-op and post-op MRI scans
+    if ~exist(Patient{i0}.wMriFile, 'file')
+        ImaGIN_anat_spm(Patient);
+    end
+    % Cortical surface
+    switch (OutputType)
+        case 'Volume'
+            % Canonical mesh is computed in the ImaGIN_Epileptogenicity if needed
+        case 'Surface'
+            % Computation of the canonical mesh
+            mesh = ImaGIN_spm_eeg_inv_mesh(wMriFile, 4);
+            Patient{i0}.CortexFile = mesh.tess_ctx;
+    end
+end
 
 
 %% ===== IMPORT SEEG =====
@@ -130,7 +148,7 @@ end
 
 % % Display contact positions
 % S.Fname = fullfile(Root, Patient{1}.Name, 'seeg', [Patient{1}.FileBipolar{1} '.mat']);
-% S.P     = fullfile(Root, Patient{1}.Name, 'anat', 'MRI', 'wBrainPre.nii');
+% S.P     = Patient{1}.wMriFile;
 % ImaGIN_DispElectrodes(S);
 
 
@@ -160,7 +178,7 @@ for i0 = 1:length(Patient)
         S.Action       = 'Add';
         S.Nevent       = 1;
         S.EventName{1} = 'Onset';
-        S.Timing{1}    = Patient{I}.Onset(i1);
+        S.Timing{1}    = Patient{i0}.Onset(i1);
         ImaGIN_Events(S);
 
         % ===== SET TIME ORIGIN =====
@@ -241,6 +259,12 @@ for i0 = 1:length(Patient)
 end
 
 
+%% ===== CATCHING UP =====
+% To execute the example starting from this here: execute de lines below
+% Patient{i0}.FileBipolar  = {'bSZ1', 'bSZ1', 'bSZ3'};
+% Patient{i0}.BaselineFile = {'Baseline_bSZ1', 'Baseline_bSZ2', 'Baseline_bSZ3'};
+
+
 %% ===== EPILEPTOGENICITY: SEIZURE #1 =====
 % Process separately seizure #1 (no propagation) and seizures #2 and #3 (generalized)
 i0 = 1;
@@ -255,14 +279,22 @@ S.HorizonT       = Patient{i0}.TimeConstant;
 S.Latency        = 0;        % No propagation: Study only the first 3s (TimeConstant) after the Onset marker
 S.TimeResolution = 0.2;
 S.ThDelay        = ThDelay;
-S.Atlas          = 'Human';
 S.AR             = 0;
-S.sMRI           = fullfile(Patient{I}.MRI.out, 'wBrainPre.nii');
-S.CorticalMesh   = 1;
 S.FileName       = Patient{i0}.Prefix;
+S.OutputType     = OutputType;
+switch (OutputType)
+    case 'Volume'
+        S.Atlas          = 'Human';
+        S.CorticalMesh   = 1;
+        S.sMRI           = Patient{i0}.wMriFile;
+    case 'Surface'
+        S.SmoothIterations = 10;
+        S.MeshFile         = Patient{i0}.CortexFile;
+end
+% Compute the epileptogenicity index
 ImaGIN_Epileptogenicity(S);
 
-    
+
 %% ===== EPILEPTOGENICITY: SEIZURE #2-3 =====
 clear S;
 % List of input files
@@ -277,11 +309,19 @@ S.HorizonT       = Patient{i0}.TimeConstant;
 S.Latency        = Patient{i0}.Latency;        % Use the sliding windows defined for this subject
 S.TimeResolution = 0.2;
 S.ThDelay        = ThDelay;
-S.Atlas          = 'Human';
 S.AR             = 0;
-S.sMRI           = fullfile(Patient{I}.MRI.out, 'wBrainPre.nii');
-S.CorticalMesh   = 1;
 S.FileName       = Patient{i0}.Prefix;
+S.OutputType     = OutputType;
+switch (OutputType)
+    case 'Volume'
+        S.Atlas          = 'Human';
+        S.CorticalMesh   = 1;
+        S.sMRI           = Patient{i0}.wMriFile;
+    case 'Surface'
+        S.SmoothIterations = 10;
+        S.MeshFile         = Patient{i0}.CortexFile;
+end
+% Compute the epileptogenicity index
 ImaGIN_Epileptogenicity(S);
 
 
