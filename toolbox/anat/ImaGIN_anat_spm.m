@@ -40,6 +40,7 @@ function Patient = ImaGIN_anat_spm(Patient, isNormalize)
 % =============================================================================-
 %
 % Authors: Olivier David
+%          Francois Tadel, 2017
 
 % If there is only one patient in input
 if isstruct(Patient)

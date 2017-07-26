@@ -18,6 +18,7 @@ function ImaGIN_Epileptogenicity(S)
 % =============================================================================-
 %
 % Authors: Olivier David
+%          Francois Tadel, 2017
 
 
 %% ===== INPUTS =====
