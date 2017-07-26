@@ -92,7 +92,7 @@ if size(DD,1)>1
                 tmp = spm_input('Band pass Filter','+1', 'Yes|No');
                 switch tmp
                     case 'No',   S.FactMod = 0;
-                    case 'Yes',  S.FactMod = spm_input('Factor of modulation', '+1', 'r', '7', 1);
+                    case 'Yes',  S.FactMod = spm_input('Factor of modulation', '+1', 'r', '10', 1);
                 end
             end
 
@@ -146,7 +146,7 @@ if size(DD,1)>1
                 tmp = spm_input('Band pass Filter','+1','Yes|No');
                 switch tmp
                     case 'No',    S.FactMod = 0;
-                    case 'Yes',   S.FactMod = spm_input('Factor of modulation', '+1', 'r', '7', 1);
+                    case 'Yes',   S.FactMod = spm_input('Factor of modulation', '+1', 'r', '10', 1);
                 end
             end
 
@@ -177,7 +177,7 @@ if size(DD,1)>1
             try
                 S.FactMod;
             catch
-                S.FactMod = spm_input('Factor of modulation', '+1', 'r', '7', 1);
+                S.FactMod = spm_input('Factor of modulation', '+1', 'r', '10', 1);
             end
 
             try
@@ -212,7 +212,7 @@ if size(DD,1)>1
             try
                 S.FactMod;
             catch
-                S.FactMod = spm_input('Factor of modulation', '+1', 'r', '7', 1);
+                S.FactMod = spm_input('Factor of modulation', '+1', 'r', '10', 1);
             end
 
             try
@@ -230,7 +230,7 @@ if size(DD,1)>1
             try
                 S.TimeResolution;
             catch
-                S.TimeResolution = spm_input('Time resolution [sec]', '+1', 'r');
+                S.TimeResolution = spm_input('Time resolution [sec]', '+1', 'r', '0.1');
             end
             
             try
@@ -242,7 +242,7 @@ if size(DD,1)>1
             try
                 S.TimeResolution;
             catch
-                S.TimeResolution = spm_input('Time resolution [sec]', '+1', 'r');
+                S.TimeResolution = spm_input('Time resolution [sec]', '+1', 'r', '0.1');
             end
 
             try
@@ -417,7 +417,7 @@ function [D, TimeWindow, TimeWindowWidth] = ImaGIN_spm_eeg_tf_main(D,S)
                 tmp=spm_input('Band pass Filter','+1','Yes|No');
                 switch tmp
                     case 'No',   D.tf.FactMod = 0;
-                    case 'Yes',  D.tf.FactMod = spm_input('Factor of modulation', '+1', 'r', '7', 1);
+                    case 'Yes',  D.tf.FactMod = spm_input('Factor of modulation', '+1', 'r', '10', 1);
                 end
             end
 
@@ -475,7 +475,7 @@ function [D, TimeWindow, TimeWindowWidth] = ImaGIN_spm_eeg_tf_main(D,S)
                 tmp=spm_input('Band pass Filter','+1','Yes|No');
                 switch tmp
                     case 'No',    D.tf.FactMod = 0;
-                    case 'Yes',   D.tf.FactMod = spm_input('Factor of modulation', '+1', 'r', '7', 1);
+                    case 'Yes',   D.tf.FactMod = spm_input('Factor of modulation', '+1', 'r', '10', 1);
                 end
             end
 
@@ -511,7 +511,7 @@ function [D, TimeWindow, TimeWindowWidth] = ImaGIN_spm_eeg_tf_main(D,S)
             try
                 D.tf.FactMod = S.FactMod;
             catch
-                D.tf.FactMod = spm_input('Factor of modulation', '+1', 'r', '7', 1);
+                D.tf.FactMod = spm_input('Factor of modulation', '+1', 'r', '10', 1);
             end
 
             try
@@ -529,7 +529,7 @@ function [D, TimeWindow, TimeWindowWidth] = ImaGIN_spm_eeg_tf_main(D,S)
             try
                 D.tf.TimeResolution = S.TimeResolution;
             catch
-                D.tf.TimeResolution = spm_input('Time resolution [sec]', '+1', 'r');
+                D.tf.TimeResolution = spm_input('Time resolution [sec]', '+1', 'r', '0.1');
             end
 
             try
@@ -551,7 +551,7 @@ function [D, TimeWindow, TimeWindowWidth] = ImaGIN_spm_eeg_tf_main(D,S)
             try
                 D.tf.FactMod = S.FactMod;
             catch
-                D.tf.FactMod = spm_input('Factor of modulation', '+1', 'r', '7', 1);
+                D.tf.FactMod = spm_input('Factor of modulation', '+1', 'r', '10', 1);
             end
 
             try
@@ -604,13 +604,12 @@ function [D, TimeWindow, TimeWindowWidth] = ImaGIN_spm_eeg_tf_main(D,S)
 
     % NB: D.tf.channels maps directly into the data. To retrieve the position of the channel, use D.channels.order
     try
-        if isempty(S.channels)
-            D.tf.channels = 1:D.nchannels;
-        else
-            D.tf.channels = S.channels;
-        end
+        D.tf.channels = S.channels;
     catch
         D.tf.channels = spm_input('Select channels', '+1', 'i', sprintf('1:%d',D.nchannels));
+    end
+    if isempty(D.tf.channels)
+        D.tf.channels = 1:D.nchannels;
     end
 
     spm('Pointer', 'Watch'); drawnow;
