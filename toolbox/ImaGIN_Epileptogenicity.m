@@ -54,8 +54,8 @@ catch
     OutputType = spm_input('Type of output', '+1', 'Surface|Volume');
 end
 
-switch (OutputType)
-    case 'Volume'
+switch lower(OutputType)
+    case 'volume'
         try
             Atlas = S.Atlas;
         catch
@@ -79,7 +79,7 @@ switch (OutputType)
             try
                 sMRI = S.sMRI;
             catch
-                sMRI = spm_select(Inf, 'image', 'Select normalised MRI');
+                sMRI = spm_select(Inf, 'image', 'Select MRI');
             end
         end
         % Output extension
@@ -88,7 +88,7 @@ switch (OutputType)
         MeshFile = [];
         SmoothIterations = [];
         
-    case 'Surface'
+    case 'surface'
         try 
             MeshFile = S.MeshFile;
         catch
@@ -97,7 +97,7 @@ switch (OutputType)
         try
             SmoothIterations = S.SmoothIterations;
         catch
-            SmoothIterations = spm_input('Smoothing parameter', '+1', 'r', 0);
+            SmoothIterations = spm_input('Smoothing parameter', '+1', 'r', 5);
         end
         % Output extension
         outExt = '.gii';
@@ -304,8 +304,8 @@ for i00 = 1:size(latency, 2)
         dirSeizure  = fullfile(P,[FileName spm_str_manip(D.fname,'s') '_' NameEpileptogenicity '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]);
         dirBaseline = fullfile(P,[FileName spm_str_manip(D.fname,'s') '_' NameEpileptogenicity 'Baseline_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]);
         % Save volume (.nii) or surface (.gii)
-        switch (OutputType)
-            case 'Volume'
+        switch lower(OutputType)
+            case 'volume'
                 % Define volume options
                 SS.n = VolRes;
                 SS.interpolate_bad = 0;
@@ -362,7 +362,7 @@ for i00 = 1:size(latency, 2)
                     movefile(fullfile(dirBaseline, ['s' tmp]), fullfile(dirBaseline,tmp));
                 end
                 
-            case 'Surface'
+            case 'surface'
                 % Copy surface options
                 SS.MeshFile = MeshFile;
                 SS.SmoothIterations = SmoothIterations;
@@ -437,7 +437,7 @@ for i00 = 1:size(latency, 2)
         WriteTvalues(deblank(DD(i0,:)), ...  % Reference recordings
                      fullfile(matlabbatch{1}.spm.stats.fmri_spec.dir{1}, ['spmT_0001' outExt]), ...  % T-values
                      fullfile(P, [NameEpileptogenicity '_' spm_str_manip(D.fname,'s') '_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]), ... % Output file name (without the extension)
-                     OutputType, giiCortex, VolRes);   % 'Volume' or 'Surface'
+                     OutputType, giiCortex, VolRes);   % 'volume' or 'surface'
     end
     
     % ===== GROUP ANALYSIS =====
@@ -503,7 +503,7 @@ for i00 = 1:size(latency, 2)
         WriteTvalues(deblank(DD(1,:)), ...  % Reference recordings
                      fullfile(matlabbatch{1}.spm.stats.fmri_spec.dir{1}, ['spmT_0001' outExt]), ...  % T-values
                      fullfile(P, [NameEpileptogenicity '_Group_' FileName '_' num2str(min(FreqBand)) '_' num2str(max(FreqBand)) '_' num2str(round(mean(Horizon))) '_' num2str(round(mean(Latency)))]), ... % Output file name (without the extension)
-                     OutputType, giiCortex, VolRes);   % 'Volume' or 'Surface'
+                     OutputType, giiCortex, VolRes);   % 'volume' or 'surface'
     end
     
     % ===== DELETE TEMP FILES =====
@@ -552,8 +552,8 @@ function WriteTvalues(RecFile, TvalueFile, OutputFile, OutputType, giiCortex, Vo
     % Load reference recordings
     D = spm_eeg_load(RecFile);
     % Read output T values
-    switch (OutputType)
-        case 'Volume'
+    switch lower(OutputType)
+        case 'volume'
             V = spm_vol(TvalueFile);
             VV = spm_read_vols(V);
             tmp = spm('Defaults','EEG');
@@ -562,7 +562,7 @@ function WriteTvalues(RecFile, TvalueFile, OutputFile, OutputType, giiCortex, Vo
                 bb(1,2):VolRes:bb(2,2),...
                 bb(1,3):VolRes:bb(2,3));
             Tvalues = permute(VV,[2 1 3]);
-        case 'Surface'
+        case 'surface'
             giiT = gifti(TvalueFile);
             Tvalues = giiT.cdata(:,:,:);
             x = giiCortex.vertices(:,1);
@@ -632,11 +632,11 @@ function WriteDelay(dirStat, latency, ThDelay, SmoothIterations, OutputFile, Out
         u = spm_uc(ThDelay,df,'T',R,1,S);
 
         % Load spmT map
-        switch (OutputType)
-            case 'Volume'
+        switch lower(OutputType)
+            case 'volume'
                 P1 = spm_vol(fullfile(dirSPM, 'spmT_0001.nii'));
                 Tvalues = spm_read_vols(P1);
-            case 'Surface'
+            case 'surface'
                 giiT = gifti(fullfile(dirSPM, 'spmT_0001.gii'));
                 Tvalues = giiT.cdata(:,:,:);
         end
@@ -653,8 +653,8 @@ function WriteDelay(dirStat, latency, ThDelay, SmoothIterations, OutputFile, Out
     end
 
     % Save delay maps
-    switch (OutputType)
-        case 'Volume'
+    switch lower(OutputType)
+        case 'volume'
             % Write delay map
             P0 = P1;
             P0.fname = OutputFile;
@@ -676,7 +676,7 @@ function WriteDelay(dirStat, latency, ThDelay, SmoothIterations, OutputFile, Out
             I = (max(Delay(:))./max(I(:))) * I;
             spm_write_vol(M,I);
             
-        case 'Surface'
+        case 'surface'
             % Replace NaN values with 0 before smoothing
             iNan = isnan(Delay);
             Delay(Delay==0) = eps('single');

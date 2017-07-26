@@ -174,6 +174,8 @@ for k = 1:size(Fname, 1)
         % Smooth surface maps
         if (SmoothIterations > 0)
             EMap = spm_mesh_smooth(GL, EMap, SmoothIterations);
+            % Remove all the values that were not initially defined
+            EMap(~I) = 0;
         end
 
         % Output file name

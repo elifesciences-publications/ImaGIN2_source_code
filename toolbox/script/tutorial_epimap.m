@@ -31,13 +31,18 @@ Root = 'C:\Work\Dev\Inserm';
 
 % Patient #1: Input files and processing options
 I = 1;
-% Name of the patient, which must corresponds to subfolder in PatientsDir
+% Name of the patient, which must corresponds to subfolder in Root directory
 Patient{I}.Name = 'tutorial_epimap';
 % Patient anatomy: pre- and post-implantation MRI scans
 Patient{I}.MRI.pre  = fullfile(Root, Patient{I}.Name, 'anat', 'MRI', '3DT1pre_deface.nii');
 Patient{I}.MRI.post = fullfile(Root, Patient{I}.Name, 'anat', 'MRI', '3DT1post_deface.nii');
 Patient{I}.MRI.ref  = 'pre';
 Patient{I}.MRI.out  = fullfile(Root, Patient{I}.Name, 'anat', 'MRI');
+
+% Cortex surface (only useful when OutputType='surface'): canonical or real patient surfaces (BrainVISA)
+% Patient{I}.MRI.pre_cortex = 'canonical';
+Patient{I}.MRI.pre_cortex = fullfile(Root, Patient{I}.Name, 'anat', 'MRI', 'brainvisa');
+
 % Name of the files with the seizure recordings (original Micromed have a .TRC extension)
 Patient{I}.File{1}     = 'SZ1';   % Short seizure, no propagation   
 Patient{I}.File{2}     = 'SZ2';   % Short seizure, propagation 
@@ -46,7 +51,7 @@ Patient{I}.File{3}     = 'SZ3';   % Long seizure, generalized
 Patient{I}.Onset = [120.800, ...         % File #1:  423ms after the Seizure marker
                     143.510, ...         % File #2: 2900ms after the Seizure marker
                     120.287];            % File #3:   60ms after the Seizure marker
-                
+
 % % Baseline segment (20s), with respect to the Onset marker: Defined while reviewing the recordings as a bipolar montage
 % Patient{I}.Baseline = {[-48, -28], ...   % File #1: From beginning of recordings 72.8s-92.8s
 %                        [-40, -20], ...   % File #2: From beginning of recordings 103.5s-123.5s
@@ -67,29 +72,25 @@ Patient{I}.TimeConstant = 3;          % Duration of the sliding window of intere
 Patient{I}.Latency      = 0:2:20;     % For files #2 and #3, will compute delay maps with sliding windows of 3s between 0s and 20s post-seizure
 Patient{I}.Prefix       = '';
 ThDelay = 0.05;
+
 % Output epileptogenicity maps as volume (.nii) or surface (.gii)
-% OutputType = 'Volume';  
-OutputType = 'Surface';
+OutputType = 'volume';
+% OutputType = 'surface';
+
+% Output coordinate system: Patient or MNI
+OutputSpace = 'mni';
+% OutputSpace = 'patient';
+
+tStart = tic;
 
 
 %% ===== PREPARE ANATOMY =====
 % Prepare the cortex surface
 for i0 = 1:length(Patient)
-    % Normalized MRI
-    Patient{i0}.wMriFile = fullfile(Patient{i0}.MRI.out, 'wBrainPre.nii');
     % Co-registration, segmentation and normalization of the pre-op and post-op MRI scans
-    if ~exist(Patient{i0}.wMriFile, 'file')
-        ImaGIN_anat_spm(Patient);
-    end
-    % Cortical surface
-    switch (OutputType)
-        case 'Volume'
-            % Canonical mesh is computed in the ImaGIN_Epileptogenicity if needed
-        case 'Surface'
-            % Computation of the canonical mesh
-            mesh = ImaGIN_spm_eeg_inv_mesh(wMriFile, 4);
-            Patient{i0}.CortexFile = mesh.tess_ctx;
-    end
+    % if ~exist(fullfile(Patient{i0}.MRI.out, 'BrainPre.nii'), 'file')
+    isNormalize = strcmpi(OutputSpace, 'mni');
+    Patient(i0) = ImaGIN_anat_spm(Patient(i0), isNormalize);
 end
 
 
@@ -116,8 +117,11 @@ for i0 = 1:length(Patient)
         % Add electrodes positions
         clear S
         S.Fname        = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.File{i1} '.mat']);
-        S.filenamePos  = fullfile(Root, Patient{i0}.Name, 'anat', 'implantation', 'Electrodes_Pos_MNI.txt');
         S.filenameName = fullfile(Root, Patient{i0}.Name, 'anat', 'implantation', 'Electrodes_Name.txt');
+        switch lower(OutputSpace)
+            case 'mni',      S.filenamePos  = fullfile(Root, Patient{i0}.Name, 'anat', 'implantation', 'Electrodes_Pos_MNI.txt');
+            case 'patient',  S.filenamePos  = fullfile(Root, Patient{i0}.Name, 'anat', 'implantation', 'Electrodes_Pos_Patient.txt');
+        end
         D = ImaGIN_Electrode(S);
         
         % Longitudinal bipolar montage
@@ -148,7 +152,7 @@ end
 
 % % Display contact positions
 % S.Fname = fullfile(Root, Patient{1}.Name, 'seeg', [Patient{1}.FileBipolar{1} '.mat']);
-% S.P     = Patient{1}.wMriFile;
+% S.P     = Patient{1}.MRI.reg_pre;
 % ImaGIN_DispElectrodes(S);
 
 
@@ -282,17 +286,27 @@ S.ThDelay        = ThDelay;
 S.AR             = 0;
 S.FileName       = Patient{i0}.Prefix;
 S.OutputType     = OutputType;
-switch (OutputType)
-    case 'Volume'
-        S.Atlas          = 'Human';
-        S.CorticalMesh   = 1;
-        S.sMRI           = Patient{i0}.wMriFile;
-    case 'Surface'
-        S.SmoothIterations = 10;
-        S.MeshFile         = Patient{i0}.CortexFile;
+switch lower(OutputType)
+    case 'volume'
+        S.Atlas        = 'Human';
+        S.CorticalMesh = 1;
+        S.sMRI         = Patient{i0}.MRI.reg_pre;
+    case 'surface'
+        S.SmoothIterations = 5;
+        S.MeshFile         = Patient{i0}.MRI.pre_cortex;
 end
 % Compute the epileptogenicity index
 ImaGIN_Epileptogenicity(S);
+
+% % Display results
+% switch lower(OutputType)
+%     case 'volume'
+%     case 'surface'
+%         %hAxes = spm_mesh_render(Patient{i0}.MRI.pre_cortex);
+%         hAxes = spm_mesh_render('Disp', fullfile(Root, Patient{i0}.Name, 'anat', 'MRI', 'wBrainPrecortex_hip_amy_8196.surf.gii'));
+%         spm_mesh_render('Overlay', hAxes, fullfile(Root, Patient{i0}.Name, 'seeg', 'SPM_EI_bSZ1_120_200_3_0', 'spmT_0001.gii'));
+%         spm_mesh_render('ColourMap', hAxes, jet);
+% end
 
 
 %% ===== EPILEPTOGENICITY: SEIZURE #2-3 =====
@@ -312,17 +326,17 @@ S.ThDelay        = ThDelay;
 S.AR             = 0;
 S.FileName       = Patient{i0}.Prefix;
 S.OutputType     = OutputType;
-switch (OutputType)
-    case 'Volume'
+switch lower(OutputType)
+    case 'volume'
         S.Atlas          = 'Human';
         S.CorticalMesh   = 1;
-        S.sMRI           = Patient{i0}.wMriFile;
-    case 'Surface'
-        S.SmoothIterations = 10;
-        S.MeshFile         = Patient{i0}.CortexFile;
+        S.sMRI           = Patient{i0}.MRI.reg_pre;
+    case 'surface'
+        S.SmoothIterations = 5;
+        S.MeshFile         = Patient{i0}.MRI.pre_cortex;
 end
 % Compute the epileptogenicity index
 ImaGIN_Epileptogenicity(S);
 
 
-
+toc(tStart)
