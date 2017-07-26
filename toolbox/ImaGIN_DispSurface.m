@@ -25,7 +25,7 @@ tmp = spm_input('Plot electrodes ','+1','Yes|No');
 if strcmp(tmp,'Yes')
     FileElec = spm_select(inf, '.*\.(mat|txt)$', 'Select electrode positions file (.txt or .mat/.dat)');
 else
-    FlagElec = [];
+    FileElec = [];
 end
 
 %% ===== THRESHOLD =====

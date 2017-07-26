@@ -64,6 +64,10 @@ iTransf = find(strcmpi(attributes, 'transformations'));
 Transf = reshape(attributes{iTransf + 1}(1:16), 4, 4)';
 % ====================================================
 
+% Swap faces if the transformation if the transformation introduces a flip of dimensions
+if (det(Transf(1:3,1:3)) < 0)
+    outTess.faces = outTess.faces(:,[2 1 3]);
+end
 % Apply transformation to the vertices
 if ~isempty(Transf)
     outTess.vertices = bsxfun(@plus, Transf(1:3,1:3) * outTess.vertices', Transf(1:3,4))';
