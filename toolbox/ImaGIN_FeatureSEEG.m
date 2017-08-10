@@ -1,26 +1,12 @@
 function T =  ImaGIN_FeatureSEEG(S)
-% -=============================================================================
-% This function is part of the ImaGIN software: 
-% https://f-tract.eu/
-%
-% This software is distributed under the terms of the GNU General Public License
-% as published by the Free Software Foundation. Further details on the GPLv3
-% license can be found at http://www.gnu.org/copyleft/gpl.html.
-%
-% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
-% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
-%
-% Copyright (c) 2000-2017 Inserm U1216
-% =============================================================================-
-%
-% Authors: Viateur Tuyisenge & Olivier David
 
-sFile = S.FileName; % Name of  dataset 
+sFile = S.FileName;
 [pth, fName, ~] = fileparts(sFile);
 clear S
 S.Fname = sFile;
 S.EventType = 'Stim';
-
+%S.StartInterpolation= -0.015;
+%S.EndInterpolation  = 0.015;
 S.StartInterpolation = -0.008;
 S.EndInterpolation   = 0.008;
 
@@ -38,30 +24,31 @@ P.Freq  = 100;
 ImaGIN_NotchFilter(P) % notch filter 100Hz
 clear P.Freq;
 delete([nFile '.*']);
-delete([iFile '.*']); % delete all temporal created file
+delete([iFile '.*']);
 nnFile  =  [pth '/nni' fName];
 P.Fname =  nnFile;
 P.Freq  = 150;
 ImaGIN_NotchFilter(P) % notch filter 150Hz
 clear P.Freq;
-delete([nnFile,'.*']); %delete all temporal created file
+delete([nnFile,'.*']);
 
 nnnFile  =  [pth '/nnni' fName];
 P.LFname = nnnFile;
 ImaGIN_LowPassFilter(P) % lowpass filter 0.2Hz
 lpf_nFile = [pth '/lpf_nnni' fName];
-delete([nnnFile,'.*']) % delete all temporal created file
+delete([nnnFile,'.*'])
 
 D = spm_eeg_load(lpf_nFile);
 sens= indchantype(D,'eeg');
 elec= sensors(D,'eeg');
 pos = elec.elecpos; 
 nx  = size(sens,2);
-nn  = 10; % number of neigbor channels 
+nn  = 10;
 nt  = find((time(D)>= -0.5));
 ny  = D.nsamples;
 data= D(1:nx,nt(1):ny);
-logScale = 1; 
+logScale = 1;
+%% 
 rawVar  = var(data, [], 2);       % Compute raw data variance
 ch_mean = mean(data,2);           
 ch_ampl = range(data,2);
@@ -120,7 +107,10 @@ end
 
 T = table(noIdx, ch_xcorr, ch_var, ch_dev, ch_ampl, ch_grad, ch_kurt, ch_hurs);
 
-delete([lpf_nFile,'.*']); % clean all temporal files
+% csvfilename = ['-csv_' fName '.csv'];
+% writetable(T,csvfilename,'Delimiter',',');
+
+delete([lpf_nFile,'.*']);
 
 end
 

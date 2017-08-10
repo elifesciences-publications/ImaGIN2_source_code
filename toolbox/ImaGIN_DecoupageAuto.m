@@ -1,20 +1,4 @@
 function D = ImaGIN_DecoupageAuto(S)
-% -=============================================================================
-% This function is part of the ImaGIN software: 
-% https://f-tract.eu/
-%
-% This software is distributed under the terms of the GNU General Public License
-% as published by the Free Software Foundation. Further details on the GPLv3
-% license can be found at http://www.gnu.org/copyleft/gpl.html.
-%
-% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
-% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
-%
-% Copyright (c) 2000-2017 Inserm U1216
-% =============================================================================-
-%
-% Authors: Viateur Tuyisenge & Olivier David
-
 sFile = S.dataset;
 DirOut= S.DirFileOut;
 thisN = S.StimName; % stim event to crop individually 
@@ -35,13 +19,15 @@ Notes  = cell(1,evsize);     % Events labels
 Time   = zeros(1,evsize);
 totTime= max(time(D));
 Time0  = min(time(D));
+elec   = sensors(D,'EEG');
 % Extract events properties (label and time in sampling)
 for i = 1: evsize
     Notes{i}  = evt(i).type;
     Time(1,i) = evt(i).time;
 end
+%%
 nHz  = 5;  % Accepted stim frequency
-minStim = 3; % minimum number of stimulations for a crop
+minStim = 3; 
 bgnTime = zeros(1,evsize); % Beginning of event
 endTime = zeros(1,evsize); % End of event
 
@@ -137,38 +123,62 @@ for c=1:length(KeepEvent) % Navigate all stim events
     if numel(numbr) >= 2
         if str2double(numbr(2))~= str2double(numbr(1)) + 1 && str2double(numbr(1))~= str2double(numbr(2)) + 1 
             if numel(numbr{1}) == 2
-                elecno = strcat(numbr{1}(1),'_',numbr{1}(2));
-                if str2double(numbr{1}(1)) + 1 == str2double(numbr{1}(2)) 
-                    noteName = strrep(noteName,numbr{1},elecno);
-                elseif numel(numbr{2}) == 3  
-                    elecno = strcat(numbr{2}(1:2),'_',numbr{2}(3));
-                    if str2double(numbr{2}(1:2)) == str2double(numbr(1)) + 1
+                 if numel(numbr{2}) ~= 3 && numel(numbr{2}) ~= 2 
+                     if str2double(numbr{1}(1)) + 1 == str2double(numbr{1}(2)) || str2double(numbr{1}(1)) == str2double(numbr{1}(2)) + 1
+                         elecno = strcat(numbr{1}(1),'_',numbr{1}(2));
+                         noteName = strrep(noteName,numbr{1},elecno);
+                     end
+                elseif numel(numbr{2}) == 3                      
+                    if str2double(numbr{2}(1:2)) == str2double(numbr(1)) + 1 || str2double(numbr{2}(1:2)) + 1 == str2double(numbr(1)) 
+                        elecno = strcat(numbr{2}(1:2),'_',numbr{2}(3));
                         noteName = strrep(noteName,numbr{2},elecno);
                     end
+                 elseif numel(numbr{2})== 2
+                   if str2double(numbr{2}(1)) == str2double(numbr(1)) + 1 || str2double(numbr{2}(1)) + 1 == str2double(numbr(1))
+                      elecno = strcat(numbr{2}(1),'_',numbr{2}(2)); 
+                      noteName = strrep(noteName,numbr{2},elecno);
+                   end
                 end
             elseif numel(numbr{1}) == 3
-                elecno = strcat(numbr{1}(1),'_',numbr{1}(2:3));
-                if str2double(numbr{1}(1)) == str2double(numbr{1}(2:3))
+                if str2double(numbr{1}(1))== 9 && str2double(numbr{1}(2:3))== 10 
+                    elecno = strcat(numbr{1}(1),'_',numbr{1}(2:3));
+                    noteName = strrep(noteName,numbr{1},elecno);
+                elseif str2double(numbr{1}(1:2))== 10 && str2double(numbr{1}(2:3))== 9
+                    elecno = strcat(numbr{1}(1:2),'_',numbr{1}(3));
+                    noteName = strrep(noteName,numbr{1},elecno);
+                elseif str2double(numbr{1}(1)) + 1 == str2double(numbr{1}(2)) || str2double(numbr{1}(1)) == str2double(numbr{1}(2)) + 1
+                    elecno = strcat(numbr{1}(1),'_',numbr{1}(2),'_',numbr{1}(3));
                     noteName = strrep(noteName,numbr{1},elecno);
                 end
             elseif numel(numbr{1}) == 4
-                elecno = strcat(numbr{1}(1:2),'_',numbr{1}(3:4));
-                if str2double(numbr{1}(1:2)) ==  str2double(numbr{1}(3:4))
+                if str2double(numbr{1}(1:2)) + 1 ==  str2double(numbr{1}(3:4)) || str2double(numbr{1}(1:2)) ==  str2double(numbr{1}(3:4)) + 1
+                    elecno = strcat(numbr{1}(1:2),'_',numbr{1}(3:4));
+                    noteName = strrep(noteName,numbr{1},elecno);
+                elseif str2double(numbr{1}(1))== 9 && str2double(numbr{1}(2:3)) == 10 
+                    elecno = strcat(numbr{1}(1),'_',numbr{1}(2:3),'_',numbr{1}(4));
+                    noteName = strrep(noteName,numbr{1},elecno);
+                elseif str2double(numbr{1}(1:2))== 10 && str2double(numbr{1}(3)) == 9
+                    elecno = strcat(numbr{1}(1:2),'_',numbr{1}(3),'_',numbr{1}(4));
                     noteName = strrep(noteName,numbr{1},elecno);
                 end
+            elseif numel(numbr{1}) == 5
+                 if str2double(numbr{1}(1:2)) + 1 ==  str2double(numbr{1}(3:4)) || str2double(numbr{1}(1:2)) ==  str2double(numbr{1}(3:4)) + 1
+                    elecno = strcat(numbr{1}(1:2),'_',numbr{1}(3:4),'_',numbr{1}(5));
+                    noteName = strrep(noteName,numbr{1},elecno);
+                 end
             elseif numel(numbr{1}) == 1 
                 if numel(numbr{2}) == 2
                     elecno = strcat(numbr{2}(1),'_',numbr{2}(2));
-                    if str2double(numbr{2}(1)) == str2double(numbr(1)) + 1 
+                    if str2double(numbr{2}(1)) == str2double(numbr(1)) + 1 || str2double(numbr{2}(1)) + 1 == str2double(numbr(1)) 
                         noteName = strrep(noteName,numbr{2},elecno);
                     end
                 elseif numel(numbr{2}) == 3
                     elecno = strcat(numbr{2}(1),'_',numbr{2}(2:3));
-                    if str2double(numbr{2}(1)) == str2double(numbr(1)) + 1 
+                    if str2double(numbr{2}(1)) == str2double(numbr(1)) + 1 || str2double(numbr{2}(1)) + 1 == str2double(numbr(1)) 
                         noteName = strrep(noteName,numbr{2},elecno);
                     else
                         elecno = strcat(numbr{2}(1:2),'_',numbr{2}(3));
-                        if str2double(numbr(1)) + 1 == str2double(numbr{2}(1:2))
+                        if str2double(numbr(1)) + 1 == str2double(numbr{2}(1:2)) || str2double(numbr(1)) == str2double(numbr{2}(1:2)) + 1
                             noteName = strrep(noteName,numbr{2},elecno);
                         end
                     end
@@ -176,6 +186,7 @@ for c=1:length(KeepEvent) % Navigate all stim events
             end
         end
     end
+
   %%   
     numb = regexp(noteName,'\d*','Match');
     

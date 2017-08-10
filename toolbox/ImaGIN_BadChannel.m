@@ -11,7 +11,7 @@ function D = ImaGIN_BadChannel(S)
 % FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
 % DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
 %
-% Copyright (c) 2000-2017 Inserm U1216
+% Copyright (c) 2017 Inserm U1216
 % =============================================================================-
 %
 % Authors: Viateur Tuyisenge & Olivier David
@@ -66,53 +66,78 @@ end
 close all;
 
 Size = 8;  %Number of channels per screenshot
-tmp = floor(size(D,1)/Size);
-for i2 = 1:tmp
-    figure(i2);
-    set(gcf,'Position',[629 -17 702 1101])
-    for i3 = 1:Size
-        if intersect(i3+(i2-1)*Size,bIdx) == i3+(i2-1)*Size
-            color = 'r'; %Bad channels will be printed in red 
-        else
-            color = 'k'; %Good channels will be printed in black
+n_c  = size(D,1);
+if n_c >= Size
+    tmp = floor(n_c/Size);
+    for i2 = 1:tmp
+        figure(i2);
+        set(gcf,'Position',[629 -17 702 1101])
+        for i3 = 1:Size
+            if intersect(i3+(i2-1)*Size,bIdx) == i3+(i2-1)*Size
+                color = 'r'; %Bad channels will be printed in red
+            else
+                color = 'k'; %Good channels will be printed in black
+            end
+            subplot(Size,1,i3)
+            plot(time(D),D(i3+(i2-1)*Size,:),color);
+            ylabel([num2str(i3+(i2-1)*Size) ' : ' D.chanlabels{i3+(i2-1)*Size}])
+            if i3 == 1
+                figName = char(strcat(cutName,'_',num2str(i3+(i2-1)*Size),'-', ...
+                    num2str(i2*Size)));
+                title(figName,'interpreter','none');
+            end
+            axis tight
         end
-        subplot(Size,1,i3)
-        plot(time(D),D(i3+(i2-1)*Size,:),color);
-        ylabel([num2str(i3+(i2-1)*Size) ' : ' D.chanlabels{i3+(i2-1)*Size}])
-        if i3 == 1
-            figName = char(strcat(cutName,'_',num2str(i3+(i2-1)*Size),'-', ...
-                num2str(i2*Size)));
-            title(figName,'interpreter','none');
-        end
-        axis tight
+        zoom on
+        fig = figure(i2);
+        print(fig,fullfile(figDir,figName),'-dpng'); %ScreenShot
+        close;
     end
-    zoom on
-    fig = figure(i2);
-    print(fig,fullfile(figDir,figName),'-dpng'); %ScreenShot
-    close;
-end
-
-rmd = size(D,1) - tmp*Size;
-if rmd ~= 0
-    figure(tmp + 1)
+    
+    rmd = size(D,1) - tmp*Size;
+    if rmd ~= 0
+        figure(tmp + 1)
+        set(gcf,'Position',[629 -17 702 1101])
+        for i4 = 1:rmd
+            if intersect(i3+(i2-1)*Size+i4,bIdx)== i3+(i2-1)*Size+i4
+                color = 'r';
+            else
+                color = 'k';
+            end
+            subplot(rmd,1,i4)
+            plot(time(D),D(i3+(i2-1)*Size+i4,:),color);
+            ylabel([num2str(i3+(i2-1)*Size+i4) ' : ' D.chanlabels{i3+(i2-1)*Size+i4}])
+            if i4 == 1
+                figName = char(strcat(cutName,'_',num2str(i3+(i2-1)*Size + 1),'-',num2str(n_c)));
+                title(figName,'interpreter','none');
+            end
+            axis tight
+        end
+        zoom on
+        fig = figure(i2+1);
+        print(fig, fullfile(figDir,figName), '-dpng');
+        close
+    end
+else
+    figure(1)
     set(gcf,'Position',[629 -17 702 1101])
-    for i4 = 1:rmd
-        if intersect(i3+(i2-1)*Size+i4,bIdx)== i3+(i2-1)*Size+i4
+    for i5 = 1:n_c
+        if intersect(i5,bIdx)== i5
             color = 'r';
         else
             color = 'k';
         end
-        subplot(rmd,1,i4)
-        plot(time(D),D(i3+(i2-1)*Size+i4,:),color);
-        ylabel([num2str(i3+(i2-1)*Size+i4) ' : ' D.chanlabels{i3+(i2-1)*Size+i4}])
-        if i4 == 1
-            figName = char(strcat(cutName,'_',num2str(i3+(i2-1)*Size + 1),'-',num2str(size(D,1))));
+        subplot(n_c,1,i5)
+        plot(time(D),D(i5,:),color);
+        ylabel([num2str(i5) ' : ' D.chanlabels{i5}])
+        if i5 == 1
+            figName = char(strcat(cutName,'_',num2str(1),'-',num2str(n_c)));
             title(figName,'interpreter','none');
         end
         axis tight
     end
     zoom on
-    fig = figure(i2+1);
+    fig = figure(1);
     print(fig, fullfile(figDir,figName), '-dpng');
     close
 end
