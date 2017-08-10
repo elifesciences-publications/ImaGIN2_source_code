@@ -1,4 +1,4 @@
-function mesh = spm_eeg_inv_mesh(sMRI, Msize)
+function mesh = ImaGIN_spm_eeg_inv_mesh(sMRI, Msize)
 % Apply the inverse spatial deformation to the template mesh
 % to obtain the individual cortical mesh
 % save the individual GIFTI meshes
