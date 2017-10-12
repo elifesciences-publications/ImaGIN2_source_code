@@ -1,5 +1,22 @@
 function ImaGIN_Validate_StimNames(S)
-sFile = S.dataset;
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
+% Copyright (c) 2000-2017 Inserm U1216
+% =============================================================================-
+%
+% Authors: Viateur Tuyisenge & Olivier David
+
+
+sFile = S.dataset; % Name of dataset
 
 pulseDefault = str2double(S.defaultPulseDuration);
 
@@ -107,8 +124,33 @@ else
     else
         pval = strcat(num2str(pval),'us');
         for c = 1:length(KeepEvent)
-            if isempty(strfind(Notes{KeepEvent(c)},pval))
-                Notes{KeepEvent(c)}=[Notes{KeepEvent(c)} '_' pval]; % add pulse duration
+            
+            [numb,idx] = regexp(Notes{KeepEvent(c)},'\d*','Match');
+            
+            if numel(numb) >=2
+                cnbre1 = numel(numb{1});
+                cnbre2 = numel(numb{2});
+                if str2double(numb(1)) == str2double(numb(2))-1||str2double(numb(1)) == str2double(numb(2))+1
+                    if isempty(strfind(Notes{KeepEvent(c)},pval))
+                        Notes{KeepEvent(c)}=[Notes{KeepEvent(c)} '_' pval]; % add pulse duration
+                    end
+                elseif str2double(numb(1)) < str2double(numb(2))-1
+                    Notes{KeepEvent(c)}(idx(2):idx(2)+cnbre2-1) = '_';
+                    Notes{KeepEvent(c)}(idx(2)) =  num2str(str2double(numb(1))+1);
+                    Notes{KeepEvent(c)}(idx(1):idx(1)+cnbre1-1) = '_';
+                    Notes{KeepEvent(c)}(idx(1)) =  num2str(str2double(numb(1)));
+                    if isempty(strfind(Notes{KeepEvent(c)},pval))
+                        Notes{KeepEvent(c)}=[Notes{KeepEvent(c)} '_' pval ]; % add pulse duration
+                    end
+                elseif str2double(numb(1)) > str2double(numb(2))+1
+                    Notes{KeepEvent(c)}(idx(1):idx(1)+cnbre1-1) = '_';
+                    Notes{KeepEvent(c)}(idx(1)) = num2str(str2double(numb(2))+1);
+                    Notes{KeepEvent(c)}(idx(2):idx(2)+cnbre2-1) = '_';
+                    Notes{KeepEvent(c)}(idx(2)) =num2str(str2double(numb(2)));
+                    if isempty(strfind(Notes{KeepEvent(c)},pval))
+                        Notes{KeepEvent(c)}=[Notes{KeepEvent(c)} '_' pval]; % add  pulse duration
+                    end
+                end
             end
             Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'MA','mA');
             Notes{KeepEvent(c)} = strrep(Notes{KeepEvent(c)},'ma','mA');
@@ -126,7 +168,6 @@ else
         D2 = clone(D, D.fnamedat, [D.nchannels D.nsamples D.ntrials]);
         D2(:,:,:) = D(:,:,:);
         save(D2);
-        fprintf('\n \n ::.. Pulse duration of %s added ..::\n',pval); 
     end
 end
 
