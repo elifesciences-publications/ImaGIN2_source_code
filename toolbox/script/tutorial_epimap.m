@@ -65,7 +65,7 @@ Patient{I}.BaselineFile = {[],[],[]};
 % List of bad channels: Defined while reviewing the recordings as a bipolar montage
 Patient{I}.BadChannel  = {[74 28], ...   % File #1: v'2v'1, f'2f'1
                           [74], ...      % File #2: v'2v'1
-                          [74 54]};      % File #3: v'2v'1, o'2o'1
+                          [54]};         % File #3: o'2o'1
 % Epileptogenicity options
 Patient{I}.FreqBand     = [120 200];  % Defined by looking at the TF maps (using the same for the three seizures)
 Patient{I}.TimeConstant = 3;          % Duration of the sliding window of interest: 3s
@@ -78,8 +78,8 @@ OutputType = 'volume';
 % OutputType = 'surface';
 
 % Output coordinate system: Patient or MNI
-OutputSpace = 'mni';
-% OutputSpace = 'patient';
+% OutputSpace = 'mni';
+OutputSpace = 'patient';
 
 tStart = tic;
 
@@ -274,7 +274,7 @@ end
 i0 = 1;
 clear S;
 % List of input files
-S.D = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.FileBipolar{1} '.mat']);            % Seizure data
+S.D = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.FileBipolar{1} '.mat']);     % Seizure data
 S.B = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.BaselineFile{1} '.mat']);    % Baseline data
 % Process options
 S.TimeWindow     = (0 : 0.01 : Patient{i0}.TimeConstant+1+max(Patient{i0}.Latency));
