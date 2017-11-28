@@ -306,7 +306,7 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
         % Save the list of channels in the output file
         ImaGIN_save_log(SpmFile, 'Convert: Removed channels:', sort(setdiff(ChanLabelsIn, ChanLabelsOut)));
     end
+set_final_status('OK');
 end
-
 
 
