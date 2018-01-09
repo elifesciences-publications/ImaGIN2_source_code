@@ -252,7 +252,7 @@ for k = 1:Nsub
     else
         FlagSyn=1;
         Nchannels=(1+sqrt(1+8*D{k}.nchannels))/2;
-        M=ImaGIN_ConnectivityMatrix(Nchannels);
+        M=ImaGIN_connectivity_matrix(Nchannels);
         tmpd=(D{k}(:, :,:));
         d=zeros(Nchannels,D{k}.nsamples);
         for i1=1:Nchannels

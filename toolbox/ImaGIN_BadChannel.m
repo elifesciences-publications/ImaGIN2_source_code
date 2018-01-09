@@ -15,6 +15,7 @@ function D = ImaGIN_BadChannel(S)
 % =============================================================================-
 %
 % Authors: Viateur Tuyisenge & Olivier David
+
 try
     FileIn = S.dataset; % name of cropped iEEG file .dat/.mat
     %badDir = S.DirFileOut; % directory where iEEG file .dat/.mat with badchannels indices will be stored

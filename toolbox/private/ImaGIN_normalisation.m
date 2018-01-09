@@ -1,4 +1,4 @@
-function y=ImaGIN_GenerateArtefact(tau,fe, art_duration, break_duration, total_window, mode)
+function data = ImaGIN_normalisation(data,dim,Baseline)
 % -=============================================================================
 % This function is part of the ImaGIN software: 
 % https://f-tract.eu/
@@ -15,54 +15,16 @@ function y=ImaGIN_GenerateArtefact(tau,fe, art_duration, break_duration, total_w
 %
 % Authors: Olivier David
 
-i=zeros(1,round(total_window*fe));
-i(1)=0;
-if strcmp(mode, 'biphasic')
-    i(2:round(art_duration*fe/2)+1)=1;
-    i(round(art_duration*fe/2)+2:round((art_duration+break_duration)*fe/2)+2)=0;
-    i(round((art_duration+break_duration)*fe/2)+3:round((art_duration+break_duration)*fe)+3)=-1;
-elseif strcmp(mode, 'monophasic')
-    i(2:round(art_duration*fe))=1;
+if nargin==2||isempty(Baseline)
+    Baseline=1:size(data,dim);
 end
-
-
-MY=zeros(length(i),length(tau));
-dt=1/fe;
-
-for jj=1:length(i)
-    
-    if jj==1
-        y = 0;
-    end
-    
-    dy = (-y+i(jj))/tau;
-    y = y + dy*dt;
-    
-    MY(jj,:)=y;
-    
+if dim==1
+    mu=mean(data(Baseline,:),dim);
+    sigma=std(data(Baseline,:),[],dim);
+    data=(data-ones(size(data,1),1)*mu)./(ones(size(data,1),1)*sigma);
+elseif dim==2
+    mu=mean(data(:,Baseline),dim);
+    sigma=std(data(:,Baseline),[],dim);
+    data=(data-mu*ones(1,size(data,2)))./(sigma*ones(1,size(data,2)));
 end
-
-y=(i'-MY);
-
-
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

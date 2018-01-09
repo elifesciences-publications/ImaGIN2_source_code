@@ -59,7 +59,7 @@ if isempty(S.channel)
     S.channel = [ChanList.number];
 end
 % Read data
-[Data, iGoodChannels, Evt] = ImaGIN_ReadSMR(Fdata, S.channel, S.coarse);
+[Data, iGoodChannels, Evt] = ImaGIN_read_smr(Fdata, S.channel, S.coarse);
 
 
 

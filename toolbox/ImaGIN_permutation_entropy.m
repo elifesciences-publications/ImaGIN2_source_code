@@ -1,4 +1,4 @@
-function [H,D,N]=ImaGIN_PermutationEntropy(data,k,TimeDelay,Prior)
+function [H,D,N]=ImaGIN_permutation_entropy(data,k,TimeDelay,Prior)
 %
 % INPUTS:
 %    - data: vector

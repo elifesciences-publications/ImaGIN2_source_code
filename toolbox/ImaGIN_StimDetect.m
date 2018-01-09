@@ -93,7 +93,7 @@ if FindBadChannels
     end
 %     GoodChannels=find(L<200/size(Data,2));
     GoodChannels=find(L<0.05);      %Assume that bad channels saturate 5% of time
-    Data=ImaGIN_Normalisation(Data(GoodChannels,:),2);
+    Data=ImaGIN_normalisation(Data(GoodChannels,:),2);
 end
 
 %Remove line noise at 50 Hz
@@ -108,21 +108,21 @@ if 1==1
     
     % d=[0 abs(diff(Data,2)) 0];
     d=[zeros(size(Data,1),1) abs(diff(Data,2,2)) zeros(size(Data,1),1)];
-%     d=ImaGIN_Normalisation(d,2);
+%     d=ImaGIN_normalisation(d,2);
 %     [tmp,Order]=sort(max(d'),'descend');
 %     d=mean(d(Order(1:ceil(length(Order)/2)),:));
 
 
-    d=ImaGIN_Normalisation(d,2);
+    d=ImaGIN_normalisation(d,2);
     d1=max(d,[],1);
-    d1=ImaGIN_Normalisation(d1,2);
+    d1=ImaGIN_normalisation(d1,2);
     d2=mean(d,1);
-    d2=ImaGIN_Normalisation(d2,2);
+    d2=ImaGIN_normalisation(d2,2);
     
     d=d1+d2;
 
     
-    d=ImaGIN_Normalisation(d,2);
+    d=ImaGIN_normalisation(d,2);
     
     % [tmp1,tmp2]=max(d);
     % Index=find(d>tmp1/4);
@@ -211,7 +211,7 @@ if 1==1
                 TemplateData=TemplateData+mean(Data2(:,stimulation(i1)+[-ceil(Stim/2):ceil(Stim/2)]),1);
             end
             TimeTemplate=[-ceil(Stim/2):ceil(Stim/2)]./fsample(D);
-            TemplateNorm=ImaGIN_Normalisation(TemplateData,2,find(TimeTemplate<-0.02&TimeTemplate>-0.1));
+            TemplateNorm=ImaGIN_normalisation(TemplateData,2,find(TimeTemplate<-0.02&TimeTemplate>-0.1));
             tmpoffset=find(TemplateNorm>10&TimeTemplate>-0.02);
             if isempty(tmpoffset)
                 offset=0;
@@ -225,7 +225,7 @@ if 1==1
             offset=stimulation;
             for i1=1:length(stimulation)
                 TemplateData=mean(Data2(:,stimulation(i1)+[-ceil(Stim/2):ceil(Stim/2)]),1);
-                TemplateNorm=ImaGIN_Normalisation(TemplateData,2,find(TimeTemplate<-0.02&TimeTemplate>-0.1));
+                TemplateNorm=ImaGIN_normalisation(TemplateData,2,find(TimeTemplate<-0.02&TimeTemplate>-0.1));
                 tmpoffset=find(TemplateNorm>5&TimeTemplate>-0.02);
                 if isempty(tmpoffset)
                     offset(i1)=0;
@@ -251,7 +251,7 @@ else
     for i0=1:size(Data,1)
         % d=[0 abs(diff(Data,2)) 0];
         d=[0 abs(diff(Data(i0,:),2,2)) 0];
-        d=ImaGIN_Normalisation(d,2);
+        d=ImaGIN_normalisation(d,2);
         
         % [tmp1,tmp2]=max(d);
         % Index=find(d>tmp1/4);
@@ -323,11 +323,11 @@ else
     
     
     d=[zeros(size(Data(Index,:),1),1) abs(diff(Data(Index,:),2,2)) zeros(size(Data(Index,:),1),1)];
-    % d=ImaGIN_Normalisation(d,2);
+    % d=ImaGIN_normalisation(d,2);
     % [tmp,Order]=sort(max(d'),'descend');
     % d=mean(d(Order(1:ceil(length(Order)/2)),:));
     d=mean(d);
-    d=ImaGIN_Normalisation(d,2);
+    d=ImaGIN_normalisation(d,2);
     
     % [tmp1,tmp2]=max(d);
     % Index=find(d>tmp1/4);

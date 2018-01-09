@@ -1,4 +1,4 @@
-function X=ImaGIN_FT1Surrogate(x,NRealisation)
+function CM=ImaGIN_connectivity_matrix(N)
 % -=============================================================================
 % This function is part of the ImaGIN software: 
 % https://f-tract.eu/
@@ -15,27 +15,23 @@ function X=ImaGIN_FT1Surrogate(x,NRealisation)
 %
 % Authors: Olivier David
 
-N=length(x);
-
-x=reshape(x,1,N);
-X=zeros(NRealisation,N);
-
-fx=fft(x);
-if ceil(N/2)~=N/2
-    N1=ceil(N/2);
-    N2=ceil(N/2)-1;
+ncouple	= N*(N-1)/2;
+if ncouple>0
+    CM	= zeros(2,ncouple);
+    cou	= 0;
+    for ii	= 1:N-1
+        j	= ii+1;
+        cou	= cou+1;
+        CM(1,cou)	= ii;
+        CM(2,cou)	= j;
+        while j < N
+            j	= j+1;
+            cou	= cou+1;
+            CM(1,cou)	= ii;
+            CM(2,cou)	= j;
+        end
+    end
 else
-    N1=ceil(N/2)+1;
-    N2=ceil(N/2);
+    CM=[];
 end
-if mod(N,2)==1
-    tmp1=2*pi*rand(NRealisation,ceil(N/2));
-    tmp1=[tmp1 -tmp1(:,[ceil(N/2):-1:2])];
-else
-    tmp1=2*pi*rand(NRealisation,ceil(N/2)+1);
-    tmp1=[tmp1 -tmp1(:,[ceil(N/2):-1:2])];
-end
-for i1=1:NRealisation
-    X(i1,:)=real(ifft(abs(fx).*exp(1i.*(angle(fx)+tmp1(i1,:)))));
-end
-
+return

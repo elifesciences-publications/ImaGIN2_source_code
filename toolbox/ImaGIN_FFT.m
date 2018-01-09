@@ -76,7 +76,7 @@ function D = ImaGIN_FFT_main(D,S)
     Duration = 1/FrequencyResolution;
     Nsamples = ceil(D.fsample*Duration);
     Time = (0 : (Nsamples-1)) ./ D.fsample;
-    Freq = ImaGIN_Time2Freq(Time);
+    Freq = ImaGIN_time2freq(Time);
     try
         if isempty(S.FrequencyRange)
             FrequencyRange = [Freq(2), max(Freq)];

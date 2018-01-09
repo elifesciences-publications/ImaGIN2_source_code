@@ -1,4 +1,4 @@
-function data=ImaGIN_Normalisation(data,dim,Baseline)
+function mArt = ImaGIN_generate_artrange(rcmin, rcmax, nb, fe, art_duration, break_duration, window, mode)
 % -=============================================================================
 % This function is part of the ImaGIN software: 
 % https://f-tract.eu/
@@ -15,16 +15,17 @@ function data=ImaGIN_Normalisation(data,dim,Baseline)
 %
 % Authors: Olivier David
 
-if nargin==2||isempty(Baseline)
-    Baseline=1:size(data,dim);
+id='MATLAB:NonIntegerInput';
+warning('off',id);
+
+prange=linspace(rcmin,rcmax,nb);
+
+mArt=zeros(round(window*fe),nb);
+for ii=1:length(prange)
+    tau=prange(ii);
+    mArt(:,ii)=ImaGIN_generate_artefact(tau,fe,art_duration, break_duration, window, mode);
 end
-if dim==1
-    mu=mean(data(Baseline,:),dim);
-    sigma=std(data(Baseline,:),[],dim);
-    data=(data-ones(size(data,1),1)*mu)./(ones(size(data,1),1)*sigma);
-elseif dim==2
-    mu=mean(data(:,Baseline),dim);
-    sigma=std(data(:,Baseline),[],dim);
-    data=(data-mu*ones(1,size(data,2)))./(sigma*ones(1,size(data,2)));
+
 end
+
 

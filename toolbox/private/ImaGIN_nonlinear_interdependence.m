@@ -1,4 +1,4 @@
-function [PredictionX,PredictionY] = ImaGIN_NonlinearInterdependence(x,y,TimeDelay,EmbeddingDimension,Method,TimeHorizon)
+function [PredictionX,PredictionY] = ImaGIN_nonlinear_interdependence(x,y,TimeDelay,EmbeddingDimension,Method,TimeHorizon)
 %
 % REFERENCES:
 %    - Schiff Phys Rev E 54(6) 6708 1997, Breakspear PhD Thesis, Quian Quiroga PhysRevE 65 041903 2002

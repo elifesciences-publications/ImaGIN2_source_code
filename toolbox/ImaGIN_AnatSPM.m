@@ -1,7 +1,7 @@
-function Patient = ImaGIN_anat_spm(Patient, isNormalize)
-% IMAGIN_ANAT_SPM Registration, segmentation and normalization of MRI and CT scans for SEEG/ECOG implantations.
+function Patient = ImaGIN_AnatSPM(Patient, isNormalize)
+% IMAGIN_ANATSPM Registration, segmentation and normalization of MRI and CT scans for SEEG/ECOG implantations.
 %
-% USAGE: ImaGIN_anat_spm(Patient, isNormalize)
+% USAGE: ImaGIN_AnatSPM(Patient, isNormalize)
 %
 % INPUT: 
 %    - Patient{}:  Cell-array of strctures, each one representing a patient, with the following optional fields

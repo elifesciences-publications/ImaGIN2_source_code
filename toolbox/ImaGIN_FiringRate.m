@@ -1,7 +1,7 @@
-function ImaGIN_spike_compute(S)
+function ImaGIN_FiringRate(S)
 % Compute mean firing rate
 %
-% USAGE:   D = ImaGIN_spike_compute(S)
+% USAGE:   D = ImaGIN_FiringRate(S)
 
 % -=============================================================================
 % This function is part of the ImaGIN software: 

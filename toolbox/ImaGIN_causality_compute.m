@@ -1,4 +1,4 @@
-function D = ImaGIN_causality_compute(S)
+function D = ImaGIN_Causality_compute(S)
 % Compute diffent measure of asymetric interactions
 
 % -=============================================================================
@@ -27,16 +27,16 @@ end
 
 for i1 = 1:size(DD,1)
     if exist('S', 'var')
-        [D,S] = ImaGIN_causality_compute_main(deblank(DD(i1,:)),S);
+        [D,S] = ImaGIN_Causality_compute_main(deblank(DD(i1,:)),S);
     else
-        [D,S] = ImaGIN_causality_compute_main(deblank(DD(i1,:)));
+        [D,S] = ImaGIN_Causality_compute_main(deblank(DD(i1,:)));
     end
 end
 end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [D,S] = ImaGIN_causality_compute_main(D,S)
+function [D,S] = ImaGIN_Causality_compute_main(D,S)
     TimeWindowWidth=[];
 
     try
@@ -321,7 +321,7 @@ function [D1,D1s] = ComputeGS(D1,k,TimeWindow,TimeWindowWidth,fnamedat,Pre)
             end
 
             EmbeddingDimension=3;
-            [PredictionX,PredictionY] = ImaGIN_NonlinearInterdependence(tmp1,tmp2,TimeDelay,EmbeddingDimension,D1.ca.MethodGS,TimeHorizon);
+            [PredictionX,PredictionY] = ImaGIN_nonlinear_interdependence(tmp1,tmp2,TimeDelay,EmbeddingDimension,D1.ca.MethodGS,TimeHorizon);
             d1(i1)=PredictionX-PredictionY;
             D1.ca.GSX(i1)=PredictionX;
             D1.ca.GSY(i1)=PredictionY;
@@ -355,7 +355,7 @@ function [D1,D1s] = ComputeGS(D1,k,TimeWindow,TimeWindowWidth,fnamedat,Pre)
                     n=n+1;
                 end
                 EmbeddingDimension=3;
-                [PredictionX,PredictionY] = ImaGIN_NonlinearInterdependence(tmp1,tmp2,TimeDelay,EmbeddingDimension,D1.ca.MethodGS,TimeHorizon);
+                [PredictionX,PredictionY] = ImaGIN_nonlinear_interdependence(tmp1,tmp2,TimeDelay,EmbeddingDimension,D1.ca.MethodGS,TimeHorizon);
                 D1.ca.GSX(i1,i0)=PredictionX;
                 D1.ca.GSY(i1,i0)=PredictionY;
                 d1(i1,i0)=PredictionX-PredictionY;
@@ -413,7 +413,7 @@ function [D1,D1s] = ComputeGS(D1,k,TimeWindow,TimeWindowWidth,fnamedat,Pre)
                 %         [ED,FNNP] = EmbeddingDimension(tmp1,TimeDelay,20);
                 EmbeddingDimension=3;
                 TimeHorizon=TimeDelay;
-                [PredictionX,PredictionY] = ImaGIN_NonlinearInterdependence(tmp1,tmp2,TimeDelay,EmbeddingDimension,D1.ca.MethodGS,TimeHorizon);
+                [PredictionX,PredictionY] = ImaGIN_nonlinear_interdependence(tmp1,tmp2,TimeDelay,EmbeddingDimension,D1.ca.MethodGS,TimeHorizon);
                 GSX_S(i1)=PredictionX;
                 GSY_S(i1)=PredictionY;
                 GS_S(i1)=PredictionX-PredictionY;
@@ -438,7 +438,7 @@ function [D1,D1s] = ComputeGS(D1,k,TimeWindow,TimeWindowWidth,fnamedat,Pre)
                     end
                     EmbeddingDimension=3;
                     TimeHorizon=TimeDelay;
-                    [PredictionX,PredictionY] = ImaGIN_NonlinearInterdependence(tmp1,tmp2,TimeDelay,EmbeddingDimension,D1.ca.MethodGS,TimeHorizon);
+                    [PredictionX,PredictionY] = ImaGIN_nonlinear_interdependence(tmp1,tmp2,TimeDelay,EmbeddingDimension,D1.ca.MethodGS,TimeHorizon);
                     GSX_S(i1,i0)=PredictionX;
                     GSY_S(i1,i0)=PredictionY;
                     GS_S(i1,i0)=PredictionX-PredictionY;
@@ -600,12 +600,12 @@ function [D1,D1s]=ComputeDTF(D1,k,TimeWindow,TimeWindowWidth,Baseline,fnamedat,P
     %Amplitude normalisation according to the baseline
     Baseline=find(time>=Baseline(1)&time<=Baseline(2));
     if isempty(Baseline)
-        data=ImaGIN_Normalisation(squeeze(D1(D1.ca.channels,:,k))',1);
+        data=ImaGIN_normalisation(squeeze(D1(D1.ca.channels,:,k))',1);
         %Find error covariance during the baseline (used for GPDC)
         [w,A,C,SBC,FPE,th]=arfit(data,2,ceil(D1.fsample/8));
         ErrorCov=C;
     else
-        data=ImaGIN_Normalisation(squeeze(D1(D1.ca.channels,:,k))',1,Baseline);
+        data=ImaGIN_normalisation(squeeze(D1(D1.ca.channels,:,k))',1,Baseline);
         %Find error covariance during the baseline (used for GPDC)
         [w,A,C,SBC,FPE,th]=arfit(data(Baseline,:),2,ceil(D1.fsample/8));
         ErrorCov=C;
@@ -649,7 +649,7 @@ function [D1,D1s]=ComputeDTF(D1,k,TimeWindow,TimeWindowWidth,Baseline,fnamedat,P
             win=find(time>=TimeWindow(i0)-TimeWindowWidth/2&time<=TimeWindow(i0)+TimeWindowWidth/2);
 
             %Amplitude normalisation
-            datatmp=ImaGIN_Normalisation(data(win,:),1);
+            datatmp=ImaGIN_normalisation(data(win,:),1);
 
             %Model order
             [w,A,C,SBC,FPE,th]=arfit(datatmp,2,ceil(D1.fsample/8));   
@@ -708,12 +708,12 @@ function [D1,D1s]=ComputeDTF(D1,k,TimeWindow,TimeWindowWidth,Baseline,fnamedat,P
         end
 
         if isempty(Baseline)
-            Surro=ImaGIN_Normalisation(Surro,1);
+            Surro=ImaGIN_normalisation(Surro,1);
             %Find error covariance during the baseline (used for GPDC)
             [w,A,C,SBC,FPE,th]=arfit(Surro,2,ceil(D1.fsample/8));
             ErrorCov=C;
         else
-            Surro=ImaGIN_Normalisation(Surro,1,Baseline);
+            Surro=ImaGIN_normalisation(Surro,1,Baseline);
             %Find error covariance during the baseline (used for GPDC)
             [w,A,C,SBC,FPE,th]=arfit(Surro(Baseline,:),2,ceil(D1.fsample/8));
             ErrorCov = C;
@@ -831,6 +831,98 @@ function event = select_events(event, timeseg)
             event(i).time=event(i).time-timeseg(1);
         end
     end
+end
+
+
+%% ===== ImaGIN_FT1Surrogate =====
+function X=ImaGIN_FT1Surrogate(x,NRealisation)
+    N=length(x);
+
+    x=reshape(x,1,N);
+    X=zeros(NRealisation,N);
+
+    fx=fft(x);
+    if ceil(N/2)~=N/2
+        N1=ceil(N/2);
+        N2=ceil(N/2)-1;
+    else
+        N1=ceil(N/2)+1;
+        N2=ceil(N/2);
+    end
+    if mod(N,2)==1
+        tmp1=2*pi*rand(NRealisation,ceil(N/2));
+        tmp1=[tmp1 -tmp1(:,[ceil(N/2):-1:2])];
+    else
+        tmp1=2*pi*rand(NRealisation,ceil(N/2)+1);
+        tmp1=[tmp1 -tmp1(:,[ceil(N/2):-1:2])];
+    end
+    for i1=1:NRealisation
+        X(i1,:)=real(ifft(abs(fx).*exp(1i.*(angle(fx)+tmp1(i1,:)))));
+    end
+end
+
+
+%% ===== ImaGIN_H2Compute =====
+function H2 = ImaGIN_H2Compute(x,y,ratio)
+    NTime=length(x);
+    if ratio>1
+        Horizon=ratio;
+    else
+        Horizon=round(NTime*ratio);
+    end
+    %H2(1,:): prediction of x from y
+    %H2(2,:): prediction of y from x
+    H2 = zeros(2,2*Horizon+1);
+    for i3 =-Horizon:Horizon
+        tmp2 = ImaGIN_shift(y,i3);
+        H2(1,i3+Horizon+1)=H2Compute(tmp2(Horizon+1:NTime-Horizon),x(Horizon+1:NTime-Horizon));
+        H2(2,i3+Horizon+1)=H2Compute(x(Horizon+1:NTime-Horizon),tmp2(Horizon+1:NTime-Horizon));
+    %     tmp2=ImaGIN_shift(x,-i3);
+    end
+end
+
+function H2 = H2Compute(x,y)
+    %these mario chavez (p. 65)
+    %intervalles construits avec le meme nombre de points
+
+    x=reshape(x,prod(size(x)),1);
+    y=reshape(y,prod(size(x)),1);
+    x=x-min(x);
+    y=y-min(y);
+    Maxx = max(x);
+    Maxy = max(y);
+    N=length(x);
+    NBin = floor(log(N)/log(2));
+
+    [xsort,xorder]=sort(x);
+
+    p = zeros(1,NBin);
+    q = zeros(1,NBin);
+    for i1=1:NBin
+    %     if i1~=NBin
+    %         tmp = find(x<i1*Maxx/NBin&x>=(i1-1)*Maxx/NBin);
+    %     else
+    %         tmp = find(x<=i1*Maxx/NBin&x>=(i1-1)*Maxx/NBin);
+    %     end
+    %     q(i1) = mean(y(tmp));
+    %     p(i1) = Maxx/(2*NBin)+(i1-1)*Maxx/NBin;
+        tmp = (i1-1)*floor(N/NBin)+[1:floor(N/NBin)];
+        q(i1) = mean(y(xorder(tmp)));
+        p(i1) = mean(xsort(tmp));
+    end
+    muxy = zeros(size(y));
+    for i1=1:length(muxy)
+        for i2=1:NBin-1
+            if x(i1)<=p(i2+1)
+                tmp=i2;
+                break
+            elseif i2==NBin-1
+                tmp=i2;
+            end
+        end
+        muxy(i1)=(q(tmp+1)-q(tmp))*(x(i1)-p(tmp))/(p(tmp+1)-p(tmp))+q(tmp);
+    end
+    H2 = 1-var(y-muxy)/var(y);
 end
 
 

@@ -1,4 +1,4 @@
-function D = ImaGIN_causality_average(S)
+function D = ImaGIN_Causality_average(S)
 % -=============================================================================
 % This function is part of the ImaGIN software: 
 % https://f-tract.eu/

@@ -61,7 +61,7 @@ if FlagSyn
         PairPos=find(Syn.S1>Zmaxs);
         PairNeg=find(Syn.S2>Zmins);
     end
-    M=ImaGIN_ConnectivityMatrix(size(Syn.Pos,1));
+    M=ImaGIN_connectivity_matrix(size(Syn.Pos,1));
 end
 
 %plot electrodes

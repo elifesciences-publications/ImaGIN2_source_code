@@ -1,4 +1,4 @@
-function [SpikeRate,MinLoc,MaxLoc]=ImaGIN_SpikeDetect(Data,Time,FreqSpike,ThreshData,ThreshCC,FlagDetrend,Coarse,FlagContinuous)
+function [SpikeRate,MinLoc,MaxLoc]=ImaGIN_spike_detect(Data,Time,FreqSpike,ThreshData,ThreshCC,FlagDetrend,Coarse,FlagContinuous)
 % -=============================================================================
 % This function is part of the ImaGIN software: 
 % https://f-tract.eu/

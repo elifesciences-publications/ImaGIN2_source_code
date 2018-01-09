@@ -1,4 +1,4 @@
-function freq = ImaGIN_Time2Freq(Time)
+function freq = ImaGIN_time2freq(Time)
 % -=============================================================================
 % This function is part of the ImaGIN software: 
 % https://f-tract.eu/

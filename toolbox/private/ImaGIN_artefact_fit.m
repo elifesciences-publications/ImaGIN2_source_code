@@ -1,4 +1,4 @@
-function [sig_corr,rc] = ImaGIN_ArtefactFit(Signal, mmArt, flagRC, IntCor)
+function [sig_corr,rc] = ImaGIN_artefact_fit(Signal, mmArt, flagRC, IntCor)
 % -=============================================================================
 % This function is part of the ImaGIN software: 
 % https://f-tract.eu/

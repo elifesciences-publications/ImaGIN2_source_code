@@ -287,12 +287,12 @@ switch Method
             win=win(1:floor(TimeWindowWidth*D.fsample));
             
             data=Data(:,win).*(ones(size(Data,1),1)*hanning(length(win))');
-            data=ImaGIN_Normalisation(data,2,[]);
+            data=ImaGIN_normalisation(data,2,[]);
 
             for i2=1:size(data,1)
-                data(i2,:)=ImaGIN_bandpassFilter(data(i2,:),fsample(D),7,90);
+                data(i2,:)=ImaGIN_bandpass(data(i2,:),fsample(D),7,90);
             end
-            data=ImaGIN_Normalisation(data,2,[]);
+            data=ImaGIN_normalisation(data,2,[]);
             [u,s,v]=svd(data',0);
             s=diag(s);
             
@@ -346,13 +346,13 @@ switch Method
         Data = ImaGIN_notch(Data, Wo, BW);
 
         if isempty(Baseline)
-            Data=ImaGIN_Normalisation(Data,2,[]);
+            Data=ImaGIN_normalisation(Data,2,[]);
         else
             Bsl=[];
             for i=1:length(Baseline)
                 Bsl(i)=indsample(D,Baseline(i));
             end
-            Data=ImaGIN_Normalisation(Data,2,Bsl(1):Bsl(2));
+            Data=ImaGIN_normalisation(Data,2,Bsl(1):Bsl(2));
         end
         SpikeWidthSamples=SpikeWidth*D.fsample;
         
@@ -418,7 +418,7 @@ switch Method
         for i1=1:length(TimeWindow)
             win=find(Time>=TimeWindow(i1)-TimeWindowWidth/2&Time<=TimeWindow(i1)+TimeWindowWidth/2);
             t=Time(win);
-            f = ImaGIN_Time2Freq(t);
+            f = ImaGIN_time2freq(t);
             switch  Subject
                 case 'GAERS'
                     FreqInterest = find(f>=7&f<=11);
@@ -431,10 +431,10 @@ switch Method
             Power(i1)=sum(Data(win).*Data(win));
             if isempty(FreqInterest)
                 win=win(1:Coarse:floor(TimeWindowWidth*D.fsample));
-                Seizure(i1)=ImaGIN_PermutationEntropy(Data(win),EmbeddingDimension,TimeDelay);
+                Seizure(i1)=ImaGIN_permutation_entropy(Data(win),EmbeddingDimension,TimeDelay);
             elseif mean(power(FreqInterest))>mean(power(FreqNoInterest))
                 win=win(1:Coarse:floor(TimeWindowWidth*D.fsample));
-                Seizure(i1)=ImaGIN_PermutationEntropy(Data(win),EmbeddingDimension,TimeDelay);
+                Seizure(i1)=ImaGIN_permutation_entropy(Data(win),EmbeddingDimension,TimeDelay);
             end
             if isnan(Seizure(i1))
             end
@@ -447,7 +447,7 @@ switch Method
         Wo = 50*(Time(2)-Time(1))*2;  BW = Wo/35;
         Data = ImaGIN_notch(Data, Wo, BW);
 
-        [S,Event1,Event2]=ImaGIN_SpikeDetect(Data,Time,Freq,ThreshData,ThreshCC,0,Coarse);
+        [S,Event1,Event2]=ImaGIN_spike_detect(Data,Time,Freq,ThreshData,ThreshCC,0,Coarse);
         D.Seizure{KeepNumber}.Event1=Event1;
         D.Seizure{KeepNumber}.Event2=Event2;
 end
@@ -602,7 +602,7 @@ Time=time(Start:End);
 
 switch Method
     case 'Spike'
-        S=ImaGIN_SpikeDetect(Data,Time,Freq,ThreshData,0.5,1);
+        S=ImaGIN_spike_detect(Data,Time,Freq,ThreshData,0.5,1);
 end
 
 if Start>1
@@ -618,7 +618,7 @@ if Bin
     if ThreshDetect==0
         %Determine the threshold with a 4 Gaussian mixture model
         Coarse=max([1 floor(length(S)/2e3)]);
-        X=ImaGIN_Normalisation(S(1:Coarse:end),2)';
+        X=ImaGIN_normalisation(S(1:Coarse:end),2)';
         [W,M,R,Tlogl] = gmmbvl_em(X,4,4,0,0,0);
         [M,order]=sort(M);
         W=W(order);
@@ -1036,7 +1036,7 @@ if UseFrequency && Somnolence
     MaxFreq=12;
     MinFreq=5.8;
     for i1=1:length(Start)
-        Freq=ImaGIN_Time2Freq(Time(Start(i1):End(i1)));
+        Freq=ImaGIN_time2freq(Time(Start(i1):End(i1)));
         power=abs(fft(D(D.Seizure{KeepNumber}.SelChan,Start(i1):End(i1),:)));
         FreqPrinc=Freq(min(find(power==max(power))));
         if  FreqPrinc>=MaxFreq || FreqPrinc<=MinFreq
@@ -1053,7 +1053,7 @@ elseif UseFrequency && ~Somnolence
    MaxFreq=12;
     MinFreq=5.8;
     for i1=1:length(Start)
-        Freq=ImaGIN_Time2Freq(Time(Start(i1):End(i1)));
+        Freq=ImaGIN_time2freq(Time(Start(i1):End(i1)));
         power=abs(fft(D(D.Seizure{KeepNumber}.SelChan,Start(i1):End(i1),:)));
         FreqPrinc=Freq(min(find(power==max(power))));
         if  FreqPrinc>=MaxFreq || FreqPrinc<=MinFreq

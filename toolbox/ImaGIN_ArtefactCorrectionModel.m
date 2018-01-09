@@ -119,9 +119,9 @@ end
 if estimateLength
     Data=D(GoodChannels,:);
     d=[zeros(size(Data,1),1) abs(diff(Data,2,2)) zeros(size(Data,1),1)];
-    d=ImaGIN_Normalisation(d,2);
+    d=ImaGIN_normalisation(d,2);
     d=max(d);
-    d=ImaGIN_Normalisation(d,2);
+    d=ImaGIN_normalisation(d,2);
     
     template=0;
     for e=IndexEvent
@@ -153,14 +153,14 @@ end
 
 mArt=[];
 for i0=1:length(tms_int)
-    mArt=cat(2,mArt,ImaGIN_GenerateArtRange(rc1, rc2, nb, fe_ovsmpl, tms_int(i0), break_duration, windowArt, mode));  % generation of the different artifact shapes according to the minimal and maximal RC values
+    mArt=cat(2,mArt,ImaGIN_generate_artrange(rc1, rc2, nb, fe_ovsmpl, tms_int(i0), break_duration, windowArt, mode));  % generation of the different artifact shapes according to the minimal and maximal RC values
 end
 
 step1=round(fe_ovsmpl/fsample(D));
 step2=ceil(fe_ovsmpl/fsample(D));
 mmArt=zeros(step2,size(mArt,2),length(1:step1:size(mArt,1)));
 for i=1:size(mArt,2)
-    mmArt(:,i,:)=ImaGIN_DownSample(mArt(:,i),fe_ovsmpl,fsample(D));    % undersampling of every artifact shape
+    mmArt(:,i,:) = ImaGIN_downsample(mArt(:,i),fe_ovsmpl,fsample(D));    % undersampling of every artifact shape
 end
 
 %correct by 3 samples (add zero) in case shift of artefact detection
@@ -189,7 +189,7 @@ for c = SelectedChannels
         sig = cat(1,sig,D(c,ind1(countEv):ind1(countEv)+intlength-1));
     end
     m = min(size(sig,2),size(mmArt,3));
-    [sig_corr,rc(c,:)] = ImaGIN_ArtefactFit(sig(:,1:m), mmArt(:,:,1:m), 'same', IntCor+1);
+    [sig_corr,rc(c,:)] = ImaGIN_artefact_fit(sig(:,1:m), mmArt(:,:,1:m), 'same', IntCor+1);
     
     startpoints=ind1(find(ind1));
     endpoints=ind1(find(ind1))+m-1;
@@ -264,4 +264,17 @@ S.filter.PHz = 90;
 S.FileOut = FileOut;
 D = ImaGIN_spm_eeg_filter(S);
 
+end
+
+
+%% ===== DOWNSAMPLE =====
+function usSignal = ImaGIN_downsample(Signal, fe, fs)
+    step1=round(fe/fs);
+    step2=ceil(fe/fs);
+
+    usSignal=zeros(step2,length(1:step1:length(Signal)));
+    for i=1:step2
+        index=i+[0:step1:length(Signal)-i];
+        usSignal(i,1:length(index))=Signal(index);
+    end
 end

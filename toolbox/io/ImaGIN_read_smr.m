@@ -1,4 +1,4 @@
-function [data,Channel,evt] = ImaGIN_ReadSMR(DataFile,channelnumber,Coarse)
+function [data,Channel,evt] = ImaGIN_read_smr(DataFile,channelnumber,Coarse)
 % -=============================================================================
 % This function is part of the ImaGIN software: 
 % https://f-tract.eu/
@@ -131,7 +131,7 @@ for i1 = Good
             d = 10 * double(d) ./ (2^16-1);  %spike2 data are in int16
             if (Coarse2 > 1)
                 try
-                    d = ImaGIN_bandpassFilter(d, 1/header.sampleinterval, 1, 1/(2*header.sampleinterval*Coarse2)-1);    %antialiasing,
+                    d = ImaGIN_bandpass(d, 1/header.sampleinterval, 1, 1/(2*header.sampleinterval*Coarse2)-1);    %antialiasing,
                 end
             end
             if i1==1
