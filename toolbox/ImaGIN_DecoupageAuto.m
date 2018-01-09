@@ -439,7 +439,7 @@ clc;
 
 f = dir(fullfile(DirOut,'*.mat')); %Delete all cropped text file
 f = {f.name};
-for k=1:numel(f);
+for k=1:numel(f)
     [~, matFileName, ~] = fileparts(f{k});
     nbrSc = strfind(matFileName,'_');
     txtFileName = matFileName(1:nbrSc(end)-1);

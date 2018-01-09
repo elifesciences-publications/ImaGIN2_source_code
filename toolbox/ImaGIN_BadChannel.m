@@ -11,13 +11,13 @@ function D = ImaGIN_BadChannel(S)
 % FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
 % DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
 %
-% Copyright (c) 2017 Inserm U1216
+% Copyright (c) 2000-2017 Inserm U1216
 % =============================================================================-
 %
 % Authors: Viateur Tuyisenge & Olivier David
 try
     FileIn = S.dataset; % name of cropped iEEG file .dat/.mat
-    badDir = S.DirFileOut; % directory where iEEG file .dat/.mat with badchannels indices will be stored
+    %badDir = S.DirFileOut; % directory where iEEG file .dat/.mat with badchannels indices will be stored
     trainDir = S.trainBase;  % directory where training set is stored
     try
         D = spm_eeg_load(FileIn); % Load the cropped meeg object
@@ -26,32 +26,36 @@ try
         D=spm_eeg_load(FileIn);
     end
     
-    [~,cutName,~] = fileparts(FileIn);
-    bPrefix = strcat(badDir,'/',cutName);
+    [badDir,FileOut,~] = fileparts(S.FileOut);
+    bPrefix = strcat(badDir,'/',FileOut);
     
     clear S2;
     S2.FileName = FileIn;
 
-
     
-    T = ImaGIN_FeatureSEEG(S2); % function returns a table T of features
+%    T = ImaGIN_FeatureSEEG(S2); % function returns a table T of features
     
-    Tbase = readtable(strcat(trainDir, '/trainBaseFeatures.csv')); % load training base
-    trainingData = Tbase(:,2:9);
-    [trainedClassifier, ~] = ImaGIN_trainClassifier(trainingData); % train the model
+%     Tbase = readtable(strcat(trainDir, '/trainBaseFeatures.csv')); % load training base
+%     trainingData = Tbase(:,2:9);
+%     [trainedClassifier, ~] = ImaGIN_trainClassifier(trainingData); % train the model
     %Uncomment the following line to use the trained model
-    %load(strcat(trainDir, '/ImaGIN_trainedClassifier.mat')) %  load the trained classifier
-    channelClass = trainedClassifier.predictFcn(T(:,2:8)); % predict new dataset
-    bd = strcmp(channelClass,'Bad');
+  
+%     load(strcat(trainDir, '/ImaGIN_trainedClassifier.mat'))  %  load the trained classifier
+%     channelClass = trainedClassifier.predictFcn(T(:,2:8)); % predict new dataset
+%     bd = strcmp(channelClass','Bad);
+
+    bd = strcmp('channelClass','Bad');
+    
     bIdx = find(bd);
     badFile = fopen(strcat(bPrefix,'_bIdx.txt'),'w'); % Save badchannel indices in .txt file
     fprintf(badFile,'%d\n',bIdx(:));
     fclose(badFile);
     
-    Tnew = [T channelClass];
-    Tnew.Properties.VariableNames{'Var9'} = 'Note';
-    csvfilename = strcat(bPrefix,'.csv'); % Save feature table & badchannels indices
-    writetable(Tnew,csvfilename,'Delimiter',',');
+%     Tnew = [T channelClass];
+%     Tnew.Properties.VariableNames{'Var9'} = 'Note';
+%     csvfilename = strcat(bPrefix,'.csv'); % Save feature table & badchannels indices
+%     writetable(Tnew,csvfilename,'Delimiter',',');
+    
     if ~isempty(bIdx)
         D = badchannels(D,bIdx,1); %Add badchannel index in meeg object
     end
@@ -83,7 +87,7 @@ try
                 plot(time(D),D(i3+(i2-1)*Size,:),color);
                 ylabel([num2str(i3+(i2-1)*Size) ' : ' D.chanlabels{i3+(i2-1)*Size}])
                 if i3 == 1
-                    figName = char(strcat(cutName,'_',num2str(i3+(i2-1)*Size),'-', ...
+                    figName = char(strcat(FileOut,'_',num2str(i3+(i2-1)*Size),'-', ...
                         num2str(i2*Size)));
                     title(figName,'interpreter','none');
                 end
@@ -109,7 +113,7 @@ try
                 plot(time(D),D(i3+(i2-1)*Size+i4,:),color);
                 ylabel([num2str(i3+(i2-1)*Size+i4) ' : ' D.chanlabels{i3+(i2-1)*Size+i4}])
                 if i4 == 1
-                    figName = char(strcat(cutName,'_',num2str(i3+(i2-1)*Size + 1),'-',num2str(n_c)));
+                    figName = char(strcat(FileOut,'_',num2str(i3+(i2-1)*Size + 1),'-',num2str(n_c)));
                     title(figName,'interpreter','none');
                 end
                 axis tight
@@ -132,7 +136,7 @@ try
             plot(time(D),D(i5,:),color);
             ylabel([num2str(i5) ' : ' D.chanlabels{i5}])
             if i5 == 1
-                figName = char(strcat(cutName,'_',num2str(1),'-',num2str(n_c)));
+                figName = char(strcat(FileOut,'_',num2str(1),'-',num2str(n_c)));
                 title(figName,'interpreter','none');
             end
             axis tight
