@@ -204,6 +204,13 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
                     end
                 end
             end
+            
+            % For recordings from YUQ: many channels are classified as "POL" => Changing the type manually to EEG
+            iPOL = find(strcmpi({ChannelMat.Channel.Type}, 'POL'));
+            if ~isempty(iPOL)
+                [ChannelMat.Channel(iPOL).Type] = deal('EEG');
+            end
+            
         % BrainVision BrainAmp
         case 'EEG-BRAINAMP'
             [sFileIn, ChannelMat] = in_fopen_brainamp(InputFile);
@@ -306,7 +313,8 @@ function D = ImaGIN_convert_brainstorm(InputFile, FileFormat, OutputFile, SelCha
         % Save the list of channels in the output file
         ImaGIN_save_log(SpmFile, 'Convert: Removed channels:', sort(setdiff(ChanLabelsIn, ChanLabelsOut)));
     end
-set_final_status('OK');
+    set_final_status('OK');
 end
+
 
 
