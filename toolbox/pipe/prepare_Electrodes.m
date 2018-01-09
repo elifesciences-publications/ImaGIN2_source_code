@@ -83,12 +83,13 @@ S.FileTxtOut = FileTxtOut;
 S.FileOut = FileOut;
 D = ImaGIN_Electrode(S);
 
+set_final_status('OK')
 end
 
 
 function data = extractIntranatFile(filename)
 delimiter = '\t';
-formatSpec = '%s%s%s%s%s%s%s%s%s%s%s%s%[^\n\r]';
+formatSpec = '%s%s%s%s%s%s%s%s%s%s%s%s%s%s%[^\n\r]';
 
 fileID = fopen(filename,'r');
 data = textscan(fileID, formatSpec, 'Delimiter', delimiter,  'ReturnOnError', false);
