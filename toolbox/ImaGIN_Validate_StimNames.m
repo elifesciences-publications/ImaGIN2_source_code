@@ -1,7 +1,23 @@
 function ImaGIN_Validate_StimNames(S)
+% -=============================================================================
+% This function is part of the ImaGIN software: 
+% https://f-tract.eu/
+%
+% This software is distributed under the terms of the GNU General Public License
+% as published by the Free Software Foundation. Further details on the GPLv3
+% license can be found at http://www.gnu.org/copyleft/gpl.html.
+%
+% FOR RESEARCH PURPOSES ONLY. THE SOFTWARE IS PROVIDED "AS IS," AND THE AUTHORS
+% DO NOT ASSUME ANY LIABILITY OR RESPONSIBILITY FOR ITS USE IN ANY CONTEXT.
+%
+% Copyright (c) 2000-2017 Inserm U1216
+% =============================================================================-
+%
+% Authors: Viateur Tuyisenge & Olivier David
+
 sFile = S.dataset;
 pulseDefault = str2double(S.defaultPulseDuration);
-print_message(sprintf('Got default pulse duration = %d \n', pulseDefault));
+fprintf('MESSAGE: Got default pulse duration = %d \n', pulseDefault);
 try
     D = spm_eeg_load(sFile); % Load the converted file .mat
 catch
@@ -87,15 +103,15 @@ end
 pIdx = find(pVals);
 
 if numel(pIdx) == numel(KeepEvent)
-    print_message('All Notes include pulse duration !')
+    fprintf('MESSAGE: All Notes include pulse duration ! \n');
     set_final_status('OK')
 else
     
     if ~isempty(pIdx)
         pval = unique(pVals(pIdx));
-        print_message(sprintf('Pulse duration found, but not in all Notes. Its unique value is %d \n', pval));
+        fprintf('MESSAGE: Pulse duration found, but not in all Notes. Its unique value is %d \n', pval);
     else
-        print_message(sprintf('Pulse duration not found in any of the Notes. Using default value = %d \n', pulseDefault));
+        fprintf('MESSAGE: Pulse duration not found in any of the Notes. Using default value = %d \n', pulseDefault);
         pval = pulseDefault;
     end
     
