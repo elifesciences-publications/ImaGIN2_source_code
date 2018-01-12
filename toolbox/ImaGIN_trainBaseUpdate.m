@@ -40,15 +40,13 @@ for i = 1:length(csvTables)
     csvName = csvTables(i).name;
     csvPath = strcat(badDir, '/', csvName);
     crTable = readtable(csvPath);
-    crTable.Properties.VariableNames = {'rankIdx', 'rankXcorr', 'rankVal', 'ch_dev', 'ch_ampl', 'ch_grad', 'ch_kurt', 'ch_hurs', 'Note'};
+    crTable.Properties.VariableNames = {'rankIdx', 'ch_xcorr', 'ch_var', 'ch_dev', 'ch_ampl', 'ch_grad', 'ch_kurt', 'ch_hurs', 'Note'};
     
-    %%%%%%%%%%%%%%%%%%
     Tbase.predictors = [Tbase.predictors; crTable(:, {'ch_xcorr', 'ch_var', 'ch_dev', 'ch_ampl', 'ch_grad', 'ch_kurt', 'ch_hurs'})];
 	Tbase.response   = [Tbase.response; crTable.Note];
-%     Tbase = [Tbase; crTable]; 
 end
 % Write train base to hard drive
-save(trainBaseFile, '-struct', Tbase);
+save(trainBaseFile, '-struct', 'Tbase');
 
 % Train classifier
 try
