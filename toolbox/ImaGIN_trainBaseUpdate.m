@@ -1,4 +1,4 @@
-function ImaGIN_trainBaseUpdate(S)
+function ImaGIN_trainBaseUpdate(badDir, trainBaseFile, trainedFile)
 % -=============================================================================
 % This function is part of the ImaGIN software: 
 % https://f-tract.eu/
@@ -15,29 +15,47 @@ function ImaGIN_trainBaseUpdate(S)
 %
 % Authors: Viateur Tuyisenge & Olivier David
 
-badDir= S.DirIn;
+% Parse inputs
+if (nargin < 3) || isempty(trainedFile)
+    trainedFile = '/gin/data/database/02-raw/ImaGIN_trainedClassifier.mat';
+end
+if (nargin < 2) || isempty(trainBaseFile)
+    trainBaseFile = '/gin/data/database/02-raw/trainBaseFeatures.mat';
+end
 
-Tbase = readtable('/gin/data/database/02-raw/trainBaseFeatures.csv');
-%%
-cd(badDir);   % Badchannel directory with csv files (features)
-csvTables = dir('*.csv'); % list csv files
+% Read existing train base
+if ~isempty(trainBaseFile) && file_exist(trainBaseFile)
+    Tbase = load(trainBaseFile);
+else
+    Tbase.predictors = [];
+    Tbase.response = {};
+end
+
+% Go to bad channel directory with csv files (features)
+cd(badDir);   
+% List csv files
+csvTables = dir('*.csv');
+% Read the csv files and stack them to form the train base
 for i = 1:length(csvTables)
     csvName = csvTables(i).name;
-    csvPath = strcat(badDir,'/',csvName);
+    csvPath = strcat(badDir, '/', csvName);
     crTable = readtable(csvPath);
-    crTable.Properties.VariableNames = {'rankIdx','rankXcorr', 'rankVal', 'ch_dev', 'ch_ampl', 'ch_grad', 'ch_kurt', 'ch_hurs','Note'};
-    Tbase = [Tbase;crTable]; 
+    crTable.Properties.VariableNames = {'rankIdx', 'rankXcorr', 'rankVal', 'ch_dev', 'ch_ampl', 'ch_grad', 'ch_kurt', 'ch_hurs', 'Note'};
+    
+    %%%%%%%%%%%%%%%%%%
+    Tbase.predictors = [Tbase.predictors; crTable(:, {'ch_xcorr', 'ch_var', 'ch_dev', 'ch_ampl', 'ch_grad', 'ch_kurt', 'ch_hurs'})];
+	Tbase.response   = [Tbase.response; crTable.Note];
+%     Tbase = [Tbase; crTable]; 
+end
+% Write train base to hard drive
+save(trainBaseFile, '-struct', Tbase);
+
+% Train classifier
+try
+    [trainedClassifier, validationAccuracy] = ImaGIN_trainClassifier(Tbase.predictors, Tbase.response);
+    save(trainedFile, 'trainedClassifier');
+catch
+    disp(['ERROR: ' lasterr]);
 end
 
-% update trainBase %  /gin/data/database/02-raw/trainBaseFeatures.csv
-% trainedModel /gin/data/database/02-raw/ImaGIN_trainedClassifier.mat
-trainedfname = '/gin/data/database/02-raw/ImaGIN_trainedClassifier.mat';
-csvfname     = '/gin/data/database/02-raw/trainBaseFeatures.csv';
-%%
-try
-    [trainedClassifier, validationAccuracy] = ImaGIN_trainClassifier(Tbase);
-    save(trainedfname,'trainedClassifier');
-    writetable(Tbase,csvfname,'Delimiter',',');
-catch
-    writetable(Tbase,csvfname,'Delimiter',',');
-end
+
