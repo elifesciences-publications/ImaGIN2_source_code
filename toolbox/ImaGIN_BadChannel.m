@@ -1,5 +1,6 @@
 function D = ImaGIN_BadChannel(S)
-% Extract badchannels indices
+% Detect bad channels indices with a trained classifier.
+%
 % -=============================================================================
 % This function is part of the ImaGIN software: 
 % https://f-tract.eu/
@@ -16,62 +17,96 @@ function D = ImaGIN_BadChannel(S)
 %
 % Authors: Viateur Tuyisenge & Olivier David
 
-try
-    FileIn = S.dataset; % name of cropped iEEG file .dat/.mat
-    %badDir = S.DirFileOut; % directory where iEEG file .dat/.mat with badchannels indices will be stored
-    trainDir = S.trainBase;  % directory where training set is stored
-    try
-        D = spm_eeg_load(FileIn); % Load the cropped meeg object
-    catch
-        FileIn = spm_select(1, '\.mat$', 'Select data file');
-        D=spm_eeg_load(FileIn);
+% Name of input iEEG file .dat/.mat (cropped)
+if (nargin >= 1) && isfield(S, 'dataset') && ~isempty(S.dataset)
+    FileIn = S.dataset; 
+else
+    FileIn = spm_select(1, '\.mat$', 'Select EEG mat file');
+    if isempty(FileIn)
+        return;
     end
+end
+
+% Directory where iEEG file .dat/.mat with badchannels indices will be stored
+if (nargin >= 1) && isfield(S, 'FileOut') && ~isempty(S.FileOut)
+    [badDir, FileOut] = fileparts(S.FileOut);
+    isNewFile = 1;
+else
+    [badDir, FileOut] = fileparts(FileIn);
+    isNewFile = 0;
+end
+
+% Directory where training set is stored (if not defined, use the toolbox folder)
+if (nargin >= 1) && isfield(S, 'trainBase') && ~isempty(S.trainBase)
+    trainDir = S.trainBase;
+else
+    trainDir = fileparts(mfilename('fullpath'));
+end
+
+
+% Detect bad channels and save summary images
+try
+    % Load the cropped meeg object
+    D = spm_eeg_load(FileIn);
     
-    [badDir,FileOut,~] = fileparts(S.FileOut);
-    bPrefix = strcat(badDir,'/',FileOut);
-    
+    % Compute signal features (apply artifact correction only for stims)
     clear S2;
     S2.FileName = FileIn;
-
+    if ~isempty(D.events) && ~isempty(D.events.type) && ismember('Stim', {D.events.type})
+        S2.InterpolationFilter = 1;
+    else
+        S2.InterpolationFilter = 0;
+    end
+    T = ImaGIN_FeatureSEEG(S2);
     
-%    T = ImaGIN_FeatureSEEG(S2); % function returns a table T of features
+    % If the trained classifier is not available: compute it
+    trainedFile = fullfile(trainDir, 'ImaGIN_trainedClassifier.mat');
+    if ~exist(trainedFile, 'file')
+        % Get train base file
+        trainBaseFile = fullfile(trainDir, 'ImaGIN_trainBaseFeatures.mat');
+        if ~exist(trainBaseFile, 'file')
+            error(['File ' trainBaseFile ' was not found.']);
+        end
+        % Load the train base
+        trainBase = load(trainBaseFile);
+        % Train the classifier
+        trainedClassifier = ImaGIN_trainClassifier(trainBase.predictors, trainBase.response);
+    % Otherwise, load the trained classifier
+    else
+        trainedClassifier = load(trainedFile);
+    end
     
-%     Tbase = readtable(strcat(trainDir, '/trainBaseFeatures.csv')); % load training base
-%     trainingData = Tbase(:,2:9);
-%     [trainedClassifier, ~] = ImaGIN_trainClassifier(trainingData); % train the model
-    %Uncomment the following line to use the trained model
-  
-%     load(strcat(trainDir, '/ImaGIN_trainedClassifier.mat'))  %  load the trained classifier
-%     channelClass = trainedClassifier.predictFcn(T(:,2:8)); % predict new dataset
-%     bd = strcmp(channelClass','Bad);
-
-    bd = strcmp('channelClass','Bad');
+    % Predict new dataset
+    channelClass = trainedClassifier.predictFcn(T(:,2:8)); 
+    % Get list of detected bad channels
+    bIdx = find(strcmp(channelClass, 'Bad'));
     
-    bIdx = find(bd);
-    badFile = fopen(strcat(bPrefix,'_bIdx.txt'),'w'); % Save badchannel indices in .txt file
-    fprintf(badFile,'%d\n',bIdx(:));
+    % Save bad channel indices in .txt file
+    badFile = fopen(fullfile(badDir, [FileOut, '_bIdx.txt']), 'w'); 
+    fprintf(badFile, '%d\n', bIdx(:));
     fclose(badFile);
     
-%     Tnew = [T channelClass];
-%     Tnew.Properties.VariableNames{'Var9'} = 'Note';
-%     csvfilename = strcat(bPrefix,'.csv'); % Save feature table & badchannels indices
-%     writetable(Tnew,csvfilename,'Delimiter',',');
-    
+    % Add badchannel index in meeg object
     if ~isempty(bIdx)
-        D = badchannels(D,bIdx,1); %Add badchannel index in meeg object
+        D = badchannels(D,bIdx,1); 
     end
-    Dbad = clone(D, bPrefix, [D.nchannels D.nsamples D.ntrials]); % save meeg with badchannel indices in Badchannel directory
-    Dbad(:,:,:) = D(:,:,:);
+    % Create new file in output (otherwise, simply update the input file)
+    if isNewFile
+        Dbad = clone(D, fullfile(badDir, FileOut), [D.nchannels D.nsamples D.ntrials]); % save meeg with badchannel indices in Badchannel directory
+        Dbad(:,:,:) = D(:,:,:);
+    end
+    % Save modified list of bad channels
     save(Dbad);
-    %Channel plots and ScreenShots
-    figDir = strcat(badDir, '/ScreenShot');
+    
+    % Channel plots and ScreenShots
+    figDir = fullfile(badDir, 'ScreenShot');
     if ~exist(figDir, 'dir')
         mkdir(figDir);
     end
     
     close all;
     
-    Size = 8;  %Number of channels per screenshot
+    Size = 8;  % Number of channels per screenshot
     n_c  = size(D,1);
     if n_c >= Size
         tmp = floor(n_c/Size);
@@ -148,8 +183,9 @@ try
         close
     end
     set_final_status('OK')
+    
 catch ME
-    fprintf('%s \n',ME.message)
+    fprintf('%s \n', ME.message)
     set_final_status('NOK')
 end 
     

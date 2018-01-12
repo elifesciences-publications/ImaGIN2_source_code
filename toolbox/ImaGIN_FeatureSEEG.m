@@ -12,24 +12,29 @@ function T =  ImaGIN_FeatureSEEG(S)
 %
 % Copyright (c) 2000-2018 Inserm U1216
 % =============================================================================-
-% 
+%
 % Authors: Viateur Tuyisenge & Olivier David
 
 sFile = S.FileName;
-[pth, fName, ~] = fileparts(sFile);
-clear S
-S.Fname = sFile;
-S.EventType = 'Stim';
-%S.StartInterpolation= -0.015;
-%S.EndInterpolation  = 0.015;
-S.StartInterpolation = -0.008;
-S.EndInterpolation   = 0.008;
+[pth, fName] = fileparts(sFile);
 
-D = ImaGIN_InterpolationFilter(S);
-clear S
+% Apply interpolation filter to remove artifact (unless disabled)
+if ~isfield(S, 'InterpolationFilter') || isempty(S.InterpolationFilter) || S.InterpolationFilter
+    clear S
+    S.Fname = sFile;
+    S.EventType = 'Stim';
+    %S.StartInterpolation= -0.015;
+    %S.EndInterpolation  = 0.015;
+    S.StartInterpolation = -0.008;
+    S.EndInterpolation   = 0.008;
+    D = ImaGIN_InterpolationFilter(S);
+    strInterp = 'i';
+else
+    strInterp = '';
+end
 
-iFile = [pth '/i' fName];
-nFile = [pth '/ni' fName];
+iFile = [pth '/' strInterp fName];
+nFile = [pth '/n' strInterp fName];
 P.Fname =  iFile;
 P.Freq  = 50;
 ImaGIN_NotchFilter(P) % notch filter 50Hz
@@ -38,19 +43,21 @@ P.Fname =  nFile;
 P.Freq  = 100;
 ImaGIN_NotchFilter(P) % notch filter 100Hz
 clear P.Freq;
+if ~isempty(strInterp)
+    delete([iFile '.*']);
+end
 delete([nFile '.*']);
-delete([iFile '.*']);
-nnFile  =  [pth '/nni' fName];
+nnFile  =  [pth '/nn' strInterp fName];
 P.Fname =  nnFile;
 P.Freq  = 150;
 ImaGIN_NotchFilter(P) % notch filter 150Hz
 clear P.Freq;
 delete([nnFile,'.*']);
 
-nnnFile  =  [pth '/nnni' fName];
+nnnFile  =  [pth '/nnn' strInterp fName];
 P.LFname = nnnFile;
 ImaGIN_LowPassFilter(P) % lowpass filter 0.2Hz
-lpf_nFile = [pth '/lpf_nnni' fName];
+lpf_nFile = [pth '/lpf_nnn' strInterp fName];
 delete([nnnFile,'.*'])
 
 D = spm_eeg_load(lpf_nFile);
