@@ -73,7 +73,7 @@ try
         trainedClassifier = ImaGIN_trainClassifier(trainBase.predictors, trainBase.response);
     % Otherwise, load the trained classifier
     else
-        trainedClassifier = load(trainedFile);
+        load(trainedFile);
     end
     
     % Predict new dataset
