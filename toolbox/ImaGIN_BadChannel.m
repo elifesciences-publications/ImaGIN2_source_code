@@ -73,7 +73,8 @@ try
         trainedClassifier = ImaGIN_trainClassifier(trainBase.predictors, trainBase.response);
     % Otherwise, load the trained classifier
     else
-        trainedClassifier = load(trainedFile);
+        trainedMat = load(trainedFile);
+        trainedClassifier = trainedMat.trainedClassifier;
     end
     
     % Predict new dataset
@@ -94,10 +95,13 @@ try
     if isNewFile
         Dbad = clone(D, fullfile(badDir, FileOut), [D.nchannels D.nsamples D.ntrials]); % save meeg with badchannel indices in Badchannel directory
         Dbad(:,:,:) = D(:,:,:);
+        % Save modified list of bad channels
+        save(Dbad);
+    else
+        % Save modified list of bad channels
+        save(D);
     end
-    % Save modified list of bad channels
-    save(Dbad);
-    
+
     % Channel plots and ScreenShots
     figDir = fullfile(badDir, 'ScreenShot');
     if ~exist(figDir, 'dir')
