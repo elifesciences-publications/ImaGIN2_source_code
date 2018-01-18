@@ -5,7 +5,7 @@ function prepare_ImaGIN_TimeZero(EventRef, Offset, FileIn,  FileOut)
 % EventRef: type of event (default:1)
 % Offset: set the time 0 at 0+Offset (default:0)
 
-S.Filename=FileIn;
+S.Fname=FileIn;
 
 S.EventRef=EventRef;
 

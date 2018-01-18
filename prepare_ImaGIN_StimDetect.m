@@ -7,7 +7,7 @@ function prepare_ImaGIN_StimDetect(StimContinuous, FileIn, FileOut)
 % StimContinuous: indiquates whether the stimulation is continuous (1) or
 % not (0)
 
-S.Filename=FileIn;
+S.Fname=FileIn;
 S.StimFreq=1;
 
 if strcmp(StimContinuous,'False')
