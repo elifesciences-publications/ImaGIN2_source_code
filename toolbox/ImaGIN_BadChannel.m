@@ -71,10 +71,11 @@ end
         trainBase = load(trainBaseFile);
         % Train the classifier
         trainedClassifier = ImaGIN_trainClassifier(trainBase.predictors, trainBase.response);
+        % Save results
+        save(trainedFile, '-struct', 'trainedClassifier');
     % Otherwise, load the trained classifier
     else
-        trainedMat = load(trainedFile);
-        trainedClassifier = trainedMat.trainedClassifier;
+        trainedClassifier = load(trainedFile);
     end
     
     % Predict new dataset
@@ -141,7 +142,7 @@ end
         mkdir(figDir);
     end
     
-    close all;
+%     close all;
     
     Size = 8;  % Number of channels per screenshot
     n_c  = size(D,1);

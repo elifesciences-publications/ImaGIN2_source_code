@@ -44,8 +44,6 @@ function [trainedClassifier, validationAccuracy] = ImaGIN_trainClassifier(predic
 % Extract predictors and response
 predictorNames = {'ch_xcorr', 'ch_var', 'ch_dev', 'ch_ampl', 'ch_grad', 'ch_kurt', 'ch_hurs'};
 
-predictorNames
-
 % Train a classifier
 % This code specifies all the classifier options and trains the classifier.
 classificationEnsemble = fitensemble(...
