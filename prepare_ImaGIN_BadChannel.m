@@ -1,5 +1,5 @@
 function prepare_ImaGIN_BadChannel(trainBase, FileIn, FileOut)
-
+ 
 % FileIn: path linking to the MEEG file to extract bad channel indices
 clear S;
 S.dataset = fullfile(FileIn); 
