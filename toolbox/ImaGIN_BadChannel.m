@@ -81,7 +81,40 @@ end
     channelClass = trainedClassifier.predictFcn(T(:,2:8)); 
     % Get list of detected bad channels
     bIdx = find(strcmp(channelClass, 'Bad'));
-    
+       
+    %%
+    % In case disconnected electrode doesn't have stimulation artefact
+    % specific for some FTRACT dataset
+    chanLbs = strrep(upper(D.chanlabels) ,'''','p');
+    crFname = D.fname;
+    undsc   = strfind(crFname,'_');
+    if numel(undsc) == 4
+        sfix = crFname(1:undsc(1)-1);
+        [numb,id] = regexp(sfix,'\d*','Match');
+        chl = sfix(1:id(1)-1);
+        if numel(numb{1}) == 2
+            ch1 = strcat(chl,numb{1}(1));
+            ch2 = strcat(chl,numb{1}(2));
+        elseif numel(numb{1}) == 3
+            ch1 = strcat(chl,numb{1}(1));
+            ch2 = strcat(chl,numb{1}(2:3));
+        elseif numel(numb{1}) == 4
+            ch1 = strcat(chl,numb{1}(1:2));
+            ch2 = strcat(chl,numb{1}(3:4));
+        end
+        chlb = {ch1,ch2};
+        chInd  = find(ismember(chanLbs,chlb));
+        if ~isempty(chInd)
+            if isempty(find(any(bIdx==chInd(1)), 1))
+                bIdx(end+1) = [chInd(1)];
+            end
+            if isempty(find(any(bIdx==chInd(2)), 1))
+                bIdx(end+1) = chInd(2);
+            end
+            bIdx = sort(bIdx);
+        end
+    end
+    %%
     % Save bad channel indices in .txt file
     badFile = fopen(fullfile(badDir, [FileOut, '_bIdx.txt']), 'w'); 
     fprintf(badFile, '%d\n', bIdx(:));
