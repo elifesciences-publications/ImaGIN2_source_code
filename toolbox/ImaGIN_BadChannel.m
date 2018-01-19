@@ -45,7 +45,7 @@ end
 
 
 % Detect bad channels and save summary images
-try
+% try
     % Load the cropped meeg object
     D = spm_eeg_load(FileIn);
     
@@ -188,8 +188,8 @@ try
     end
     set_final_status('OK')
     
-catch ME
-    fprintf('%s \n', ME.message)
-    set_final_status('NOK')
-end 
+% catch ME
+%     fprintf('%s \n', ME.message)
+%     set_final_status('NOK')
+% end 
     

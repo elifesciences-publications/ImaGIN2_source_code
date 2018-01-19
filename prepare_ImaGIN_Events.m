@@ -9,7 +9,7 @@ function prepare_ImaGIN_Events(Action, Nevent, EventName, FileDataIn, FileEventI
 % (default:1)
 % EventName: name of the event (default:'Stim')
 
-S.Filename=FileDataIn;
+S.Fname=FileDataIn;
 
 S.Action=Action;
 if ischar(Nevent)

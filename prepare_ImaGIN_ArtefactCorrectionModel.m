@@ -8,7 +8,7 @@ function prepare_ImaGIN_ArtefactCorrectionModel(tms, time_break, rc1, rc2, nb, m
 % nb: number of artifact shape generated (default:500)
 % mode: stimulation mode (monophasic or biphasic)
 
-S.Filename=FileIn;
+S.Fname=FileIn;
 
 if ischar(tms)
     tms=str2num(tms);
