@@ -88,6 +88,7 @@ end
     % specific for some FTRACT dataset
     chanLbs = strrep(upper(D.chanlabels) ,'''','p');
     crFname = D.fname;
+    crFname = strrep(crFname,'welectrodes_','');
     undsc   = strfind(crFname,'_');
     if numel(undsc) == 4
         sfix = crFname(1:undsc(1)-1);
