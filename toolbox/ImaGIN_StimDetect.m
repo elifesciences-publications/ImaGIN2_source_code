@@ -370,7 +370,7 @@ if length(stimulation)>1
     remove=[];
     for i1=1:length(stimulation)
         difftmp=abs(stimulation-stimulation(i1));
-        if isempty(find(difftmp>0.98*Stim & difftmp<1.02*Stim))
+        if isempty(find(difftmp>0.95*Stim & difftmp<1.05*Stim))
             remove=[remove i1];
         end
     end
