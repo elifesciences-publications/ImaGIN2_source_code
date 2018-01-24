@@ -122,6 +122,11 @@ end
     fprintf(badFile, '%d\n', bIdx(:));
     fclose(badFile);
     
+    Tnew = [T channelClass];
+    Tnew.Properties.VariableNames{'Var9'} = 'Note';
+    csvfilename = fullfile(badDir, [FileOut, '.csv']); % Save feature table & badchannels indices
+    writetable(Tnew,csvfilename,'Delimiter',',');
+    
     % Add badchannel index in meeg object
     if ~isempty(bIdx)
         D = badchannels(D,bIdx,1); 
