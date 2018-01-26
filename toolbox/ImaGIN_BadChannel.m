@@ -71,21 +71,61 @@ end
         trainBase = load(trainBaseFile);
         % Train the classifier
         trainedClassifier = ImaGIN_trainClassifier(trainBase.predictors, trainBase.response);
+        % Save results
+        save(trainedFile, '-struct', 'trainedClassifier');
     % Otherwise, load the trained classifier
     else
-        trainedMat = load(trainedFile);
-        trainedClassifier = trainedMat.trainedClassifier;
+        trainedClassifier = load(trainedFile);
     end
     
     % Predict new dataset
     channelClass = trainedClassifier.predictFcn(T(:,2:8)); 
     % Get list of detected bad channels
     bIdx = find(strcmp(channelClass, 'Bad'));
-    
+       
+    %%
+    % In case disconnected electrode doesn't have stimulation artefact
+    % specific for some FTRACT dataset
+    chanLbs = strrep(upper(D.chanlabels) ,'''','p');
+    crFname = D.fname;
+    crFname = strrep(crFname,'welectrodes_','');
+    undsc   = strfind(crFname,'_');
+    if numel(undsc) == 4
+        sfix = crFname(1:undsc(1)-1);
+        [numb,id] = regexp(sfix,'\d*','Match');
+        chl = sfix(1:id(1)-1);
+        if numel(numb{1}) == 2
+            ch1 = strcat(chl,numb{1}(1));
+            ch2 = strcat(chl,numb{1}(2));
+        elseif numel(numb{1}) == 3
+            ch1 = strcat(chl,numb{1}(1));
+            ch2 = strcat(chl,numb{1}(2:3));
+        elseif numel(numb{1}) == 4
+            ch1 = strcat(chl,numb{1}(1:2));
+            ch2 = strcat(chl,numb{1}(3:4));
+        end
+        chlb = {ch1,ch2};
+        chInd  = find(ismember(chanLbs,chlb));
+        if ~isempty(chInd)
+            if isempty(find(any(bIdx==chInd(1)), 1))
+                bIdx(end+1) = [chInd(1)];
+            end
+            if isempty(find(any(bIdx==chInd(2)), 1))
+                bIdx(end+1) = chInd(2);
+            end
+            bIdx = sort(bIdx);
+        end
+    end
+    %%
     % Save bad channel indices in .txt file
     badFile = fopen(fullfile(badDir, [FileOut, '_bIdx.txt']), 'w'); 
     fprintf(badFile, '%d\n', bIdx(:));
     fclose(badFile);
+    
+    Tnew = [T channelClass];
+    Tnew.Properties.VariableNames{'Var9'} = 'Note';
+    csvfilename = fullfile(badDir, [FileOut, '.csv']); % Save feature table & badchannels indices
+    writetable(Tnew,csvfilename,'Delimiter',',');
     
     % Add badchannel index in meeg object
     if ~isempty(bIdx)
@@ -108,7 +148,7 @@ end
         mkdir(figDir);
     end
     
-    close all;
+%     close all;
     
     Size = 8;  % Number of channels per screenshot
     n_c  = size(D,1);

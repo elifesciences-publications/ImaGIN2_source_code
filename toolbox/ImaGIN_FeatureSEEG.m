@@ -125,12 +125,8 @@ if logScale
 else
     ch_var = bandVar;
 end
-%%
 
-T = table(noIdx, ch_xcorr, ch_var, ch_dev, ch_ampl, ch_grad, ch_kurt, ch_hurs);
-
-% csvfilename = ['-csv_' fName '.csv'];
-% writetable(T,csvfilename,'Delimiter',',');
+T = table(noIdx, ch_xcorr, ch_var, ch_dev, ch_ampl, ch_grad, ch_kurt, ch_hurs); % table of SEEG features
 
 delete([lpf_nFile,'.*']);
 
@@ -210,22 +206,22 @@ function y = misc_euclidean_dist(a,b)
 %   in the space given by A (or B) and the multiple points given by the
 %   other input parameter.
 
-if nargin < 2, 
+if nargin < 2 
     ME = MException('euclideanDistance:needMoreInputs','Some input parameters are missing');
     throw(ME);
 end
 
-if size(a,1) ~= size(b,1) && size(a,1)>1 && size(b,1) > 1,
+if size(a,1) ~= size(b,1) && size(a,1)>1 && size(b,1) > 1
     ME = MException('euclideanDist:invalidDim','Invalid dimensions in input parameter.');
     throw(ME);
 end
 
-if size(a,1) > size(b,1),
+if size(a,1) > size(b,1)
     tmp = a;
     a = b;
     b = tmp;
     clear tmp;
-elseif size(a,1)>1 && size(a,1) == size(b,1),
+elseif size(a,1)>1 && size(a,1) == size(b,1)
     y = nan(size(a,1),1);
     for i = 1:size(a,1)
        y(i) = misc_euclidean_dist(a(i,:), b(i,:));       
