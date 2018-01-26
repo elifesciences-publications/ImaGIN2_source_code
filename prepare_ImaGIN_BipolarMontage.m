@@ -1,5 +1,5 @@
 function prepare_ImaGIN_BipolarMontage(Save,FileIn, FileOut)
-
+ 
 [Root,file,ext]=fileparts(FileIn);
 %Longitudinal bipolar montage
 clear S
