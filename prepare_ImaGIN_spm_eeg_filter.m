@@ -1,5 +1,5 @@
 function prepare_ImaGIN_spm_eeg_filter(FilterBand, FilterType, FilterOrder, CutFreq, FileIn, FileOut)
-
+ 
 % FileIn: path linking to the MEEG file to correct
 % DirOut: path of the output directory
 % FilterBand: band of frequency to keep ('low' or 'high')
