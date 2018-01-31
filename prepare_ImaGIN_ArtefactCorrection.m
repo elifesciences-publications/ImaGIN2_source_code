@@ -1,4 +1,4 @@
-function prepare_ImaGIN_ArtefactCorrection(Method, EventType, StartInterpolation, EndInterpolation, screenshot, FileIn, FileOut, DirScreenshots)
+function prepare_ImaGIN_ArtefactCorrection(Method, EventType, StartInterpolation, EndInterpolation, FileIn, FileOut, DirScreenshots)
 
 S.Fname=FileIn ;
 
