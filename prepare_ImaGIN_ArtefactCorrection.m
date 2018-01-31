@@ -1,4 +1,4 @@
-function prepare_ImaGIN_ArtefactCorrection(Method, EventType, StartInterpolation, EndInterpolation, FileIn, FileOut, DirScreenshots)
+function prepare_ImaGIN_ArtefactCorrection(Method, EventType, StartInterpolation, EndInterpolation, FileIn, FileOut)
 
 S.Fname=FileIn ;
 
@@ -12,8 +12,6 @@ if ischar(EndInterpolation)
     EndInterpolation=str2num(EndInterpolation);
 end
 S.EndInterpolation = EndInterpolation ;
-
-S.DirScreenshots = DirScreenshots;
 
 D=ImaGIN_InterpolationFilter(S) ;
 
