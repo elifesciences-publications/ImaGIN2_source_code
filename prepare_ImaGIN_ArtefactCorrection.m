@@ -7,7 +7,7 @@ S.EventType = EventType ;
 if ischar(StartInterpolation)
     StartInterpolation=str2num(StartInterpolation);
 end
-S.StartInteprolation = StartInterpolation ;
+S.StartInterpolation = StartInterpolation ;
 if ischar(EndInterpolation)
     EndInterpolation=str2num(EndInterpolation);
 end
