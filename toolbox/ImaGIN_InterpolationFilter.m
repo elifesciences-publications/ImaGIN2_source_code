@@ -15,9 +15,10 @@ for i0=1:size(t,1)
     D=spm_eeg_load(T);
     Time=time(D);
     
-    F  = spm_figure('GetWin','Interactive');
-    figure(F);clf
-    
+%
+%    F  = spm_figure('GetWin','Interactive');
+%    figure(F);clf
+%    
     
     try
         EventType = S.EventType;
