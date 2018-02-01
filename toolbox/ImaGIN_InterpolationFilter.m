@@ -5,11 +5,11 @@ function D=ImaGIN_InterpolationFilter(S)
 
 % S.method = 'linear' or 'spline' or 'other'
 
-try
+% try
     t=S.Fname;
-catch
-    t = spm_select(Inf, '\.mat$', 'Select data file');
-end
+% catch
+%     t = spm_select(Inf, '\.mat$', 'Select data file');
+% end
 for i0=1:size(t,1)
     T=deblank(t(i0,:));
     D=spm_eeg_load(T);
@@ -19,21 +19,21 @@ for i0=1:size(t,1)
     figure(F);clf
     
     
-    try
+%     try
         EventType = S.EventType;
-    catch
-        EventType=spm_input('Events of interest', '+1', 'i',1);
-    end
-    try
+%     catch
+%         EventType=spm_input('Events of interest', '+1', 'i',1);
+%     end
+%     try
         StartInterpolation = S.StartInterpolation;
-    catch
-        StartInterpolation=spm_input('Start of interpolation [sec]', '+1', 'r',-0.001);
-    end
-    try
+%     catch
+%         StartInterpolation=spm_input('Start of interpolation [sec]', '+1', 'r',-0.001);
+%     end
+%     try
         EndInterpolation = S.EndInterpolation;
-    catch
-        EndInterpolation=spm_input('End of interpolation [sec]', '+1', 'r',0.003);
-    end
+%     catch
+%         EndInterpolation=spm_input('End of interpolation [sec]', '+1', 'r',0.003);
+%     end
     StartInterpolation=round(StartInterpolation*fsample(D));
     EndInterpolation=round(EndInterpolation*fsample(D));
     
