@@ -28,5 +28,6 @@ S.FileOut=FileOut;
 S.Channels=[];
 ImaGIN_StimDetect(S);
 
+close all
 
 end

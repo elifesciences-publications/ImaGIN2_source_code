@@ -4,3 +4,7 @@ S.dataset = fullfile(FileIn);
 S.DirFileOut = FileOut;
 S.defaultPulseDuration = defaultPulseDuration;
 ImaGIN_Validate_StimNames(S);
+
+close all
+
+end

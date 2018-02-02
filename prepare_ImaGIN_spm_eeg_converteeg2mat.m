@@ -71,4 +71,6 @@ end
 
 D = ImaGIN_spm_eeg_converteeg2mat(S);
 
+close all
+
 end

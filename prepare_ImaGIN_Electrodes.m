@@ -84,6 +84,9 @@ S.FileOut = FileOut;
 D = ImaGIN_Electrode(S);
 
 set_final_status('OK')
+
+close all
+
 end
 
 
