@@ -9,6 +9,9 @@ function D=ImaGIN_InterpolationFilter(S)
 try spm_interactive = S.spm_interactive ; catch, spm_interactive = true ; end
 
 
+fprintf( 1, [ 'function D=ImaGIN_InterpolationFilter(S) spm_interactive\n' ] ) ; spm_interactive
+
+
 try
     t=S.Fname;
 catch
