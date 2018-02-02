@@ -1,13 +1,12 @@
-function prepare_ImaGIN_ArtefactCorrection(Method, EventType, StartInterpolation, EndInterpolation, CloseAllFigures, FileIn, FileOut)
+function prepare_ImaGIN_ArtefactCorrection(Method, EventType, StartInterpolation, EndInterpolation, FileIn, FileOut)
 
-fprintf( 1, [ 'prepare_ImaGIN_ArtefactCorrection branch artefact_correction_jd\n' ] ) ;
-fprintf( 1, [ 'Method\n' ] ) ; Method
-fprintf( 1, [ 'EventType\n' ] ) ; EventType
-fprintf( 1, [ 'StartInterpolation\n' ] ) ; StartInterpolation
-fprintf( 1, [ 'EndInterpolation\n' ] ) ; EndInterpolation
-fprintf( 1, [ 'CloseAllFigures\n' ] ) ; CloseAllFigures
-fprintf( 1, [ 'FileIn\n' ] ) ; FileIn
-fprintf( 1, [ 'FileOut\n' ] ) ; FileOut
+% fprintf( 1, [ 'prepare_ImaGIN_ArtefactCorrection branch artefact_correction_jd\n' ] ) ;
+% fprintf( 1, [ 'Method\n' ] ) ; Method
+% fprintf( 1, [ 'EventType\n' ] ) ; EventType
+% fprintf( 1, [ 'StartInterpolation\n' ] ) ; StartInterpolation
+% fprintf( 1, [ 'EndInterpolation\n' ] ) ; EndInterpolation
+% fprintf( 1, [ 'FileIn\n' ] ) ; FileIn
+% fprintf( 1, [ 'FileOut\n' ] ) ; FileOut
 
 S.Fname=FileIn ;
 
@@ -21,20 +20,13 @@ if ischar(EndInterpolation)
     EndInterpolation=str2num(EndInterpolation);
 end
 S.EndInterpolation = EndInterpolation ;
-fprintf( 1, [ 'S\n' ] ) ; S
+% fprintf( 1, [ 'S\n' ] ) ; S
 D=ImaGIN_InterpolationFilter(S) ;
 
 move( D, FileOut ) ;
 
 set_final_status('OK')
 
-
-if strcmp( CloseAllFigures, 'true' )
-	fprintf( 1, [ 'YES Closing AllFigures\n' ] ) ; 
-   	close all
-else
-	fprintf( 1, [ 'NO Closing AllFigures\n' ] ) ; 	
-end
+close all
 
 end
-
