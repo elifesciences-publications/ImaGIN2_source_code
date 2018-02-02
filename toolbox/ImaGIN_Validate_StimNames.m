@@ -14,7 +14,7 @@ function ImaGIN_Validate_StimNames(S)
 % =============================================================================-
 %
 % Authors: Viateur Tuyisenge & Olivier David
-
+ 
 sFile = S.dataset;
 pulseDefault = str2double(S.defaultPulseDuration);
 fprintf('MESSAGE: Got default pulse duration = %d \n', pulseDefault);
