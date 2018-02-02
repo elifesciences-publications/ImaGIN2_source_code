@@ -22,4 +22,6 @@ S.EventFileName{1}=FileEventIn;
 S.FileOut=FileOut;
 ImaGIN_Events(S);
 
+close all
+
 end

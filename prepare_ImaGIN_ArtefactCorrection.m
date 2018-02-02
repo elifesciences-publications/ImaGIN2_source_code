@@ -19,4 +19,6 @@ move( D, FileOut ) ;
 
 set_final_status('OK')
 
+close all
+
 end

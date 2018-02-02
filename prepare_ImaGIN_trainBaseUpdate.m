@@ -3,3 +3,8 @@ function prepare_ImaGIN_trainBaseUpdate(inDir)
 clear S;
 S.DirIn = inDir;
 ImaGIN_trainBaseUpdate(S)
+
+close all
+
+end
+
