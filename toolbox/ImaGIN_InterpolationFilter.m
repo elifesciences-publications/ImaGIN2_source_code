@@ -15,9 +15,10 @@ for i0=1:size(t,1)
     D=spm_eeg_load(T);
     Time=time(D);
     
-    F  = spm_figure('GetWin','Interactive');
-    figure(F);clf
-    
+%
+%    F  = spm_figure('GetWin','Interactive');
+%    figure(F);clf
+%    
     
     try
         EventType = S.EventType;
@@ -133,7 +134,8 @@ for i0=1:size(t,1)
     for i1=1:length(CompoArtefact)
         U2(:,i1)=2*U(:,i1)-filter(ones(1,windowSize)/windowSize,1,U(:,i1))-flipud(filter(ones(1,windowSize)/windowSize,1,flipud(U(:,i1))));
     end
-    Artefact=ImaGIN_Normalisation(sum(abs(U2),2),1);
+%    Artefact=ImaGIN_Normalisation(sum(abs(U2),2),1);
+    Artefact=ImaGIN_normalisation(sum(abs(U2),2),1);
     windowSize = round(1*length(Artefact)/length(ev));
     Artefact=2*Artefact-filter(ones(1,windowSize)/windowSize,1,Artefact)-flipud(filter(ones(1,windowSize)/windowSize,1,flipud(Artefact)));
 
