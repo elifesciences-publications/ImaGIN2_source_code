@@ -149,7 +149,8 @@ else
         D2 = clone(D, D.fnamedat, [D.nchannels D.nsamples D.ntrials]);
         D2(:,:,:) = D(:,:,:);
         save(D2);
-        fprintf('\n \n ::.. Pulse duration of %s added ..::\n',pval); 
+        fprintf('\n \n ');
+        fprintf('MESSAGE: .. Pulse duration of %s added ..::\n',pval); 
         set_final_status('OK')
     end
 end
