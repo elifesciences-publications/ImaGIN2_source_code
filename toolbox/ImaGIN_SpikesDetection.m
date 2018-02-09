@@ -64,7 +64,7 @@ for i2 = 1:tmp
         axis tight
     end
     zoom on
-    pause;
+    pause(1);
 end
     
 
