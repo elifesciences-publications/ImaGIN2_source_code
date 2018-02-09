@@ -30,6 +30,7 @@ for n = 1:size(x,1)
 end
 
 %% upwind third order
+[row,col] = size(x);
 dy = zeros(row,col);
 dy(:,1) = x(:,2)-x(:,1);
 dy(:,2) = x(:,3)-x(:,2);
