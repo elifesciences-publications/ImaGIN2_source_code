@@ -1,5 +1,5 @@
 function prepare_ImaGIN_Electrodes(source, polarity, FileIn, implantationFile, FileOut, FileTxtOut)
-
+ 
 %Add electrode position
 %source : 'classic' (a file with the electrodes names and another one with
 %the MNI positions), implantationFile is the source directory of the 2
