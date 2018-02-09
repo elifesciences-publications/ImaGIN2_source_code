@@ -4,4 +4,6 @@ P.fname = FileIn;
 P.FileOut = FileOut;
 ImaGIN_NotchFilter(P);
 
+close all
+
 end

@@ -72,4 +72,7 @@ S.FileOut=FileOut;
 D=ImaGIN_ArtefactCorrectionModel(S);
 
 set_final_status('OK')
+
+close all
+
 end

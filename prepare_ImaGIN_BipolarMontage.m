@@ -20,4 +20,7 @@ S.SaveFile=deblank(file);
 disp(S.SaveFile(1:end-length(ext)-1));
 
 set_final_status('OK')
+
+close all
+
 end

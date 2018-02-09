@@ -38,4 +38,8 @@ D = ImaGIN_spm_eeg_filter(S);
 
 
 set_final_status('OK')
+
+close all
+
+
 end

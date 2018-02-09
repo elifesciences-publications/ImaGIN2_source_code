@@ -17,4 +17,6 @@ S.Offset=Offset;
 S.FileOut=FileOut;
 ImaGIN_TimeZero(S);
 
+close all
+
 end

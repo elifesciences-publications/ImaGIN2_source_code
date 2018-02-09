@@ -17,3 +17,6 @@ else
 end
 D = ImaGIN_CropAuto(S);
 
+close all 
+
+end
