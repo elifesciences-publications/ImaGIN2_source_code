@@ -41,7 +41,7 @@ dy(:,col) = x(:,col) - x(:,col-1);
 % Squaring
 dy = (dy.^2).*sign(dy);
 % Smoothing
-sdy = movmean(dy,[8 8],2); 
+sdy = dy;%movmean(dy,[8 8],2); 
 
 %%
 
