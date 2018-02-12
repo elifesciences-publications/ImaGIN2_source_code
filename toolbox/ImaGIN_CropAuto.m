@@ -63,11 +63,13 @@ for c=1:evsize % Navigate all available events
     xpr9  = '\w*SE 1Hz\w*';
     xpr10  = 'crise';
     xpr11  = '\w*OFF\w*';
+    xpr12  = '\w*t65535\w*';
     [ds,di]=regexp(Notes{c},'\d*','Match');
     if ~isempty(di)
         if ~isempty(regexpi(Notes{c},xpr4)) || ~isempty(regexpi(Notes{c},xpr5)) || ...
                 ~isempty(regexpi(Notes{c},xpr6)) || ~isempty(regexpi(Notes{c},xpr7)) || ...
                 ~isempty(regexpi(Notes{c},xpr8)) || ~isempty(regexpi(Notes{c},xpr9)) || ...
+                ~isempty(regexpi(Notes{c},xpr12)) || ...
                 ~isempty(regexpi(Notes{c},xpr11)) || strcmpi(Notes{c}(1:min([length(Notes{c}) 5])),xpr10)
         elseif ~isempty(regexpi(Notes{c},xpr1))
             KeepEvent=[KeepEvent c];
