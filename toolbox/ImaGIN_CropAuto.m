@@ -35,7 +35,6 @@ Notes  = cell(1,evsize);     % Events labels
 Time   = zeros(1,evsize);
 totTime= max(time(D));
 Time0  = min(time(D));
-elec   = sensors(D,'EEG');
 % Extract events properties (label and time in sampling)
 for i = 1: evsize
     Notes{i}  = evt(i).type;
@@ -122,7 +121,7 @@ for c=1:length(KeepEvent) % Navigate all stim events
     noteName = strrep(noteName,'.',''); noteName = strrep(noteName,',','');
     noteName = strrep(noteName,'sec','us');  noteName = strrep(noteName,'_us','us');
     noteName = strrep(noteName,'AA','A');
-    keepN = ''; noteName = strrep(noteName,'stim','');
+    keepN = ''; noteName = strrep(noteName,'stim','');  noteName = strrep(noteName,'Stim','');
     try
         fundc = strfind(noteName,'_');
         lNumb = strfind(noteName,noteName(1:fundc(1)-1));
@@ -238,19 +237,7 @@ for c=1:length(KeepEvent) % Navigate all stim events
                 noteName = strcat(upper(sfix),num2str(numb{1}), num2str(numb{2}),noteName(idx2(1)+cnbre2:end));
             end
         end
-%         flag = 0;
-%       
-%         if flag == 1
-%             if str2double(numb(1)) > str2double(numb(2))
-%                 noteName(idx1(1):idx1(1)+cnbre2-1) = numb{2};
-%                 noteName(idx2(1):idx2(1)+cnbre1-1) = numb{1};
-%             end
-%             idxs = strfind(noteName(1:idx2(1)),'_');
-%             if numel(idxs) >= 1
-%                 undsc = strrep(noteName(1:idx2(1)),'_','');
-%                 noteName = strcat(upper(undsc), noteName(idx2(1)+1:end));
-%             end
-%         end
+
         xpr1  = '\w*Hz_\w*'; xpr2 = '\w*us_\w*';
         xpri1 = regexpi(noteName,xpr1); xpri2 = regexpi(noteName,xpr2);
         if isempty(xpri1) && isempty(xpri2)
@@ -394,9 +381,6 @@ for c=1:length(KeepEvent) % Navigate all stim events
         % Select only the stimulations
         if stimFq <= nHz && numel(stimTime) >= minStim && numel(numb) > 1 ...
                 && ~strcmp(xsub2(1),'50Hz') 
-                % && ~strcmpi(Notes{c},'PI') ...
-                % && isempty(strfind(Notes{c},'PI')) %&&  alpha <= 4 ...
-                % && isempty(strfind(Notes{c},'SE'))
             clear S
             S.Job   = 'Manual';
             S.Fname = fullfile(pth, matFile);
