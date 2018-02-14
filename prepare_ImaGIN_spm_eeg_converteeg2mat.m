@@ -71,10 +71,5 @@ end
 
 D = ImaGIN_spm_eeg_converteeg2mat(S);
 
-<<<<<<< HEAD
-end
-=======
 close all
 
-end
->>>>>>> artefact_correction_jd
