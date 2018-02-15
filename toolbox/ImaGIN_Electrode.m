@@ -71,11 +71,15 @@ for i0 = 1:size(t,1)
     % Loop on all channels available in the file
     for i1 = 1:length(Sensors.chantype)
         if strcmpi(chantype(D,i1),'eeg')
-            % Look for channel in position file
-            iChanPos = find(strcmpi(Sensors.label{i1}, Name));
-            % Channel not found: try replacing ' by p
-            if isempty(iChanPos)
-                iChanPos = find(strcmpi(strrep(Sensors.label{i1},'''','p'), strrep(Name,'''','p')));
+            % If there are two lists of names
+            if iscell(Name{1})
+                iChanPos = findChannel(Sensors.label{i1}, Name{1});
+                if isempty(iChanPos)
+                    iChanPos = findChannel(Sensors.label{i1}, Name{2});
+                end
+            % If there is only one list of names
+            else
+                iChanPos = findChannel(Sensors.label{i1}, Name);
             end
             % If channel was found: get its position
             if ~isempty(iChanPos)
@@ -122,4 +126,14 @@ function Name = readName(filename)
     fclose(fid);
 end
 
+
+%% Find channel name in a list
+function iChanPos = findChannel(Label, List)
+    % Look for channel in position file
+    iChanPos = find(strcmpi(Label, List));
+    % Channel not found: try replacing ' by p
+    if isempty(iChanPos)
+        iChanPos = find(strcmpi(strrep(Label,'''','p'), strrep(List,'''','p')));
+    end
+end
 
