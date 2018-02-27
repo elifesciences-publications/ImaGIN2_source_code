@@ -98,8 +98,8 @@ for i0 = 1:size(t,1)
     
     D = sensors(D,'EEG',Sensors);
     
-    if ~isempty(FileOut)
-        D2 = clone(D,FileOut,[D.nchannels D.nsamples D.ntrials]); % Create a new .mat/dat file (F-TRACT convention)
+    if ~isempty(S.FileOut)
+        D2 = clone(D,S.FileOut,[D.nchannels D.nsamples D.ntrials]); % Create a new .mat/dat file (F-TRACT convention)
         D2(:,:,:) = D(:,:,:);
         save(D2); 
         
