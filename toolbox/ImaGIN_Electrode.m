@@ -102,17 +102,25 @@ for i0 = 1:size(t,1)
         D2 = clone(D,FileOut,[D.nchannels D.nsamples D.ntrials]); % Create a new .mat/dat file (F-TRACT convention)
         D2(:,:,:) = D(:,:,:);
         save(D2); 
+        
+        if ~isempty(chFound)
+            ImaGIN_save_log(fullfile(D2), 'Positions added for channels:', chFound);
+        end
+        if ~isempty(chNotFound)
+            ImaGIN_save_log(fullfile(D2), 'Positions not found for channels:', chNotFound);
+        end
+        
     else
-        save(D); % Update .mat file
+        save(D); % Update .mat file        
+        % Add entries in log file
+        if ~isempty(chFound)
+            ImaGIN_save_log(fullfile(D), 'Positions added for channels:', chFound);
+        end
+        if ~isempty(chNotFound)
+            ImaGIN_save_log(fullfile(D), 'Positions not found for channels:', chNotFound);
+        end
     end
     
-    % Add entries in log file
-    if ~isempty(chFound)
-        ImaGIN_save_log(fullfile(D), 'Positions added for channels:', chFound);
-    end
-    if ~isempty(chNotFound)
-        ImaGIN_save_log(fullfile(D), 'Positions not found for channels:', chNotFound);
-    end
 end
 
 end
