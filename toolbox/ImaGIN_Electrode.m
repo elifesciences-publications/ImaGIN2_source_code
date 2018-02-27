@@ -95,9 +95,16 @@ for i0 = 1:size(t,1)
         end
     end
     
-    % Update .mat file
+    
     D = sensors(D,'EEG',Sensors);
-    save(D);
+    
+    if ~isempty(FileOut)
+        D2 = clone(D,FileOut,[D.nchannels D.nsamples D.ntrials]); % Create a new .mat/dat file (F-TRACT convention)
+        D2(:,:,:) = D(:,:,:);
+        save(D2); 
+    else
+        save(D); % Update .mat file
+    end
     
     % Add entries in log file
     if ~isempty(chFound)
