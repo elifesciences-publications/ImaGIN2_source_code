@@ -95,24 +95,15 @@ for i0 = 1:size(t,1)
         end
     end
     
-    
-    D = sensors(D,'EEG',Sensors);
-    
-    if ~isempty(S.FileOut)
-        D2 = clone(D,S.FileOut,[D.nchannels D.nsamples D.ntrials]); % Create a new .mat/dat file (F-TRACT convention)
-        D2(:,:,:) = D(:,:,:);
-        save(D2); 
-        
+    % Add entries in log file
+    if~isempty(S.FileOut)
         if ~isempty(chFound)
-            ImaGIN_save_log(fullfile(D2), 'Positions added for channels:', chFound);
+            ImaGIN_save_log(fullfile(S.FileOut), 'Positions added for channels:', chFound);
         end
         if ~isempty(chNotFound)
-            ImaGIN_save_log(fullfile(D2), 'Positions not found for channels:', chNotFound);
+            ImaGIN_save_log(fullfile(S.FileOut), 'Positions not found for channels:', chNotFound);
         end
-        
-    else
-        save(D); % Update .mat file        
-        % Add entries in log file
+    else       
         if ~isempty(chFound)
             ImaGIN_save_log(fullfile(D), 'Positions added for channels:', chFound);
         end
@@ -120,7 +111,25 @@ for i0 = 1:size(t,1)
             ImaGIN_save_log(fullfile(D), 'Positions not found for channels:', chNotFound);
         end
     end
-    
+end
+
+try
+    fid = fopen(S.FileTxtOut,'w');
+    recording_output = (D.sensors('eeg').label);
+    fprintf(fid,'%s\n',recording_output{:});
+    fclose(fid);
+catch
+    disp('recording sensors not saved.')
+end
+
+D = sensors(D,'EEG',Sensors);
+
+if ~isempty(S.FileOut)
+    D2 = clone(D,S.FileOut,[D.nchannels D.nsamples D.ntrials]); % Create a new .mat/dat file (F-TRACT convention)
+    D2(:,:,:) = D(:,:,:);
+    save(D2);
+else
+    save(D); % Update .mat file
 end
 
 end
