@@ -95,8 +95,8 @@ for i0 = 1:size(t,1)
         end
     end
     
-    % Add entries in log file
-    if~isempty(S.FileOut)
+    % Add entries in log file 
+    if isfield(S, 'FileOut') && ~isempty(S.FileOut)
         if ~isempty(chFound)
             ImaGIN_save_log(fullfile(S.FileOut), 'Positions added for channels:', chFound);
         end
@@ -124,7 +124,7 @@ end
 
 D = sensors(D,'EEG',Sensors);
 
-if ~isempty(S.FileOut)
+if isfield(S, 'FileOut') && ~isempty(S.FileOut)
     D2 = clone(D,S.FileOut,[D.nchannels D.nsamples D.ntrials]); % Create a new .mat/dat file (F-TRACT convention)
     D2(:,:,:) = D(:,:,:);
     save(D2);
