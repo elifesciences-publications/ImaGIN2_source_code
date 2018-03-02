@@ -57,7 +57,7 @@ end
     else
         S2.InterpolationFilter = 0;
     end
-    %{
+
     T = ImaGIN_FeatureSEEG(S2);
     
     % If the trained classifier is not available: compute it
@@ -83,8 +83,7 @@ end
     channelClass = trainedClassifier.predictFcn(T(:,2:8)); 
     % Get list of detected bad channels
     bIdx = find(strcmp(channelClass, 'Bad'));
-    %}
-    bIdx = [12;13]; %TEST
+
     %%
     % In case disconnected electrode doesn't have stimulation artefact
     % specific for some FTRACT dataset
@@ -123,12 +122,12 @@ end
     badFile = fopen(fullfile(badDir, [FileOut, '_bIdx.txt']), 'w'); 
     fprintf(badFile, '%d\n', bIdx(:));
     fclose(badFile);
-    %{ 
+
     Tnew = [T channelClass];
     Tnew.Properties.VariableNames{'Var9'} = 'Note';
     csvfilename = fullfile(badDir, [FileOut, '.csv']); % Save feature table & badchannels indices
     writetable(Tnew,csvfilename,'Delimiter',',');
-    %}
+
     % Add badchannel index in meeg object
     if ~isempty(bIdx)
         D = badchannels(D,bIdx,1); 
