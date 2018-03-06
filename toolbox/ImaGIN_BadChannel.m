@@ -87,7 +87,7 @@ end
     %%
     % In case disconnected electrode doesn't have stimulation artefact
     % specific for some FTRACT dataset
-    chanLbs = strrep(upper(D.chanlabels) ,'''','p');
+    chanLbs = strrep(upper(string(D.chanlabels)),'''','p');
     crFname = D.fname;
     crFname = strrep(crFname,'welectrodes_','');
     undsc   = strfind(crFname,'_');
@@ -122,7 +122,7 @@ end
     badFile = fopen(fullfile(badDir, [FileOut, '_bIdx.txt']), 'w'); 
     fprintf(badFile, '%d\n', bIdx(:));
     fclose(badFile);
-
+    channelClass(bIdx) = {'Bad'};
     Tnew = [T channelClass];
     Tnew.Properties.VariableNames{'Var9'} = 'Note';
     csvfilename = fullfile(badDir, [FileOut, '.csv']); % Save feature table & badchannels indices
