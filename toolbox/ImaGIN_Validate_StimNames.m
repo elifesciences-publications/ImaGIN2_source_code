@@ -135,7 +135,7 @@ else
             Notes{ii} = strrep(Notes{ii},'1_HA','1Hz');
             Notes{ii} = strrep(Notes{ii},'_mA','mA');
             Notes{ii} = strrep(Notes{ii},'_Hz','Hz');
-            Notes{ii} = strrep(Notes{ii},'Stim_Start_','');
+            Notes{ii} = strrep(Notes{ii},'Stim_Start_',''); Notes{ii} = strrep(Notes{ii},'_0us','');
             evt(ii).type = Notes{ii};
             if ~strcmpi(evt(ii).type,'RESET ON') && ~strcmpi(evt(ii).type,'RESET OFF')...
                     && isempty(strfind(evt(ii).type,'Stim_Stop_'))... 
