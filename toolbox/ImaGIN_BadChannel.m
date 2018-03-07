@@ -87,7 +87,8 @@ end
     %%
     % In case disconnected electrode doesn't have stimulation artefact
     % specific for some FTRACT dataset
-    chanLbs = strrep(upper(string(D.chanlabels)),'''','p');
+    chanLbs = upper(char(D.chanlabels));
+    chanLbs = strrep(cellstr(chanLbs),'''','p');
     crFname = D.fname;
     crFname = strrep(crFname,'welectrodes_','');
     undsc   = strfind(crFname,'_');
