@@ -86,9 +86,9 @@ end
 %% ------------------------------------------------
 % Case only specific stim events are to be cropped
 if ~isempty(thisN)
-    %idxN = strcmp(Notes,thisN);
-    %idxN= find(idxN);
-    KeepEvent = thisN;%find(KeepEvent==idxN);
+    idxN = strcmp(Notes,thisN);
+    idxN= find(idxN);
+    KeepEvent = find(KeepEvent==idxN);
 end
 %% ------------------------------------------------
 for c=1:length(KeepEvent) % Navigate all stim events
@@ -126,8 +126,8 @@ for c=1:length(KeepEvent) % Navigate all stim events
         fundc = strfind(noteName,'_');
         lNumb = strfind(noteName,noteName(1:fundc(1)-1));
         keepN = noteName(1:fundc(1)-1);
-        if(numel(lNumb)) == 2 && ~strcmp(keepN,'A') && ~strcmp(keepN,'H')
-            noteName = strrep(noteName,keepN,'CHNAME');
+        if(numel(lNumb)) == 2 && ~strcmp(keepN,'A') && ~strcmp(keepN,'H') && ~isempty(keepN)            
+            noteName = strrep(noteName,keepN,'CHNAME');            
         end  
     end   
     %% Avoid number starting with 0: 01 02 03,...
@@ -297,10 +297,10 @@ for c=1:length(KeepEvent) % Navigate all stim events
         idxn1 = strfind(noteName,numb2{1});          %OD
         subn1 = strrep(noteName(1:idxn1),'_','');
         noteName = char(strcat(subn1,noteName(idxn1+1:end)));
-    end
-    if keepN
-        noteName = strrep(noteName,'CHNAME',keepN);
-    end
+    end 
+    
+    noteName = strrep(noteName,'CHNAME',keepN);  
+    
     ptrn = ',';
     if strncmp(noteName,ptrn,1)
         noteName = char(noteName(2:end));
