@@ -4,6 +4,9 @@ function D=ImaGIN_InterpolationFilter(S)
 % Ref: Ramirez & Baillet, 2011
 
 % S.method = 'linear' or 'spline' or 'other'
+if ~isfield(S, 'method') || isempty(S.method)
+    S.method = 'other';
+end
 
 % try
     t=S.Fname;
