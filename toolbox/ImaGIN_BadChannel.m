@@ -87,7 +87,8 @@ end
     %%
     % In case disconnected electrode doesn't have stimulation artefact
     % specific for some FTRACT dataset
-    chanLbs = strrep(upper(string(D.chanlabels)),'''','p');
+    chanLbs = upper(char(D.chanlabels));
+    chanLbs = strrep(cellstr(chanLbs),'''','p');
     crFname = D.fname;
     crFname = strrep(crFname,'welectrodes_','');
     undsc   = strfind(crFname,'_');
@@ -104,17 +105,24 @@ end
         elseif numel(numb{1}) == 4
             ch1 = strcat(chl,numb{1}(1:2));
             ch2 = strcat(chl,numb{1}(3:4));
+        else
+           ch1 = '';
+           ch2 = '';
         end
         chlb = {ch1,ch2};
-        chInd  = find(ismember(chanLbs,chlb));
-        if ~isempty(chInd)
-            if isempty(find(any(bIdx==chInd(1)), 1))
-                bIdx(end+1) = [chInd(1)];
+        if ~isempty(chlb)
+            chInd  = find(ismember(chanLbs,chlb));
+            if ~isempty(chInd)
+                if isempty(find(any(bIdx==chInd(1)), 1))
+                    bIdx(end+1) = [chInd(1)];
+                end
+                if numel(chInd) > 1
+                    if isempty(find(any(bIdx==chInd(2)), 1))
+                        bIdx(end+1) = chInd(2);
+                    end
+                end
+                bIdx = sort(bIdx);
             end
-            if isempty(find(any(bIdx==chInd(2)), 1))
-                bIdx(end+1) = chInd(2);
-            end
-            bIdx = sort(bIdx);
         end
     end
     %%

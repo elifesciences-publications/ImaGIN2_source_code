@@ -41,15 +41,21 @@ for c=1:evsize % Navigate all available events
     xpr4  = '\w*50.0hz\w*';
     xpr5  = '\w*50hz\w*';
     xpr6  = '\w*50 hz\w*';
+    
+    xpr4b  = '\w*55.0hz\w*';
+    xpr5b  = '\w*55hz\w*';
+    xpr6b  = '\w*55 hz\w*';
+    
     xpr7  = '\w*alarme\w*';
     xpr8  = '\w*SE1Hz\w*';
     xpr9  = '\w*SE 1Hz\w*';
     xpr10  = 'crise';
-    [ds,di]=regexp(Notes{c},'\d*','Match');
+    [~,di]=regexp(Notes{c},'\d*','Match');
     if ~isempty(di)
         if ~isempty(regexpi(Notes{c},xpr4)) || ~isempty(regexpi(Notes{c},xpr5)) || ...
                 ~isempty(regexpi(Notes{c},xpr6)) || ~isempty(regexpi(Notes{c},xpr7)) || ...
                 ~isempty(regexpi(Notes{c},xpr8)) || ~isempty(regexpi(Notes{c},xpr9)) || ...
+                ~isempty(regexpi(Notes{c},xpr4b)) || ~isempty(regexpi(Notes{c},xpr5b)) || ~isempty(regexpi(Notes{c},xpr6b)) ||...
                 strcmpi(Notes{c}(1:min([length(Notes{c}) 5])),xpr10)
         elseif ~isempty(regexpi(Notes{c},xpr1))
             KeepEvent=[KeepEvent c];
@@ -71,15 +77,7 @@ for j=1:length(KeepEvent) % Navigate all stim events
     noteName = strrep(noteName,'.0','');
     noteName = strrep(noteName,'.',''); noteName = strrep(noteName,',','');
     noteName = strrep(noteName,'sec','s');  noteName = strrep(noteName,'AA','A');
-    keepN = ''; noteName = strrep(noteName,'stim','');
-    try
-        fundc = strfind(noteName,'_');
-        lNumb = strfind(noteName,noteName(1:fundc(1)-1));
-        keepN = noteName(1:fundc(1)-1);
-        if(numel(lNumb)) == 2 && ~strcmp(keepN,'A') && ~strcmp(keepN,'H')
-            noteName = strrep(noteName,keepN,'CHNAME');
-        end
-    end
+    noteName = strrep(noteName,'stim','');
     Notes{KeepEvent(j)} = noteName;
 end
 
@@ -108,7 +106,7 @@ if numel(pIdx) == numel(KeepEvent)
 else
     
     if ~isempty(pIdx)
-        pval = unique(pVals(pIdx));
+        pval = unique(pVals(pIdx)); 
         fprintf('MESSAGE: Pulse duration found, but not in all Notes. Its unique value is %d \n', pval);
     else
         fprintf('MESSAGE: Pulse duration not found in any of the Notes. Using default value = %d \n', pulseDefault);
@@ -116,8 +114,11 @@ else
     end
     
     if isempty(pval)
-        error('No pulse duration found in Notes, no default value either.');
+        error('No pulse duration found in Notes, no default value neither.');
     else
+        if numel(pval) > 1
+            pval = pval(1);
+        end
         pval = strcat(num2str(pval),'us');
         for c = 1:length(KeepEvent)
             if isempty(strfind(Notes{KeepEvent(c)},pval))
@@ -135,7 +136,7 @@ else
             Notes{ii} = strrep(Notes{ii},'1_HA','1Hz');
             Notes{ii} = strrep(Notes{ii},'_mA','mA');
             Notes{ii} = strrep(Notes{ii},'_Hz','Hz');
-            Notes{ii} = strrep(Notes{ii},'Stim_Start_','');
+            Notes{ii} = strrep(Notes{ii},'Stim_Start_',''); Notes{ii} = strrep(Notes{ii},'_0us','');
             evt(ii).type = Notes{ii};
             if ~strcmpi(evt(ii).type,'RESET ON') && ~strcmpi(evt(ii).type,'RESET OFF')...
                     && isempty(strfind(evt(ii).type,'Stim_Stop_'))... 

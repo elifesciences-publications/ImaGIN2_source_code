@@ -57,6 +57,11 @@ for c=1:evsize % Navigate all available events
     xpr4  = '\w*50.0hz\w*';
     xpr5  = '\w*50hz\w*';
     xpr6  = '\w*50 hz\w*';
+    
+    xpr4b  = '\w*55.0hz\w*';
+    xpr5b  = '\w*55hz\w*';
+    xpr6b  = '\w*55 hz\w*';
+    
     xpr7  = '\w*alarme\w*';
     xpr8  = '\w*SE1Hz\w*';
     xpr9  = '\w*SE 1Hz\w*';
@@ -68,8 +73,9 @@ for c=1:evsize % Navigate all available events
         if ~isempty(regexpi(Notes{c},xpr4)) || ~isempty(regexpi(Notes{c},xpr5)) || ...
                 ~isempty(regexpi(Notes{c},xpr6)) || ~isempty(regexpi(Notes{c},xpr7)) || ...
                 ~isempty(regexpi(Notes{c},xpr8)) || ~isempty(regexpi(Notes{c},xpr9)) || ...
-                ~isempty(regexpi(Notes{c},xpr12)) || ...
-                ~isempty(regexpi(Notes{c},xpr11)) || strcmpi(Notes{c}(1:min([length(Notes{c}) 5])),xpr10)
+                ~isempty(regexpi(Notes{c},xpr12))||~isempty(regexpi(Notes{c},xpr4b)) || ...
+                ~isempty(regexpi(Notes{c},xpr5b))|| ~isempty(regexpi(Notes{c},xpr6b))||...
+                ~isempty(regexpi(Notes{c},xpr11))|| strcmpi(Notes{c}(1:min([length(Notes{c}) 5])),xpr10)
         elseif ~isempty(regexpi(Notes{c},xpr1))
             KeepEvent=[KeepEvent c];
         elseif ~isempty(regexpi(Notes{c},xpr2))
@@ -86,9 +92,9 @@ end
 %% ------------------------------------------------
 % Case only specific stim events are to be cropped
 if ~isempty(thisN)
-    %idxN = strcmp(Notes,thisN);
-    %idxN= find(idxN);
-    KeepEvent = thisN;%find(KeepEvent==idxN);
+    idxN = strcmp(Notes,thisN);
+    idxN= find(idxN);
+    KeepEvent = find(KeepEvent==idxN);
 end
 %% ------------------------------------------------
 for c=1:length(KeepEvent) % Navigate all stim events
@@ -126,8 +132,8 @@ for c=1:length(KeepEvent) % Navigate all stim events
         fundc = strfind(noteName,'_');
         lNumb = strfind(noteName,noteName(1:fundc(1)-1));
         keepN = noteName(1:fundc(1)-1);
-        if(numel(lNumb)) == 2 && ~strcmp(keepN,'A') && ~strcmp(keepN,'H')
-            noteName = strrep(noteName,keepN,'CHNAME');
+        if(numel(lNumb)) == 2 && ~strcmp(keepN,'A') && ~strcmp(keepN,'H') && ~isempty(keepN)            
+            noteName = strrep(noteName,keepN,'CHNAME');            
         end  
     end   
     %% Avoid number starting with 0: 01 02 03,...
@@ -297,10 +303,10 @@ for c=1:length(KeepEvent) % Navigate all stim events
         idxn1 = strfind(noteName,numb2{1});          %OD
         subn1 = strrep(noteName(1:idxn1),'_','');
         noteName = char(strcat(subn1,noteName(idxn1+1:end)));
-    end
-    if keepN
-        noteName = strrep(noteName,'CHNAME',keepN);
-    end
+    end 
+    
+    noteName = strrep(noteName,'CHNAME',keepN);  
+    
     ptrn = ',';
     if strncmp(noteName,ptrn,1)
         noteName = char(noteName(2:end));
