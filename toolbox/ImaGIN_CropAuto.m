@@ -57,6 +57,11 @@ for c=1:evsize % Navigate all available events
     xpr4  = '\w*50.0hz\w*';
     xpr5  = '\w*50hz\w*';
     xpr6  = '\w*50 hz\w*';
+    
+    xpr4b  = '\w*55.0hz\w*';
+    xpr5b  = '\w*55hz\w*';
+    xpr6b  = '\w*55 hz\w*';
+    
     xpr7  = '\w*alarme\w*';
     xpr8  = '\w*SE1Hz\w*';
     xpr9  = '\w*SE 1Hz\w*';
@@ -68,8 +73,9 @@ for c=1:evsize % Navigate all available events
         if ~isempty(regexpi(Notes{c},xpr4)) || ~isempty(regexpi(Notes{c},xpr5)) || ...
                 ~isempty(regexpi(Notes{c},xpr6)) || ~isempty(regexpi(Notes{c},xpr7)) || ...
                 ~isempty(regexpi(Notes{c},xpr8)) || ~isempty(regexpi(Notes{c},xpr9)) || ...
-                ~isempty(regexpi(Notes{c},xpr12)) || ...
-                ~isempty(regexpi(Notes{c},xpr11)) || strcmpi(Notes{c}(1:min([length(Notes{c}) 5])),xpr10)
+                ~isempty(regexpi(Notes{c},xpr12))||~isempty(regexpi(Notes{c},xpr4b)) || ...
+                ~isempty(regexpi(Notes{c},xpr5b))|| ~isempty(regexpi(Notes{c},xpr6b))||...
+                ~isempty(regexpi(Notes{c},xpr11))|| strcmpi(Notes{c}(1:min([length(Notes{c}) 5])),xpr10)
         elseif ~isempty(regexpi(Notes{c},xpr1))
             KeepEvent=[KeepEvent c];
         elseif ~isempty(regexpi(Notes{c},xpr2))
