@@ -7,6 +7,7 @@ function prepare_ImaGIN_spm_eeg_converteeg2mat(FileIn, FileOut)
 [Root,file,ext]=fileparts(FileIn);
 clear S
 S.FileOut=FileOut;
+S.SelectChannels=[];
 S.isSEEG=1;
 
 switch lower(ext)

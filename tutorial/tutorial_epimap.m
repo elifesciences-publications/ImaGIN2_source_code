@@ -21,7 +21,7 @@
 % =============================================================================-
 %
 % Authors: Olivier David,  2010-2017
-%          Francois Tadel, 2017
+%          Francois Tadel, 2017-2018
 
 
 %% ===== DATA DEFINITION =====
@@ -90,7 +90,7 @@ for i0 = 1:length(Patient)
     % Co-registration, segmentation and normalization of the pre-op and post-op MRI scans
     % if ~exist(fullfile(Patient{i0}.MRI.out, 'BrainPre.nii'), 'file')
     isNormalize = strcmpi(OutputSpace, 'mni');
-    Patient(i0) = ImaGIN_anat_spm(Patient(i0), isNormalize);
+    Patient(i0) = ImaGIN_AnatSPM(Patient(i0), isNormalize);
 end
 
 
@@ -112,6 +112,8 @@ for i0 = 1:length(Patient)
         clear S
         S.dataset = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.File{i1} '.TRC']);
         S.FileOut = fullfile(Root, Patient{i0}.Name, 'seeg', Patient{i0}.File{i1});
+        S.SelectChannels = [];
+        S.isSEEG = 1;
         D = ImaGIN_spm_eeg_converteeg2mat(S);
 
         % Add electrodes positions
@@ -227,7 +229,7 @@ for i0 = 1:length(Patient)
     
     % Compute the TF decomposition with multi-taper
     for i1 = 1:length(Patient{i0}.FileBipolar)
-        % Multi-taper decomposition
+        % Multi-taper decomposition (Seizure)
         clear SS
         SS.D = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.FileBipolar{i1} '.mat']);
         D = spm_eeg_load(SS.D);
@@ -242,10 +244,17 @@ for i0 = 1:length(Patient)
         SS.Taper           = 'Hanning';
         SS.channels        = 1:D.nchannels;
         ImaGIN_spm_eeg_tf(SS);
+        
+        % Multi-taper decomposition (Baseline)
+        SS.D = fullfile(Root, Patient{i0}.Name, 'seeg', [Patient{i0}.BaselineFile{i1} '.mat']);
+        B = spm_eeg_load(SS.D);
+        SS.TimeWindow = [];
+        ImaGIN_spm_eeg_tf(SS);
+        
         % Baseline normalization of the TF maps
         clear SS2
         SS2.D = fullfile(D.path,['m1_' SS.Pre '_' D.fname]);
-        SS2.B = [-10 -1];
+        SS2.B = fullfile(B.path,['m1_' SS.Pre '_' B.fname]);
         ImaGIN_NormaliseTF(SS2);
     end
     % Average the TF maps

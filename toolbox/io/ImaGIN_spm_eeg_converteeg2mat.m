@@ -51,17 +51,16 @@ if ~isfield(S2, 'dataset')
     end
 end
 % Selected channels: if not specified, auto-detect
-if isfield(S, 'SelectChannels') && ~isempty(S.SelectChannels)
+if isfield(S, 'SelectChannels')
     SelectChannels = S.SelectChannels;
-    isSEEG = 1;  % No auto-detection, no need to ask
 else
-    SelectChannels = [];
-    % Ask if the input data is SEEG
-    if isfield(S, 'isSEEG') && ~isempty(S.isSEEG)
-        isSEEG = S.isSEEG;
-    else
-        isSEEG = 1;  % Assume by default everything is SEEG
-    end
+    SelectChannels = str2num(spm_input('Index of channels (empty=detect)', '+1', 's'));
+end
+% Ask if the input data is SEEG
+if isfield(S, 'isSEEG') && ~isempty(S.isSEEG)
+    isSEEG = S.isSEEG;
+else
+    isSEEG = isequal(spm_input('SEEG? ','+1','Yes|No'), 'Yes');
 end
 
 % Is output file defined
