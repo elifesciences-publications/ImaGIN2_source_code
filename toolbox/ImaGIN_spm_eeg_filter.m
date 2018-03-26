@@ -203,7 +203,7 @@ spm_progress_bar('Clear');
 D = Dnew;
 D = D.history(mfilename, S);
 D2=clone(D,FileOut, [D.nchannels D.nsamples D.ntrials]);
-D2(:,:,:)=D(:,:,:)
+D2(:,:,:)=D(:,:,:);
 save(D2);
 
 %-Cleanup
