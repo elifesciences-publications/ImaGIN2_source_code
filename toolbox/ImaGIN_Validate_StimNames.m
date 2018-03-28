@@ -91,7 +91,13 @@ for k = 1:length(KeepEvent)
         pVals = [pVals;str2double(xsub3(1:end-2))];
     elseif isempty(xsub3)&& ~isempty(xsub4)
         xsub4 = char(xsub4);
-        xsub3 = char(xsub4(1:end-1));
+        xsub3 = char(xsub4(1:end-1)); % sec --> msec
+        if numel(xsub3) <= 3
+            buff = num2str(str2double(xsub3)*1000);
+           if numel(buff) <= 4
+               xsub3 = buff;
+           end
+        end
         pVals = [pVals;str2double(xsub3)];
     else
         xsub3 = '0';
