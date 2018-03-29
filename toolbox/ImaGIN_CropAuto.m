@@ -282,6 +282,12 @@ for c=1:length(KeepEvent) % Navigate all stim events
             xsub3 = cellstr(xsub3);
         elseif isempty(xsub3)&& ~isempty(xsub4)
             xsub4 = char(xsub4);
+            if numel(xsub4) <= 3
+                buff = num2str(str2double(xsub4)*1000);
+                if numel(buff) <= 4
+                    xsub4 = buff;
+                end
+            end
             xsub3 = cellstr(strcat(xsub4(1:end-1),'us'));
         else
             xsub3 = '0us';
