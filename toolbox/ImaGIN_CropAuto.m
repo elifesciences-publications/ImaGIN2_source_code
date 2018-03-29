@@ -121,10 +121,9 @@ for c=1:length(KeepEvent) % Navigate all stim events
     noteName = regexprep(noteName,'MA','mA'); %OD
     noteName = regexprep(noteName,'MS','mA'); %OD - errors in Milan notes
     noteName = regexprep(noteName,'Stim_Start_',''); %YUQ notes
-    noteName = regexprep(noteName,'Stim_Stop_','');  %YUQ notes
-    noteName = strrep(noteName,'.0','');
+    noteName = regexprep(noteName,'Stim_Stop_','');  %YUQ notes    
     noteName = strrep(noteName,'-','_');  noteName = strrep(noteName,'__','_');    
-    noteName = strrep(noteName,'.',''); noteName = strrep(noteName,',','');
+    noteName = strrep(noteName,',','');
     noteName = strrep(noteName,'sec','us');  noteName = strrep(noteName,'_us','us');
     noteName = strrep(noteName,'AA','A');
     keepN = ''; noteName = strrep(noteName,'stim','');  noteName = strrep(noteName,'Stim','');
@@ -142,6 +141,7 @@ for c=1:length(KeepEvent) % Navigate all stim events
         noteName =  char(strrep(noteName,numZ(1), num2str(str2double(numZ(1)))));
         noteName =  char(strrep(noteName,numZ(2), num2str(str2double(numZ(2)))));
     end
+    noteName = strrep(noteName,'.0',''); noteName = strrep(noteName,'.','');
     %% check if stim electr numbers are concatenated without space or -
     
     numbr = regexp(noteName,'\d*','Match');
@@ -157,6 +157,9 @@ for c=1:length(KeepEvent) % Navigate all stim events
                     if str2double(numbr{2}(1:2)) == str2double(numbr(1)) + 1 || str2double(numbr{2}(1:2)) + 1 == str2double(numbr(1)) 
                         elecno = strcat(numbr{2}(1:2),'_',numbr{2}(3));
                         noteName = strrep(noteName,numbr{2},elecno);
+                    elseif str2double(numbr{2}(1)) == str2double(numbr(1)) + 1 || str2double(numbr{2}(1)) + 1 == str2double(numbr(1)) 
+                        elecno = strcat(numbr{2}(1),'_',numbr{2}(2:3));
+                        noteName = strrep(noteName,numbr{2},elecno);                        
                     end
                  elseif numel(numbr{2}) == 4
                      if str2double(numbr{2}(1:2)) == str2double(numbr(1)) + 1 || str2double(numbr{2}(1:2)) + 1 == str2double(numbr(1))
@@ -207,7 +210,7 @@ for c=1:length(KeepEvent) % Navigate all stim events
                     end
                 elseif numel(numbr{2}) == 3
                     elecno = strcat(numbr{2}(1),'_',numbr{2}(2:3));
-                    if str2double(numbr{2}(1)) == str2double(numbr(1)) + 1 || str2double(numbr{2}(1)) + 1 == str2double(numbr(1)) 
+                    if str2double(numbr{2}(1)) <= str2double(numbr(1)) + 1 || str2double(numbr{2}(1)) + 1 >= str2double(numbr(1)) 
                         noteName = strrep(noteName,numbr{2},elecno);
                     else
                         elecno = strcat(numbr{2}(1:2),'_',numbr{2}(3));
@@ -455,7 +458,7 @@ for k=1:numel(f)
         delete(fullfile(DirOut,strcat(txtFileName,'.txt')));
     end
 end
-nf = dir(fullfile(DirOut,'*.txt'));
+nf = dir(fullfile(DirOut,'*0us.txt'));
 nf = {nf.name};
 
 realStims = length(KeepEvent);
