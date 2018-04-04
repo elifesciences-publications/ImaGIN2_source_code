@@ -145,7 +145,7 @@ for c=1:length(KeepEvent) % Navigate all stim events
     %% check if stim electr numbers are concatenated without space or -
     
     numbr = regexp(noteName,'\d*','Match');
-    if numel(numbr) >= 2
+    if numel(numbr) > 2
         if str2double(numbr(2))~= str2double(numbr(1)) + 1 && str2double(numbr(1))~= str2double(numbr(2)) + 1 
             if numel(numbr{1}) == 2
                  if numel(numbr{2}) ~= 3 && numel(numbr{2}) ~= 2 && numel(numbr{2}) ~= 4
@@ -221,7 +221,33 @@ for c=1:length(KeepEvent) % Navigate all stim events
                 end
             end
         end
+    elseif numel(numbr) == 2
+        if (contains(noteName,  [numbr{2} 'us']) || contains(noteName, [numbr{2} 'mA']) ...
+                || contains(noteName, [numbr{2} 'Hz']))
+            if numel(numbr{1}) == 2
+                elecno = strcat(numbr{1}(1),'_',numbr{1}(2));
+                if str2double(numbr{1}(1)) + 1 == str2double(numbr{1}(2)) || str2double(numbr{1}(1)) == str2double(numbr{1}(2)) + 1
+                    noteName = strrep(noteName,numbr{1},elecno);
+                end
+            elseif contains(numbr{1},'10')  
+                 noteName = strrep(noteName,'10','_10_');
+            elseif numel(numbr{1}) == 4
+                elecno = strcat(numbr{1}(1:2),'_',numbr{1}(3));
+                noteName = strrep(noteName,numbr{1},elecno);
+            elseif contains(noteName, [numbr{1} 'mA']) || contains(noteName, [numbr{1} 'Hz']) 
+                if ~contains(numbr{1},'.') 
+                    if numel(numbr{1}) == 3
+                        elecno = strcat(numbr{1}(1),'_',numbr{1}(2),'_',numbr{1}(3));
+                        noteName = strrep(noteName,numbr{1},elecno);
+                    elseif numel(numbr{1}) == 5
+                        elecno = strcat(numbr{1}(1:2),'_',numbr{1}(3:4),'_',numbr{1}(5));
+                        noteName = strrep(noteName,numbr{1},elecno);
+                    end
+                end
+            end
+        end
     end
+
 
   %%   
     numb = regexp(noteName,'\d*','Match');
