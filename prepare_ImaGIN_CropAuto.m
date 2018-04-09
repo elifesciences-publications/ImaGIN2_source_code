@@ -1,5 +1,5 @@
 function prepare_ImaGIN_CropAuto(NameStim,FileIn,FileOut)
-  
+   
 % FileIn: path linking to the MEEG file to dissect
 
 clear S;
