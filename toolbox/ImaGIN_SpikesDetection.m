@@ -157,13 +157,13 @@ channels = {results.markers.channels}';
 %%
 SPKmarkers = table(channels,marks, pasition);
 [~, bname,~] = fileparts(D.fnamedat);
-spkFile = ['spk_' bname];
+spkFileName = ['spk_' bname];
 spkFile.spikeRate = allSPKs;
 spkFile.markers   = SPKmarkers;
 spkFile.baseline  = ['duration of ' num2str(totRec)  ' minutes'];
 spkFile.comment   = 'Spike rate is number of spikes per minute whithin a bipolar channel';
 
-save(fullfile(DirOUt,spkFile), 'spkFile');
+save(fullfile(DirOUt,spkFileName), 'spkFile');
 
 
 
