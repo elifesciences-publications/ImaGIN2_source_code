@@ -1,4 +1,4 @@
-function [spk_Rate] = ImaGIN_SpikesDetection(S)
+function ImaGIN_SpikesDetection(S)
 
 sFile = S.dataset;
 DirOut= S.DirFileOut;
