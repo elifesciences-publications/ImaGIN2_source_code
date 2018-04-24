@@ -1,7 +1,7 @@
 function ImaGIN_SpikesDetection(S)
 
 sFile = S.dataset;
-DirOut= S.DirFileOut;
+DirOut= S.FileOut;
 try
     D = spm_eeg_load(sFile); % Load the converted file .mat
 catch
