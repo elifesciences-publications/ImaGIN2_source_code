@@ -6,5 +6,5 @@ S.dataset = fullfile(FileIn);
 S.FileOut = FileOut;
 fprintf('prepare_ImaGIN_SpikesDetection: S.dataset: %s \n', S.dataset)
 fprintf('prepare_ImaGIN_SpikesDetection: S.FileOut: %s \n', S.FileOut)
-D = ImaGIN_SpikesDetection(S);
+ ImaGIN_SpikesDetection(S);
 end
