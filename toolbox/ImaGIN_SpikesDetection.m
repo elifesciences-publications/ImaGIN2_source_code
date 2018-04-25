@@ -114,7 +114,7 @@ D2        = events(D2,1,nonStimEvents);
 save(D2);
 
 %%
-clearvars -except  basefile;
+clearvars -except  basefile DirOut;
 S.Fname = basefile;
 D = ImaGIN_BipolarMontage(S);
 % Perform a longitudinal bipolar montage
