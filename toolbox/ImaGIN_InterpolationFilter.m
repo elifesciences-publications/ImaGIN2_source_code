@@ -5,7 +5,7 @@ function D=ImaGIN_InterpolationFilter(S)
 
 % S.method = 'linear' or 'spline' or 'other'
 if ~isfield(S, 'method') || isempty(S.method)
-    S.method = 'other';
+    S.method = 'svd';
 end
 
 % try
@@ -96,7 +96,46 @@ for i0=1:size(t,1)
                 Data(i1,:) = spline(Time2,Data(i1,Index),Time);
             end
             
+        case 'svd'
             
+            %Define basis function
+            PeakMin=-0.001;
+            PeakMax=0.003;      %Could be defined as argument
+            Artefact=[];
+            for i1=1:length(ev)
+                if strcmp(EventType,strvcat(ev(i1).type))
+                    T2=indsample(D,S.StartInterpolation+ev(i1).time);
+                    T3=indsample(D,S.EndInterpolation+ev(i1).time);
+                    T4=indsample(D,PeakMin+ev(i1).time);
+                    T5=indsample(D,PeakMax+ev(i1).time);
+                    T6=indsample(D,ev(i1).time);
+                    Signe=sign(mean(D(:,(T6-1):(T6+1)),2)-mean(D(:,T2:T3),2));
+                    if ~isnan(T3)
+                        Artefact=cat(1,Artefact,(Signe(Good)*ones(1,T3-T2+1)).*D(Good,T2:T3));
+                    end
+                end
+            end
+            [u,s,v]=svd(Artefact,'econ');
+            V=abs(v-ones(size(v,2),1)*v(1,:));
+            index=[T4:T5]-T2;
+            [Y,I] = max(V,[],1);
+            Select=find(I>=min(index)&I<=max(index));
+            Basis=[v(:,Select)];
+            
+            %Apply correction
+            for i1=1:length(ev)
+                if strcmp(EventType,strvcat(ev(i1).type))
+                    T2=indsample(D,S.StartInterpolation+ev(i1).time);
+                    T3=indsample(D,S.EndInterpolation+ev(i1).time);
+                    if ~isnan(T3)
+                        Correction=D(:,T2:T3)*Basis*Basis';
+                        Data(:,T2:T3)=D(:,T2:T3)-Correction;
+                        Bias=(Data(:,T2)+Data(:,T3)-D(:,T2-1)-D(:,T3+1))./2;
+                        Data(:,T2:T3)=Data(:,T2:T3)-Bias;
+                    end
+                end
+            end
+                        
             
         case 'other'
             
