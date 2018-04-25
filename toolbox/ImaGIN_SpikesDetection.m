@@ -144,7 +144,7 @@ totRec = (D.nsamples/fs)/60; %time in minutes;
 bgnTime = tic;
 results = Delphos_detector(seeg,labels, 'SEEG', fs, {'Spk'}, [], [], 40, []);
 stpTime = toc(bgnTime);
-fprintf('\n Time Delphos spends  %.2f min for  %.2f min recordings ',stpTime/60, totRec);
+fprintf('\n Time Delphos spends %.2f min for %s: %.2f min recordings ',stpTime/60, fname, totRec);
 
 %% results
 labels   = [results.labels]';
@@ -157,13 +157,13 @@ channels = {results.markers.channels}';
 %%
 SPKmarkers = table(channels,marks, pasition);
 [~, bname,~] = fileparts(D.fnamedat);
-spkFileName = ['spk_' bname '.mat'];
+spkFileName = ['SPK_' bname '.mat'];
 spkFile.spikeRate = allSPKs;
 spkFile.markers   = SPKmarkers;
 spkFile.baseline  = ['duration of ' num2str(totRec)  ' minutes'];
 spkFile.comment   = 'Spike rate is number of spikes per minute whithin a bipolar channel';
-
 save(fullfile(DirOut,spkFileName), 'spkFile');
-
-
+delete(fullfile(DirOut ,'*.txt'))
+set_final_status('OK');
+disp('Done');
 
