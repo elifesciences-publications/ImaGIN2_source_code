@@ -96,6 +96,31 @@ for i0=1:size(t,1)
                 Data(i1,:) = spline(Time2,Data(i1,Index),Time);
             end
             
+        case 'pchip'
+            
+            ind1=[];
+            ind2=[];
+            for i1=1:length(ev)
+                %         if ~isempty(intersect(EventType,ev(i1).value))
+                if ~isempty(intersect(EventType,ev(i1).type))
+                    ind=indsample(D,ev(i1).time);
+                    ind1=[ind1 ind+StartInterpolation];
+                    ind2=[ind2 ind+EndInterpolation];
+                end
+            end
+            ind1=sort(ind1);
+            ind2=sort(ind2);
+            Time=time(D);
+            Index=1:length(Time);
+            for i1=1:length(ind1)
+                Index=setdiff(Index,ind1(i1):ind2(i1));
+            end
+            Time2=Time(Index);
+            
+            for i1=1:size(Data,1)
+                Data(i1,:) = pchip(Time2,Data(i1,Index),Time);
+            end
+            
         case 'svd'
             
             %Define basis function
@@ -133,7 +158,21 @@ for i0=1:size(t,1)
 
             Basis=[v(:,Select)];
             
+            
+%             %Do local correction to components
+%             for i1=1:size(v,2)
+%                 k = sort([local_max(v(:,i1))' local_max(-v(:,i1))']);
+%                 indexk=intersect(index,k);
+%                 if ~isempty(indexk)
+% %                     v([(index(1)-1):(index(end)+1)],i1)=interp1([index(1)-1 index(end)+1],v([index(1)-1 index(end)+1],i1),[(index(1)-1):(index(end)+1)]);
+%                     v(:,i1)=spline([1:index(1)-1 index(end)+1:size(v,1)],v([1:index(1)-1 index(end)+1:size(v,1)],i1),[1:size(v,1)]);
+%                 end
+%             end
+%             Basis=v;
+           
+            
             %Apply correction
+            n=0;
             for i1=1:length(ev)
                 if strcmp(EventType,strvcat(ev(i1).type))
                     T2=indsample(D,S.StartInterpolation+ev(i1).time);
@@ -143,6 +182,15 @@ for i0=1:size(t,1)
                         Data(:,T2:T3)=D(:,T2:T3)-Correction;
                         Bias=(Data(:,T2)+Data(:,T3)-D(:,T2-1)-D(:,T3+1))./2;
                         Data(:,T2:T3)=Data(:,T2:T3)-Bias;
+%                     T2=indsample(D,S.StartInterpolation+ev(i1).time);
+%                     T3=indsample(D,S.EndInterpolation+ev(i1).time);
+%                     T4=indsample(D,PeakMin+ev(i1).time);
+%                     T5=indsample(D,PeakMax+ev(i1).time);
+%                     T6=indsample(D,ev(i1).time);
+%                     Signe=sign(mean(D(:,(T6-1):(T6+1)),2)-mean(D(:,T2:T3),2));
+%                         n=n+1;
+%                         indexchan=(n-1)*length(Good)+[1:length(Good)];
+%                         Data(Good,T2:T3)=(Signe(Good)*ones(1,T3-T2+1)).*u(indexchan,:)*s*Basis';
                     end
                 end
             end
