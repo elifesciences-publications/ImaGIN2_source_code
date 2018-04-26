@@ -117,9 +117,20 @@ for i0=1:size(t,1)
             end
             [u,s,v]=svd(Artefact,'econ');
             V=abs(v-ones(size(v,2),1)*v(1,:));
-            index=[T4:T5]-T2;
+            index=[T4:T5]-T2+1;
+            
+%             %Selection based on vaiance
+%             tmp=cumsum(diag(s))/sum(diag(s));
+%             Select=1:max(find(tmp<0.99));
+
+            %Selection based on the max
             [Y,I] = max(V,[],1);
             Select=find(I>=min(index)&I<=max(index));
+            
+%             %Selection based on the ratio
+%             Ratio=sum(V(index,:))./sum(V);
+%             Select=find(Ratio>length(index)/(size(V,1)-1));
+
             Basis=[v(:,Select)];
             
             %Apply correction
@@ -135,9 +146,85 @@ for i0=1:size(t,1)
                     end
                 end
             end
-                        
+
+%             %Define basis function
+%             PeakMin=-0.001;
+%             PeakMax=0.004;      %Could be defined as argument
+%             Artefact=[];
+%             %resample data at 2 kHz
+% %             clear SS
+% %             SS.D=S.Fname;
+% %             SS.fsample_new=4e3;
+% %             Ds = spm_eeg_downsample(SS);
+% %             Data=D(:,:);
+%             timeS=min(time(D)):(1/2000):max(time(D));
+%             Ds=zeros(nchannels(D),length(timeS));
+%             for i1=1:nchannels(D)
+%                 Ds(i1,:)=interp1(time(D),D(i1,:),timeS);
+%             end
+% 
+%             for i1=1:length(ev)
+%                 if strcmp(EventType,strvcat(ev(i1).type))
+%                     T2=min(find(abs(timeS-(S.StartInterpolation+ev(i1).time))==min(abs(timeS-(S.StartInterpolation+ev(i1).time)))));
+%                     T3=min(find(abs(timeS-(S.EndInterpolation+ev(i1).time))==min(abs(timeS-(S.EndInterpolation+ev(i1).time)))));
+%                     T4=min(find(abs(timeS-(PeakMin+ev(i1).time))==min(abs(timeS-(PeakMin+ev(i1).time)))));
+%                     T5=min(find(abs(timeS-(PeakMax+ev(i1).time))==min(abs(timeS-(PeakMax+ev(i1).time)))));
+%                     T6=min(find(abs(timeS)==min(abs(timeS))));
+%                     Signe=sign(mean(Ds(:,(T6-1):(T6+1)),2)-mean(Ds(:,T2:T3),2));
+%                     if ~isnan(T3)
+%                         Artefact=cat(1,Artefact,(Signe(Good)*ones(1,T3-T2+1)).*Ds(Good,T2:T3));
+%                     end
+%                 end
+%             end
+%             [u,s,v]=svd(Artefact,'econ');
+%             V=abs(v-ones(size(v,2),1)*v(1,:));
+%             index=[T4:T5]-T2+1;
+%             
+% %             %Selection based on vaiance
+% %             tmp=cumsum(diag(s))/sum(diag(s));
+% %             Select=1:max(find(tmp<0.99));
+%             
+%             %Selection based on the max
+%             [Y,I] = max(V,[],1);
+%             Select=find(I>=min(index)&I<=max(index));
+%             
+% %             %Selection based on the ratio
+% %             Ratio=sum(V(index,:))./sum(V);
+% %             Select=find(Ratio>length(index)/(size(V,1)-1));
+% 
+%             Basis=[v(:,Select)];
+%             
+%             %Apply correction
+%             Datas=Ds(:,:);
+%             for i1=1:length(ev)
+%                 if strcmp(EventType,strvcat(ev(i1).type))
+%                     T2=min(find(abs(timeS-(S.StartInterpolation+ev(i1).time))==min(abs(timeS-(S.StartInterpolation+ev(i1).time)))));
+%                     T3=min(find(abs(timeS-(S.EndInterpolation+ev(i1).time))==min(abs(timeS-(S.EndInterpolation+ev(i1).time)))));
+%                     if ~isnan(T3)
+%                         Correction=Ds(:,T2:T3)*Basis*Basis';
+%                         Datas(:,T2:T3)=Ds(:,T2:T3)-Correction;
+%                         Bias=(Datas(:,T2)+Datas(:,T3)-Ds(:,T2-1)-Ds(:,T3+1))./2;
+%                         Datas(:,T2:T3)=Datas(:,T2:T3)-Bias;
+%                     end
+%                 end
+%             end
+%             
+%             %Reinterpolate
+%             Data=D(:,:);
+%             for i1=1:nchannels(D)
+%                 Data(i1,:)=interp1(timeS,Datas(i1,:),time(D));
+%             end
+%             
+%             
+% %     figure
+% %     for i2=1:nchannels(Ds)
+% %         plot([Ds(i2,:);Datas(i2,:)]')
+% %         title(num2str(i2))
+% %         pause
+% %     end
+
             
-        case 'other'
+        case 'other' 
             
             NCompo=2;
             CCthresh=0.5;
