@@ -148,7 +148,7 @@ fprintf('\n Time Delphos spends %.2f min for %s: %.2f min recordings ',stpTime/6
 
 %% results
 labels   = [results.labels]';
-spk_Rate = round(10*(results.n_Spk)./totRec)/10; % round result to one decimal place
+spk_Rate = round(10*(results.n_Spk)./totRec)/10; % Take result to one decimal place
 allSPKs  = table(labels, spk_Rate);
 %%
 pasition = [results.markers.position]';
