@@ -5,7 +5,7 @@ function D=ImaGIN_InterpolationFilter(S)
 
 % S.method = 'linear' or 'spline' or 'other'
 if ~isfield(S, 'method') || isempty(S.method)
-    S.method = 'other';
+    S.method = 'svd';
 end
 
 % try
@@ -96,9 +96,183 @@ for i0=1:size(t,1)
                 Data(i1,:) = spline(Time2,Data(i1,Index),Time);
             end
             
+        case 'pchip'
+            
+            ind1=[];
+            ind2=[];
+            for i1=1:length(ev)
+                %         if ~isempty(intersect(EventType,ev(i1).value))
+                if ~isempty(intersect(EventType,ev(i1).type))
+                    ind=indsample(D,ev(i1).time);
+                    ind1=[ind1 ind+StartInterpolation];
+                    ind2=[ind2 ind+EndInterpolation];
+                end
+            end
+            ind1=sort(ind1);
+            ind2=sort(ind2);
+            Time=time(D);
+            Index=1:length(Time);
+            for i1=1:length(ind1)
+                Index=setdiff(Index,ind1(i1):ind2(i1));
+            end
+            Time2=Time(Index);
+            
+            for i1=1:size(Data,1)
+                Data(i1,:) = pchip(Time2,Data(i1,Index),Time);
+            end
+            
+        case 'svd'
+            
+            %Define basis function
+            PeakMin=-0.001;
+            PeakMax=0.003;      %Could be defined as argument
+            Artefact=[];
+            for i1=1:length(ev)
+                if strcmp(EventType,strvcat(ev(i1).type))
+                    T2=indsample(D,S.StartInterpolation+ev(i1).time);
+                    T3=indsample(D,S.EndInterpolation+ev(i1).time);
+                    T4=indsample(D,PeakMin+ev(i1).time);
+                    T5=indsample(D,PeakMax+ev(i1).time);
+                    T6=indsample(D,ev(i1).time);
+                    Signe=sign(mean(D(:,(T6-1):(T6+1)),2)-mean(D(:,T2:T3),2));
+                    if ~isnan(T3)
+                        Artefact=cat(1,Artefact,(Signe(Good)*ones(1,T3-T2+1)).*D(Good,T2:T3));
+                    end
+                end
+            end
+            [u,s,v]=svd(Artefact,'econ');
+            V=abs(v-ones(size(v,2),1)*v(1,:));
+            index=[T4:T5]-T2+1;
+            
+%             %Selection based on vaiance
+%             tmp=cumsum(diag(s))/sum(diag(s));
+%             Select=1:max(find(tmp<0.99));
+
+            %Selection based on the max
+            [Y,I] = max(V,[],1);
+            Select=find(I>=min(index)&I<=max(index));
+            
+%             %Selection based on the ratio
+%             Ratio=sum(V(index,:))./sum(V);
+%             Select=find(Ratio>length(index)/(size(V,1)-1));
+
+            Basis=[v(:,Select)];
             
             
-        case 'other'
+%             %Do local correction to components
+%             for i1=1:size(v,2)
+%                 k = sort([local_max(v(:,i1))' local_max(-v(:,i1))']);
+%                 indexk=intersect(index,k);
+%                 if ~isempty(indexk)
+% %                     v([(index(1)-1):(index(end)+1)],i1)=interp1([index(1)-1 index(end)+1],v([index(1)-1 index(end)+1],i1),[(index(1)-1):(index(end)+1)]);
+%                     v(:,i1)=spline([1:index(1)-1 index(end)+1:size(v,1)],v([1:index(1)-1 index(end)+1:size(v,1)],i1),[1:size(v,1)]);
+%                 end
+%             end
+%             Basis=v;
+           
+            
+            %Apply correction
+            n=0;
+            for i1=1:length(ev)
+                if strcmp(EventType,strvcat(ev(i1).type))
+                    T2=indsample(D,S.StartInterpolation+ev(i1).time);
+                    T3=indsample(D,S.EndInterpolation+ev(i1).time);
+                    if ~isnan(T3)
+                        Correction=D(:,T2:T3)*Basis*Basis';
+                        Data(:,T2:T3)=D(:,T2:T3)-Correction;
+                        Bias=(Data(:,T2)+Data(:,T3)-D(:,T2-1)-D(:,T3+1))./2;
+                        Data(:,T2:T3)=Data(:,T2:T3)-Bias;
+%                     T2=indsample(D,S.StartInterpolation+ev(i1).time);
+%                     T3=indsample(D,S.EndInterpolation+ev(i1).time);
+%                     T4=indsample(D,PeakMin+ev(i1).time);
+%                     T5=indsample(D,PeakMax+ev(i1).time);
+%                     T6=indsample(D,ev(i1).time);
+%                     Signe=sign(mean(D(:,(T6-1):(T6+1)),2)-mean(D(:,T2:T3),2));
+%                         n=n+1;
+%                         indexchan=(n-1)*length(Good)+[1:length(Good)];
+%                         Data(Good,T2:T3)=(Signe(Good)*ones(1,T3-T2+1)).*u(indexchan,:)*s*Basis';
+                    end
+                end
+            end
+
+%             %Define basis function
+%             PeakMin=-0.001;
+%             PeakMax=0.004;      %Could be defined as argument
+%             Artefact=[];
+%             %resample data at 2 kHz
+% %             clear SS
+% %             SS.D=S.Fname;
+% %             SS.fsample_new=4e3;
+% %             Ds = spm_eeg_downsample(SS);
+% %             Data=D(:,:);
+%             timeS=min(time(D)):(1/2000):max(time(D));
+%             Ds=zeros(nchannels(D),length(timeS));
+%             for i1=1:nchannels(D)
+%                 Ds(i1,:)=interp1(time(D),D(i1,:),timeS);
+%             end
+% 
+%             for i1=1:length(ev)
+%                 if strcmp(EventType,strvcat(ev(i1).type))
+%                     T2=min(find(abs(timeS-(S.StartInterpolation+ev(i1).time))==min(abs(timeS-(S.StartInterpolation+ev(i1).time)))));
+%                     T3=min(find(abs(timeS-(S.EndInterpolation+ev(i1).time))==min(abs(timeS-(S.EndInterpolation+ev(i1).time)))));
+%                     T4=min(find(abs(timeS-(PeakMin+ev(i1).time))==min(abs(timeS-(PeakMin+ev(i1).time)))));
+%                     T5=min(find(abs(timeS-(PeakMax+ev(i1).time))==min(abs(timeS-(PeakMax+ev(i1).time)))));
+%                     T6=min(find(abs(timeS)==min(abs(timeS))));
+%                     Signe=sign(mean(Ds(:,(T6-1):(T6+1)),2)-mean(Ds(:,T2:T3),2));
+%                     if ~isnan(T3)
+%                         Artefact=cat(1,Artefact,(Signe(Good)*ones(1,T3-T2+1)).*Ds(Good,T2:T3));
+%                     end
+%                 end
+%             end
+%             [u,s,v]=svd(Artefact,'econ');
+%             V=abs(v-ones(size(v,2),1)*v(1,:));
+%             index=[T4:T5]-T2+1;
+%             
+% %             %Selection based on vaiance
+% %             tmp=cumsum(diag(s))/sum(diag(s));
+% %             Select=1:max(find(tmp<0.99));
+%             
+%             %Selection based on the max
+%             [Y,I] = max(V,[],1);
+%             Select=find(I>=min(index)&I<=max(index));
+%             
+% %             %Selection based on the ratio
+% %             Ratio=sum(V(index,:))./sum(V);
+% %             Select=find(Ratio>length(index)/(size(V,1)-1));
+% 
+%             Basis=[v(:,Select)];
+%             
+%             %Apply correction
+%             Datas=Ds(:,:);
+%             for i1=1:length(ev)
+%                 if strcmp(EventType,strvcat(ev(i1).type))
+%                     T2=min(find(abs(timeS-(S.StartInterpolation+ev(i1).time))==min(abs(timeS-(S.StartInterpolation+ev(i1).time)))));
+%                     T3=min(find(abs(timeS-(S.EndInterpolation+ev(i1).time))==min(abs(timeS-(S.EndInterpolation+ev(i1).time)))));
+%                     if ~isnan(T3)
+%                         Correction=Ds(:,T2:T3)*Basis*Basis';
+%                         Datas(:,T2:T3)=Ds(:,T2:T3)-Correction;
+%                         Bias=(Datas(:,T2)+Datas(:,T3)-Ds(:,T2-1)-Ds(:,T3+1))./2;
+%                         Datas(:,T2:T3)=Datas(:,T2:T3)-Bias;
+%                     end
+%                 end
+%             end
+%             
+%             %Reinterpolate
+%             Data=D(:,:);
+%             for i1=1:nchannels(D)
+%                 Data(i1,:)=interp1(timeS,Datas(i1,:),time(D));
+%             end
+%             
+%             
+% %     figure
+% %     for i2=1:nchannels(Ds)
+% %         plot([Ds(i2,:);Datas(i2,:)]')
+% %         title(num2str(i2))
+% %         pause
+% %     end
+
+            
+        case 'other' 
             
             NCompo=2;
             CCthresh=0.5;
