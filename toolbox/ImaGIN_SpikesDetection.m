@@ -1,5 +1,5 @@
 function ImaGIN_SpikesDetection(S)
-
+ 
 sFile = S.dataset;
 DirOut= S.FileOut;
 try
