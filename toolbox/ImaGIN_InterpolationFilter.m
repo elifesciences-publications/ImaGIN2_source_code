@@ -5,7 +5,7 @@ function D=ImaGIN_InterpolationFilter(S)
 
 % S.method = 'linear' or 'spline' or 'other'
 if ~isfield(S, 'method') || isempty(S.method)
-    S.method = 'svd';
+    S.method = 'pchip';
 end
 
 % try
@@ -54,7 +54,66 @@ for i0=1:size(t,1)
         
         case 'linear'
             
+                %try to estimate artefact duration
+            Ratio=1; %assumes artefact is Ratio times higher than the response
+            startinterpolation=NaN*zeros(length(Good),length(ev));
+            endinterpolation=NaN*zeros(length(Good),length(ev));
+            indexint=[4*StartInterpolation:4*EndInterpolation];
             for i1=1:length(ev)
+                if ~isempty(intersect(EventType,ev(i1).type))
+                    ind=indsample(D,ev(i1).time);
+                    ind1=[ind+4*StartInterpolation];
+                    ind2=[ind+4*EndInterpolation];
+                    Signal=Data(Good,ind1:ind2);
+                    Signal=ImaGIN_Normalisation(Signal,2,1:3*abs(StartInterpolation));
+                    for i2=1:size(Signal,1)
+                        Threshold=Ratio*mean(abs(Signal(i2,end-abs(EndInterpolation):end)));
+                        tmp=find(abs(Signal(i2,:))>Threshold);
+                        if ~isempty(tmp)
+                            tmp2=min(find(tmp>=4*abs(StartInterpolation)-1&tmp<=4*abs(StartInterpolation)+1));
+                            if ~isempty(tmp2)
+                                tmpstart=tmp2;
+                                tmpend=tmp2;
+                                ok=1;
+                                if tmp2==1
+                                    ok=0;
+                                end
+                                while ok
+                                    if isempty(intersect(tmp,tmp(tmpstart)-1))
+                                        ok=0;
+                                    else
+                                        tmpstart=tmpstart-1;
+                                    end
+                                end
+                                ok=1;
+                                while ok
+                                    if isempty(intersect(tmp,tmp(tmpend)+1))
+                                        ok=0;
+                                    else
+                                        tmpend=tmpend+1;
+                                    end
+                                end
+                                startinterpolation(i1,i2)=tmp(tmpstart);
+                                endinterpolation(i1,i2)=tmp(tmpend);
+                            end
+                        end
+                    end
+                end
+            end
+            startinterpolation(startinterpolation==0)=NaN;
+            endinterpolation(endinterpolation==0)=NaN;
+            StartInterpolationEstimate=indexint(median(median(startinterpolation,2,'omitnan'),'omitnan'))-1;
+            EndInterpolationEstimate=indexint(median(median(endinterpolation,2,'omitnan'),'omitnan'))+1;
+            if StartInterpolationEstimate>StartInterpolation
+                StartInterpolation=StartInterpolationEstimate;
+            end
+            if EndInterpolationEstimate<EndInterpolation
+                EndInterpolation=EndInterpolationEstimate;
+            end
+            
+            
+            %Do the interpolation
+        for i1=1:length(ev)
                 if mod(i1,200)==0
                     disp([i1 length(ev)])
                 end
@@ -73,52 +132,256 @@ for i0=1:size(t,1)
             
         case 'spline'
             
-            ind1=[];
-            ind2=[];
+            %try to estimate artefact duration
+            Ratio=5; %assumes artefact is Ratio times higher than the baseline (z-score)
+            startinterpolation=NaN*zeros(length(Good),length(ev));
+            endinterpolation=NaN*zeros(length(Good),length(ev));
+            indexint=[4*StartInterpolation:4*EndInterpolation];
             for i1=1:length(ev)
-                %         if ~isempty(intersect(EventType,ev(i1).value))
                 if ~isempty(intersect(EventType,ev(i1).type))
                     ind=indsample(D,ev(i1).time);
-                    ind1=[ind1 ind+StartInterpolation];
-                    ind2=[ind2 ind+EndInterpolation];
+                    ind1=[ind+4*StartInterpolation];
+                    ind2=[ind+4*EndInterpolation];
+                    Signal=Data(Good,ind1:ind2);
+                    Signal=ImaGIN_Normalisation(Signal,2,1:3*abs(StartInterpolation));
+                    for i2=1:size(Signal,1)
+%                         Threshold=Ratio*mean(abs(Signal(i2,end-abs(EndInterpolation):end)));
+                        Threshold=Ratio;
+                        tmp=find(abs(Signal(i2,:))>Threshold);
+                        if ~isempty(tmp)
+                            tmp2=min(find(tmp>=4*abs(StartInterpolation)-1&tmp<=4*abs(StartInterpolation)+1));
+                            tmp3=max(find(tmp>=4*abs(StartInterpolation)-1&tmp<=4*abs(StartInterpolation)+1));
+                            if ~isempty(tmp2)
+                                tmpstart=tmp2;
+                                tmpend=tmp3;
+                                ok=1;
+                                if tmp2==1
+                                    ok=0;
+                                end
+                                while ok
+                                    if isempty(intersect(tmp,tmp(tmpstart)-1))
+                                        ok=0;
+                                    else
+                                        tmpstart=tmpstart-1;
+                                    end
+                                end
+                                ok=1;
+                                while ok
+                                    if isempty(intersect(tmp,tmp(tmpend)+1))
+                                        ok=0;
+                                    else
+                                        tmpend=tmpend+1;
+                                    end
+                                end
+                                startinterpolation(i2,i1)=tmp(tmpstart);
+                                endinterpolation(i2,i1)=tmp(tmpend);
+                            end
+                        end
+                    end
                 end
             end
-            ind1=sort(ind1);
-            ind2=sort(ind2);
-            Time=time(D);
-            Index=1:length(Time);
-            for i1=1:length(ind1)
-                Index=setdiff(Index,ind1(i1):ind2(i1));
-            end
-            Time2=Time(Index);
+%             StartInterpolationEstimate=indexint(median(median(startinterpolation,2,'omitnan'),'omitnan'))-1;
+%             EndInterpolationEstimate=indexint(median(median(endinterpolation,2,'omitnan'),'omitnan'))+1;
+%             if StartInterpolationEstimate>StartInterpolation
+%                 StartInterpolation=StartInterpolationEstimate;
+%             end
+%             if EndInterpolationEstimate<EndInterpolation
+%                 EndInterpolation=EndInterpolationEstimate;
+%             end
+%    
+%             %Do the interpolation
+%             ind1=[];
+%             ind2=[];
+%             for i1=1:length(ev)
+%                 %         if ~isempty(intersect(EventType,ev(i1).value))
+%                 if ~isempty(intersect(EventType,ev(i1).type))
+%                     ind=indsample(D,ev(i1).time);
+%                     ind1=[ind1 ind+StartInterpolation];
+%                     ind2=[ind2 ind+EndInterpolation];
+%                 end
+%             end
+%             ind1=sort(ind1);
+%             ind2=sort(ind2);
+%             Time=time(D);
+%             Index=1:length(Time);
+%             for i1=1:length(ind1)
+%                 Index=setdiff(Index,ind1(i1):ind2(i1));
+%             end
+%             Time2=Time(Index);
+%             
+%             for i1=1:size(Data,1)
+%                 Data(i1,:) = spline(Time2,Data(i1,Index),Time);
+%             end
             
-            for i1=1:size(Data,1)
-                Data(i1,:) = spline(Time2,Data(i1,Index),Time);
+                    %fill the NaNs and limit the range
+            StartInterpolationEstimate=startinterpolation;
+            EndInterpolationEstimate=endinterpolation;
+            for i1=1:size(startinterpolation,1)
+                startinterpolation(i1,isnan(startinterpolation(i1,:)))=floor(median(startinterpolation(i1,:),2,'omitnan'));
+                endinterpolation(i1,isnan(endinterpolation(i1,:)))=ceil(median(endinterpolation(i1,:),2,'omitnan'));
+                StartInterpolationEstimate(i1,:)=indexint(startinterpolation(i1,:))-1;
+                StartInterpolationEstimate(i1,find(StartInterpolationEstimate(i1,:)<StartInterpolation))=StartInterpolation;
+                EndInterpolationEstimate(i1,:)=indexint(endinterpolation(i1,:))+1;
+                EndInterpolationEstimate(i1,find(EndInterpolationEstimate(i1,:)>EndInterpolation))=EndInterpolation;
             end
+            StartInterpolation=StartInterpolationEstimate;
+            EndInterpolation=EndInterpolationEstimate;
+            
+            
+            %Do the interpolation with event and channel specific values
+            for i2=1:length(Good)
+                
+                ind1=[];
+                ind2=[];
+                n=0;
+                for i1=1:length(ev)
+                    %         if ~isempty(intersect(EventType,ev(i1).value))
+                    if ~isempty(intersect(EventType,ev(i1).type))
+                        n=n+1;
+                        ind=indsample(D,ev(i1).time);
+                        ind1=[ind1 ind+StartInterpolation(i2,n)];
+                        ind2=[ind2 ind+EndInterpolation(i2,n)];
+                    end
+                end
+                ind1=sort(ind1);
+                ind2=sort(ind2);
+                Time=time(D);
+                Index=1:length(Time);
+                for i1=1:length(ind1)
+                    Index=setdiff(Index,ind1(i1):ind2(i1));
+                end
+                Time2=Time(Index);
+                
+                Data(Good(i2),:) = spline(Time2,Data(Good(i2),Index),Time);
+            end
+            
+    
+            
             
         case 'pchip'
             
-            ind1=[];
-            ind2=[];
+            %try to estimate artefact duration
+            Ratio=5; %assumes artefact is Ratio times higher than the baseline (z-score)
+            startinterpolation=NaN*zeros(length(Good),length(ev));
+            endinterpolation=NaN*zeros(length(Good),length(ev));
+            indexint=[4*StartInterpolation:4*EndInterpolation];
             for i1=1:length(ev)
-                %         if ~isempty(intersect(EventType,ev(i1).value))
                 if ~isempty(intersect(EventType,ev(i1).type))
                     ind=indsample(D,ev(i1).time);
-                    ind1=[ind1 ind+StartInterpolation];
-                    ind2=[ind2 ind+EndInterpolation];
+                    ind1=[ind+4*StartInterpolation];
+                    ind2=[ind+4*EndInterpolation];
+                    Signal=Data(Good,ind1:ind2);
+                    Signal=ImaGIN_Normalisation(Signal,2,1:3*abs(StartInterpolation));
+                    for i2=1:size(Signal,1)
+%                         Threshold=Ratio*mean(abs(Signal(i2,end-abs(EndInterpolation):end)));
+                        Threshold=Ratio;
+                        tmp=find(abs(Signal(i2,:))>Threshold);
+                        if ~isempty(tmp)
+                            tmp2=min(find(tmp>=4*abs(StartInterpolation)-1&tmp<=4*abs(StartInterpolation)+1));
+                            tmp3=max(find(tmp>=4*abs(StartInterpolation)-1&tmp<=4*abs(StartInterpolation)+1));
+                            if ~isempty(tmp2)
+                                tmpstart=tmp2;
+                                tmpend=tmp3;
+                                ok=1;
+                                if tmp2==1
+                                    ok=0;
+                                end
+                                while ok
+                                    if isempty(intersect(tmp,tmp(tmpstart)-1))
+                                        ok=0;
+                                    else
+                                        tmpstart=tmpstart-1;
+                                    end
+                                end
+                                ok=1;
+                                while ok
+                                    if isempty(intersect(tmp,tmp(tmpend)+1))
+                                        ok=0;
+                                    else
+                                        tmpend=tmpend+1;
+                                    end
+                                end
+                                startinterpolation(i2,i1)=tmp(tmpstart);
+                                endinterpolation(i2,i1)=tmp(tmpend);
+                            end
+                        end
+                    end
                 end
             end
-            ind1=sort(ind1);
-            ind2=sort(ind2);
-            Time=time(D);
-            Index=1:length(Time);
-            for i1=1:length(ind1)
-                Index=setdiff(Index,ind1(i1):ind2(i1));
+%             StartInterpolationEstimate=indexint(median(median(startinterpolation,2,'omitnan'),'omitnan'))-1;
+%             EndInterpolationEstimate=indexint(median(median(endinterpolation,2,'omitnan'),'omitnan'))+1;
+%             if StartInterpolationEstimate>StartInterpolation
+%                 StartInterpolation=StartInterpolationEstimate;
+%             end
+%             if EndInterpolationEstimate<EndInterpolation
+%                 EndInterpolation=EndInterpolationEstimate;
+%             end
+%    
+%             %Do the interpolation
+%             ind1=[];
+%             ind2=[];
+%             for i1=1:length(ev)
+%                 %         if ~isempty(intersect(EventType,ev(i1).value))
+%                 if ~isempty(intersect(EventType,ev(i1).type))
+%                     ind=indsample(D,ev(i1).time);
+%                     ind1=[ind1 ind+StartInterpolation];
+%                     ind2=[ind2 ind+EndInterpolation];
+%                 end
+%             end
+%             ind1=sort(ind1);
+%             ind2=sort(ind2);
+%             Time=time(D);
+%             Index=1:length(Time);
+%             for i1=1:length(ind1)
+%                 Index=setdiff(Index,ind1(i1):ind2(i1));
+%             end
+%             Time2=Time(Index);
+%             
+%             for i1=1:size(Data,1)
+%                 Data(i1,:) = pchip(Time2,Data(i1,Index),Time);
+%             end
+
+
+            %fill the NaNs and limit the range
+            StartInterpolationEstimate=startinterpolation;
+            EndInterpolationEstimate=endinterpolation;
+            for i1=1:size(startinterpolation,1)
+                startinterpolation(i1,isnan(startinterpolation(i1,:)))=floor(median(startinterpolation(i1,:),2,'omitnan'));
+                endinterpolation(i1,isnan(endinterpolation(i1,:)))=ceil(median(endinterpolation(i1,:),2,'omitnan'));
+                StartInterpolationEstimate(i1,:)=indexint(startinterpolation(i1,:))-1;
+                StartInterpolationEstimate(i1,find(StartInterpolationEstimate(i1,:)<StartInterpolation))=StartInterpolation;
+                EndInterpolationEstimate(i1,:)=indexint(endinterpolation(i1,:))+1;
+                EndInterpolationEstimate(i1,find(EndInterpolationEstimate(i1,:)>EndInterpolation))=EndInterpolation;
             end
-            Time2=Time(Index);
+            StartInterpolation=StartInterpolationEstimate;
+            EndInterpolation=EndInterpolationEstimate;
             
-            for i1=1:size(Data,1)
-                Data(i1,:) = pchip(Time2,Data(i1,Index),Time);
+            
+            %Do the interpolation with event and channel specific values
+            for i2=1:length(Good)
+                
+                ind1=[];
+                ind2=[];
+                n=0;
+                for i1=1:length(ev)
+                    %         if ~isempty(intersect(EventType,ev(i1).value))
+                    if ~isempty(intersect(EventType,ev(i1).type))
+                        n=n+1;
+                        ind=indsample(D,ev(i1).time);
+                        ind1=[ind1 ind+StartInterpolation(i2,n)];
+                        ind2=[ind2 ind+EndInterpolation(i2,n)];
+                    end
+                end
+                ind1=sort(ind1);
+                ind2=sort(ind2);
+                Time=time(D);
+                Index=1:length(Time);
+                for i1=1:length(ind1)
+                    Index=setdiff(Index,ind1(i1):ind2(i1));
+                end
+                Time2=Time(Index);
+                
+                Data(Good(i2),:) = pchip(Time2,Data(Good(i2),Index),Time);
             end
             
         case 'svd'
