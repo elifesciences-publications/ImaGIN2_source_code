@@ -86,10 +86,6 @@ for c=1:length(KeepEvent) % Navigate all stim events
     if ~isempty(stimIdx)
         StimeWidth = [StimeWidth;stimIdx(1),stimIdx(end)];
     end
-    
-    
-    disp(KeepEvent(c)), disp(S.EvtName);
-
 end
 
 nonIdx = ~ismember(Notes, Notes(KeepEvent));
