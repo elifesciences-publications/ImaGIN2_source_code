@@ -60,7 +60,7 @@ for i0=1:size(t,1)
             endinterpolation=NaN*zeros(length(Good),length(ev));
             indexint=[4*StartInterpolation:4*EndInterpolation];
             for i1=1:length(ev)
-                if ~isempty(intersect(EventType,ev(i1).type))
+                if strcmp(EventType,strvcat(ev(i1).type))
                     ind=indsample(D,ev(i1).time);
                     ind1=[ind+4*StartInterpolation];
                     ind2=[ind+4*EndInterpolation];
@@ -70,7 +70,7 @@ for i0=1:size(t,1)
                         Threshold=Ratio*mean(abs(Signal(i2,end-abs(EndInterpolation):end)));
                         tmp=find(abs(Signal(i2,:))>Threshold);
                         if ~isempty(tmp)
-                            tmp2=min(find(tmp>=4*abs(StartInterpolation)-1&tmp<=4*abs(StartInterpolation)+1));
+                            tmp2=min(find(tmp>=4*abs(StartInterpolation)&tmp<=4*abs(StartInterpolation)+2));
                             if ~isempty(tmp2)
                                 tmpstart=tmp2;
                                 tmpend=tmp2;
@@ -118,7 +118,7 @@ for i0=1:size(t,1)
                     disp([i1 length(ev)])
                 end
                 %         if ~isempty(intersect(EventType,ev(i1).value))
-                if ~isempty(intersect(EventType,ev(i1).type))
+                if strcmp(EventType,strvcat(ev(i1).type))
                     ind=indsample(D,ev(i1).time);
                     tmp1=D(:,ind+[StartInterpolation EndInterpolation]);
                     tmp2=zeros(size(Data,1),length([StartInterpolation:EndInterpolation]));
@@ -137,8 +137,10 @@ for i0=1:size(t,1)
             startinterpolation=NaN*zeros(length(Good),length(ev));
             endinterpolation=NaN*zeros(length(Good),length(ev));
             indexint=[4*StartInterpolation:4*EndInterpolation];
+            GoodEvent=[];
             for i1=1:length(ev)
-                if ~isempty(intersect(EventType,ev(i1).type))
+                if strcmp(EventType,strvcat(ev(i1).type))
+                    GoodEvent=[GoodEvent i1];
                     ind=indsample(D,ev(i1).time);
                     ind1=[ind+4*StartInterpolation];
                     ind2=[ind+4*EndInterpolation];
@@ -149,8 +151,8 @@ for i0=1:size(t,1)
                         Threshold=Ratio;
                         tmp=find(abs(Signal(i2,:))>Threshold);
                         if ~isempty(tmp)
-                            tmp2=min(find(tmp>=4*abs(StartInterpolation)-1&tmp<=4*abs(StartInterpolation)+1));
-                            tmp3=max(find(tmp>=4*abs(StartInterpolation)-1&tmp<=4*abs(StartInterpolation)+1));
+                            tmp2=min(find(tmp>=4*abs(StartInterpolation)-1&tmp<=4*abs(StartInterpolation)+3));
+                            tmp3=max(find(tmp>=4*abs(StartInterpolation)-1&tmp<=4*abs(StartInterpolation)+3));
                             if ~isempty(tmp2)
                                 tmpstart=tmp2;
                                 tmpend=tmp3;
@@ -159,7 +161,7 @@ for i0=1:size(t,1)
                                     ok=0;
                                 end
                                 while ok
-                                    if isempty(intersect(tmp,tmp(tmpstart)-1))
+                                    if isempty(intersect(tmp,[tmp(tmpstart)-1 tmp(tmpstart)-2]))
                                         ok=0;
                                     else
                                         tmpstart=tmpstart-1;
@@ -167,7 +169,7 @@ for i0=1:size(t,1)
                                 end
                                 ok=1;
                                 while ok
-                                    if isempty(intersect(tmp,tmp(tmpend)+1))
+                                    if isempty(intersect(tmp,[tmp(tmpend)+1 tmp(tmpend)+2]))
                                         ok=0;
                                     else
                                         tmpend=tmpend+1;
@@ -180,6 +182,9 @@ for i0=1:size(t,1)
                     end
                 end
             end
+            startinterpolation=startinterpolation(:,GoodEvent);
+            endinterpolation=endinterpolation(:,GoodEvent);
+
 %             StartInterpolationEstimate=indexint(median(median(startinterpolation,2,'omitnan'),'omitnan'))-1;
 %             EndInterpolationEstimate=indexint(median(median(endinterpolation,2,'omitnan'),'omitnan'))+1;
 %             if StartInterpolationEstimate>StartInterpolation
@@ -217,6 +222,12 @@ for i0=1:size(t,1)
             StartInterpolationEstimate=startinterpolation;
             EndInterpolationEstimate=endinterpolation;
             for i1=1:size(startinterpolation,1)
+                if isnan(floor(median(startinterpolation(i1,:),2,'omitnan')))
+                    startinterpolation(i1,1)=find(indexint==StartInterpolation);
+                end
+                if isnan(ceil(median(endinterpolation(i1,:),2,'omitnan')))
+                    endinterpolation(i1,1)=find(indexint==EndInterpolation);
+                end
                 startinterpolation(i1,isnan(startinterpolation(i1,:)))=floor(median(startinterpolation(i1,:),2,'omitnan'));
                 endinterpolation(i1,isnan(endinterpolation(i1,:)))=ceil(median(endinterpolation(i1,:),2,'omitnan'));
                 StartInterpolationEstimate(i1,:)=indexint(startinterpolation(i1,:))-1;
@@ -265,8 +276,10 @@ for i0=1:size(t,1)
             startinterpolation=NaN*zeros(length(Good),length(ev));
             endinterpolation=NaN*zeros(length(Good),length(ev));
             indexint=[4*StartInterpolation:4*EndInterpolation];
+            GoodEvent=[];
             for i1=1:length(ev)
-                if ~isempty(intersect(EventType,ev(i1).type))
+                if strcmp(EventType,strvcat(ev(i1).type))
+                    GoodEvent=[GoodEvent i1];
                     ind=indsample(D,ev(i1).time);
                     ind1=[ind+4*StartInterpolation];
                     ind2=[ind+4*EndInterpolation];
@@ -277,8 +290,8 @@ for i0=1:size(t,1)
                         Threshold=Ratio;
                         tmp=find(abs(Signal(i2,:))>Threshold);
                         if ~isempty(tmp)
-                            tmp2=min(find(tmp>=4*abs(StartInterpolation)-1&tmp<=4*abs(StartInterpolation)+1));
-                            tmp3=max(find(tmp>=4*abs(StartInterpolation)-1&tmp<=4*abs(StartInterpolation)+1));
+                            tmp2=min(find(tmp>=4*abs(StartInterpolation)-1&tmp<=4*abs(StartInterpolation)+3));
+                            tmp3=max(find(tmp>=4*abs(StartInterpolation)-1&tmp<=4*abs(StartInterpolation)+3));
                             if ~isempty(tmp2)
                                 tmpstart=tmp2;
                                 tmpend=tmp3;
@@ -287,7 +300,7 @@ for i0=1:size(t,1)
                                     ok=0;
                                 end
                                 while ok
-                                    if isempty(intersect(tmp,tmp(tmpstart)-1))
+                                    if isempty(intersect(tmp,[tmp(tmpstart)-1 tmp(tmpstart)-2]))
                                         ok=0;
                                     else
                                         tmpstart=tmpstart-1;
@@ -295,7 +308,7 @@ for i0=1:size(t,1)
                                 end
                                 ok=1;
                                 while ok
-                                    if isempty(intersect(tmp,tmp(tmpend)+1))
+                                    if isempty(intersect(tmp,[tmp(tmpend)+1 tmp(tmpend)+2]))
                                         ok=0;
                                     else
                                         tmpend=tmpend+1;
@@ -308,6 +321,10 @@ for i0=1:size(t,1)
                     end
                 end
             end
+            startinterpolation=startinterpolation(:,GoodEvent);
+            endinterpolation=endinterpolation(:,GoodEvent);
+            
+            
 %             StartInterpolationEstimate=indexint(median(median(startinterpolation,2,'omitnan'),'omitnan'))-1;
 %             EndInterpolationEstimate=indexint(median(median(endinterpolation,2,'omitnan'),'omitnan'))+1;
 %             if StartInterpolationEstimate>StartInterpolation
@@ -346,6 +363,12 @@ for i0=1:size(t,1)
             StartInterpolationEstimate=startinterpolation;
             EndInterpolationEstimate=endinterpolation;
             for i1=1:size(startinterpolation,1)
+                if isnan(floor(median(startinterpolation(i1,:),2,'omitnan')))
+                    startinterpolation(i1,1)=find(indexint==StartInterpolation);
+                end
+                if isnan(ceil(median(endinterpolation(i1,:),2,'omitnan')))
+                    endinterpolation(i1,1)=find(indexint==EndInterpolation);
+                end
                 startinterpolation(i1,isnan(startinterpolation(i1,:)))=floor(median(startinterpolation(i1,:),2,'omitnan'));
                 endinterpolation(i1,isnan(endinterpolation(i1,:)))=ceil(median(endinterpolation(i1,:),2,'omitnan'));
                 StartInterpolationEstimate(i1,:)=indexint(startinterpolation(i1,:))-1;
@@ -365,7 +388,7 @@ for i0=1:size(t,1)
                 n=0;
                 for i1=1:length(ev)
                     %         if ~isempty(intersect(EventType,ev(i1).value))
-                    if ~isempty(intersect(EventType,ev(i1).type))
+                    if strcmp(EventType,ev(i1).type)
                         n=n+1;
                         ind=indsample(D,ev(i1).time);
                         ind1=[ind1 ind+StartInterpolation(i2,n)];
