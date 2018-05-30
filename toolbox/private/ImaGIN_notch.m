@@ -27,7 +27,7 @@ if (nargin == 4)
     
     Fmax = min([Fmax Fs/2]);
     for i1 = 1:floor(Fmax/Fp)
-        Wo = i1*2/Fs; 
+        Wo = i1*2*Fp/Fs; 
         BW = Wo/35;
         [bnotch,anotch] = local_notch(Wo,BW);
         x = filter(bnotch,anotch,x);
