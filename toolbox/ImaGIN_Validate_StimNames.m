@@ -91,8 +91,7 @@ mil_flag = 0;
 % MIL patients have stims parameters in stim_parameters file saved on /02-raw
 % that could be loaded 
 if ~isempty(strfind(patientCode,'MIL'))
-    %load('/gin/data/database/02-raw/stim_parameters-ftract-mil.mat','stim_params')
-    load('stim_parameters-ftract-mil.mat','stim_params')
+    load('/gin/data/database/02-raw/stim_parameters-ftract-mil.mat','stim_params')
     Loc = find(ismember(stim_params.PCode, patientCode), 1);
     if ~isempty(Loc)
         mil_flag = 1;
