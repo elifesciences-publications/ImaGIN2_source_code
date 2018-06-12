@@ -5,9 +5,9 @@ function [sFile, ChannelMat] = in_fopen_nk(DataFile)
 
 % @=============================================================================
 % This function is part of the Brainstorm software:
-% http://neuroimage.usc.edu/brainstorm
+% https://neuroimage.usc.edu/brainstorm
 % 
-% Copyright (c)2000-2017 University of Southern California & McGill University
+% Copyright (c)2000-2018 University of Southern California & McGill University
 % This software is distributed under the terms of the GNU General Public License
 % as published by the Free Software Foundation. Further details on the GPLv3
 % license can be found at http://www.gnu.org/copyleft/gpl.html.
@@ -21,7 +21,7 @@ function [sFile, ChannelMat] = in_fopen_nk(DataFile)
 % For more information type "brainstorm license" at command prompt.
 % =============================================================================@
 %
-% Authors: Francois Tadel, 2017
+% Authors: Francois Tadel, 2017-2018
 %          Inspired from NK2EDF, Teunis van Beelen, 2007-2017
 %          and from the BIOSIG-toolbox http://biosig.sf.net/
 
@@ -183,6 +183,13 @@ switch (hdr.version)
         fseek(fid, hdr.ctl(i).extblock2_address + 20, 'bof');
         hdr.ctl(i).data(id).extblock3_address = fread(fid, 1, 'uint32');
         
+% Suggestion from V. Gnatkovsky: not working with some of the files...
+%         % Read the block information: number of records 
+%         fseek(fid, hdr.ctl(i).data(id).extblock3_address + 44, 'bof');
+%         hdr.ctl(i).data(id).num_records = fread(fid, 1, 'uint32');
+%         % Compute number of samples
+%         hdr.ctl(i).data(id).num_samples = hdr.ctl(i).data(id).num_records * hdr.ctl(i).data(id).sample_rate * hdr.record_duration;
+
         % Reading number of channels
         fseek(fid, hdr.ctl(i).data(id).extblock3_address + 68, 'bof');
         hdr.ctl(i).data(id).num_channels = fread(fid, 1, 'uint16') + 1;   % +1 for the STIM channel
@@ -430,6 +437,8 @@ sFile.prop.nAvg    = 1;
 sFile.channelflag = ones(hdr.num_channels,1);
 % Save full header in the file link
 sFile.header = hdr;
+% Acquisition date
+sFile.acq_date = str_date(hdr.startdate);
 
 
 %% ===== EVENTS =====
@@ -506,7 +515,7 @@ function s = str_clean(s)
         s(iNull:end) = [];
     end
     % Remove weird characters
-    s(~ismember(s, '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-.()[]/\_@ ')) = [];
+    s(~ismember(s, '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-,:;.*+=?!<>''"`&%$()[]{}/\_@ áÁàÀâÂäÄãÃåÅæÆçÇéÉèÈêÊëËíÍìÌîÎïÏñÑóÓòÒôÔöÖõÕøØœŒßúÚùÙûÛüÜ')) = [];
     % Remove useless spaces
     s = strtrim(s);
 end
