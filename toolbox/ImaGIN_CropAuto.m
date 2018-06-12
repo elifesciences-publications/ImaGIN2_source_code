@@ -147,8 +147,6 @@ for c=1:length(KeepEvent) % Navigate all stim events
            noteName(idScore(1)) = '';
         end
     end
-    
-    noteName = strrep(noteName,'_',''); 
     %% check if stim electr numbers are concatenated without space or -
     
     numbr = regexp(noteName,'\d*','Match');
@@ -427,7 +425,7 @@ for c=1:length(KeepEvent) % Navigate all stim events
         endTime(KeepEvent(c)) = stimTime(end);
         
         % Select only the stimulations
-        if stimFq <= nHz && numel(stimTime) >= minStim && numel(numb) > 1 ...
+        if stimFq <= nHz && numel(stimTime) >= minStim && numel(numb) >= 1 ...
                 && ~strcmp(xsub2(1),'50Hz') 
             clear S
             S.Job   = 'Manual';
@@ -462,7 +460,7 @@ for c=1:length(KeepEvent) % Navigate all stim events
         end
     end
             
-    if stimFq <= nHz && numel(stimTime) >= minStim && numel(numb) > 1 ...
+    if stimFq <= nHz && numel(stimTime) >= minStim && numel(numb) >= 1 ...
             && ~strcmp(xsub2(1),'50Hz') ...
             
         % Add events
