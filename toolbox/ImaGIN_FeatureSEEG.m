@@ -68,7 +68,7 @@ nx  = size(sens,2);
 nn  = 10;
 nt  = find((time(D)>= -0.5));
 ny  = D.nsamples;
-data= D(1:nx,nt(1):ny);
+data= D(sens,nt(1):ny);
 logScale = 1;
 %% 
 rawVar  = var(data, [], 2);       % Compute raw data variance
@@ -109,7 +109,7 @@ for i = 1:nx
         end
         ch_xcorr(i) = ch_xcorr(i) + abs(thisCorr);
     end
-    noIdx(i) = i;
+    noIdx(i) = sens(i);
     ch_xcorr(i) = ch_xcorr(i)/numel(idx); 
 end
 
