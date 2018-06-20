@@ -36,7 +36,7 @@ end
 T = readtable(strcat(bPrefix,'.csv'));
 tNote = cell(size(T,1),1);
 tNote(:) = {'Good'};
-tNote(bIdx) = {'Bad'};
+tNote(ismember(T.noIdx,bIdx)) = {'Bad'};
 T(:,9) = tNote;
 csvfilename = strcat(bPrefix,'.csv');
 writetable(T,csvfilename,'Delimiter',',');
