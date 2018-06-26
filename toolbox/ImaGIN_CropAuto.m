@@ -126,6 +126,7 @@ for c=1:length(KeepEvent) % Navigate all stim events
     noteName = strrep(noteName,'sec','us');  noteName = strrep(noteName,'_us','us');
     noteName = strrep(noteName,'AA','A'); noteName = strrep(noteName,'_MA_','_'); %some MIL notes 
     keepN = ''; noteName = strrep(noteName,'stim','');  noteName = strrep(noteName,'Stim','');
+    noteName = strrep(noteName,'TextNote:',''); % for BRN datasets
     try
         fundc = strfind(noteName,'_');
         lNumb = strfind(noteName,noteName(1:fundc(1)-1));
