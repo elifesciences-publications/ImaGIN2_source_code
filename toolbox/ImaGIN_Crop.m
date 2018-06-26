@@ -44,6 +44,9 @@ switch Job
         try
             D.OffsetEnd=P.OffsetEnd;
         end
+        try
+            D.FileOut=P.FileOut;
+        end
         ImaGIN_CropEpoch(D);
 
     case{'Manual'}
@@ -185,6 +188,10 @@ function ImaGIN_CropEpoch(D)
     end
     OffsetEndName=OffsetEnd;
     OffsetEnd=ceil(OffsetEnd*D.fsample);
+    
+    try
+        FileOut=D.FileOut;
+    end
 
     n=0;
     DD=D;
@@ -238,7 +245,12 @@ function ImaGIN_CropEpoch(D)
         %Save as a newfile
         Prefix=[EventRefName '_' sprintf('%d-%d',round(OffsetStartName),round(OffsetEndName))];
         ntrials=length(EventRef);
-        Dnew = clone(D, [Prefix '_' fname(D)], [D.nchannels OffsetStart+OffsetEnd+1, ntrials]);
+        try
+            newname=FileOut;
+            Dnew=clone(D,newname, [D.nchannels OffsetStart+OffsetEnd+1, ntrials]);
+        catch
+            Dnew = clone(D, [Prefix '_' fname(D)], [D.nchannels OffsetStart+OffsetEnd+1, ntrials]);
+        end
         for i1=1:ntrials
             if (EventRef(i1)-OffsetStart>=1) && (EventRef(i1)-OffsetStart<=DD.nsamples) && (EventRef(i1)+OffsetEnd>=1) && (EventRef(i1)+OffsetEnd<=DD.nsamples)
                 n=n+1;
@@ -248,7 +260,8 @@ function ImaGIN_CropEpoch(D)
                 d = D(:, Index, 1); 
                 Dnew(:, :, i1) = d;
                 Dnew = events(Dnew, i1, select_events(D.events,[Time(1)/D.fsample  Time(2)/D.fsample]));
-                Dnew = timeonset(Dnew, Time(1)./D.fsample+D.timeonset);
+%                 Dnew = timeonset(Dnew, Time(1)./D.fsample+D.timeonset);
+                Dnew = timeonset(Dnew, -OffsetStart/D.fsample);
                 if isfield(DD,'spike')
                     for i2=1:length(DD.spike.timings)
                         tmp=find(DD.spike.timings{i2}>=time(EventRef(i1))-OffsetStart/D.fsample&DD.spike.timings{i2}<=time(EventRef(i1))+OffsetEnd/D.fsample);
