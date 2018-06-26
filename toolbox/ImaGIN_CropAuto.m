@@ -140,10 +140,10 @@ for c=1:length(KeepEvent) % Navigate all stim events
         noteName =  char(strrep(noteName,numZ(1), num2str(str2double(numZ(1)))));
         noteName =  char(strrep(noteName,numZ(2), num2str(str2double(numZ(2)))));        
     end
-<<<<<<< HEAD
+
 %     noteName = strrep(noteName,'.0','');
-%       noteName = strrep(noteName,'.','');  %OD for EXCITATOR
-=======
+%     noteName = strrep(noteName,'.','');  %OD for EXCITATOR
+
     noteName = strrep(noteName,'.0',''); noteName = strrep(noteName,'.','');
     idScore = strfind(noteName,'_');
     if ~isempty(idScore)
@@ -151,7 +151,6 @@ for c=1:length(KeepEvent) % Navigate all stim events
            noteName(idScore(1)) = '';
         end
     end
->>>>>>> 49be8a3362aa9558ed0de011f6ec40fc69754f9f
     %% check if stim electr numbers are concatenated without space or -
     
     numbr = regexp(noteName,'\d*','Match');
