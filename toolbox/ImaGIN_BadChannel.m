@@ -29,10 +29,10 @@ end
 
 % Directory where iEEG file .dat/.mat with badchannels indices will be stored
 if (nargin >= 1) && isfield(S, 'FileOut') && ~isempty(S.FileOut)
-    [badDir, FileOut] = fileparts(S.FileOut);
+    [badDir, FileOut, ~] = fileparts(S.FileOut);
     isNewFile = 1;
 else
-    [badDir, FileOut] = fileparts(FileIn);
+    [badDir, FileOut, ~] = fileparts(FileIn);
     isNewFile = 0;
 end
 
@@ -44,12 +44,18 @@ else
 end
 
 
-% Detect bad channels and save summary images
-% try
-    % Load the cropped meeg object
-    D = spm_eeg_load(FileIn);
-    
-    % Compute signal features (apply artifact correction only for stims)
+% Detect bad channels indices and save summary images
+% Load the cropped meeg object
+D = spm_eeg_load(FileIn);
+
+% if badchanel file exists, "text file ending with _bIdx"
+% no computation is needed, load and put them in spm object.
+if exist(fullfile(badDir, [FileOut,'_bIdx.txt']),'file') == 2 
+    bIdx  = load(fullfile(badDir, [FileOut,'_bIdx.txt']));
+elseif exist(fullfile(badDir, ['BadChannels_', FileOut,'_bIdx.txt']),'file') == 2
+    bIdx  = load(fullfile(badDir, ['BadChannels_', FileOut,'_bIdx.txt']));   
+else
+    % Compute signal features
     clear S2;
     S2.FileName = FileIn;
     if ~isempty(D.events) && ~isempty(D.events.type) && ismember('Stim', {D.events.type})
@@ -57,7 +63,7 @@ end
     else
         S2.InterpolationFilter = 0;
     end
-
+    
     T = ImaGIN_FeatureSEEG(S2);
     
     % If the trained classifier is not available: compute it
@@ -74,19 +80,19 @@ end
         trainedClassifier = ImaGIN_trainClassifier(trainBase.predictors, trainBase.response);
         % Save results
         save(trainedFile, '-struct', 'trainedClassifier');
-    % Otherwise, load the trained classifier
+        % Otherwise, load the trained classifier
     else
         trainedClassifier = load(trainedFile);
     end
     
     % Predict new dataset
-    channelClass = trainedClassifier.predictFcn(T(:,2:8)); 
+    channelClass = trainedClassifier.predictFcn(T(:,2:8));
     % Get list of detected bad channels
     bIdx = T.noIdx(strcmp(channelClass, 'Bad'));
-
+    
     %%
     % In case disconnected electrode doesn't have stimulation artefact
-    % specific for some FTRACT dataset
+    % specific for some FTRACT datasets
     chanLbs = D.chanlabels;
     try
         chanLbs = upper(char(chanLbs));
@@ -111,8 +117,8 @@ end
             ch1 = strcat(chl,numb{1}(1:2));
             ch2 = strcat(chl,numb{1}(3:4));
         else
-           ch1 = '';
-           ch2 = '';
+            ch1 = '';
+            ch2 = '';
         end
         chlb = {ch1,ch2};
         if ~isempty(chlb)
@@ -132,7 +138,7 @@ end
     end
     %%
     % Save bad channel indices in .txt file
-    badFile = fopen(fullfile(badDir, [FileOut, '_bIdx.txt']), 'w'); 
+    badFile = fopen(fullfile(badDir, [FileOut, '_bIdx.txt']), 'w');
     fprintf(badFile, '%d\n', bIdx(:));
     fclose(badFile);
     Lia = ismember(T.noIdx,bIdx);
@@ -142,109 +148,105 @@ end
     csvfilename = fullfile(badDir, [FileOut, '.csv']); % Save feature table & badchannels indices
     writetable(Tnew,csvfilename,'Delimiter',',');
 
-    % Add badchannel index in meeg object
-    if ~isempty(bIdx)
-        D = badchannels(D,bIdx,1); 
-    end
-    % Create new file in output (otherwise, simply update the input file)
-    if isNewFile
-        Dbad = clone(D, fullfile(badDir, FileOut), [D.nchannels D.nsamples D.ntrials]); % save meeg with badchannel indices in Badchannel directory
-        Dbad(:,:,:) = D(:,:,:);
-        % Save modified list of bad channels
-        save(Dbad);
-    else
-        % Save modified list of bad channels
-        save(D);
-    end
+end
+% Add badchannel index in meeg object
+if ~isempty(bIdx)
+    D = badchannels(D,bIdx,1);
+end
+% Create new file in output (otherwise, simply update the input file)
+if isNewFile
+    Dbad = clone(D, fullfile(badDir, FileOut), [D.nchannels D.nsamples D.ntrials]); % save meeg with badchannel indices in Badchannel directory
+    Dbad(:,:,:) = D(:,:,:);
+    % Save modified list of bad channels
+    save(Dbad);
+else
+    % Save modified list of bad channels
+    save(D);
+end
 
-    % Channel plots and ScreenShots
-    figDir = fullfile(badDir, 'ScreenShot');
-    if ~exist(figDir, 'dir')
-        mkdir(figDir);
-    end
-    
+% Channel plots and ScreenShots
+figDir = fullfile(badDir, 'ScreenShot');
+if ~exist(figDir, 'dir')
+    mkdir(figDir);
+end
+
 %     close all;
-    
-    Size = 8;  % Number of channels per screenshot
-    n_c  = size(D,1);
-    if n_c >= Size
-        tmp = floor(n_c/Size);
-        for i2 = 1:tmp
-            figure(i2);
-            set(gcf,'Position',[629 -17 702 1101])
-            for i3 = 1:Size
-                if intersect(i3+(i2-1)*Size,bIdx) == i3+(i2-1)*Size
-                    color = 'r'; %Bad channels will be printed in red
-                else
-                    color = 'k'; %Good channels will be printed in black
-                end
-                subplot(Size,1,i3)
-                plot(time(D),D(i3+(i2-1)*Size,:),color);
-                ylabel([num2str(i3+(i2-1)*Size) ' : ' D.chanlabels{i3+(i2-1)*Size}])
-                if i3 == 1
-                    figName = char(strcat(FileOut,'_',num2str(i3+(i2-1)*Size),'-', ...
-                        num2str(i2*Size)));
-                    title(figName,'interpreter','none');
-                end
-                axis tight
-            end
-            zoom on
-            fig = figure(i2);
-            print(fig,fullfile(figDir,figName),'-dpng'); %ScreenShot
-            close;
-        end
-        
-        rmd = size(D,1) - tmp*Size;
-        if rmd ~= 0
-            figure(tmp + 1)
-            set(gcf,'Position',[629 -17 702 1101])
-            for i4 = 1:rmd
-                if intersect(i3+(i2-1)*Size+i4,bIdx)== i3+(i2-1)*Size+i4
-                    color = 'r';
-                else
-                    color = 'k';
-                end
-                subplot(rmd,1,i4)
-                plot(time(D),D(i3+(i2-1)*Size+i4,:),color);
-                ylabel([num2str(i3+(i2-1)*Size+i4) ' : ' D.chanlabels{i3+(i2-1)*Size+i4}])
-                if i4 == 1
-                    figName = char(strcat(FileOut,'_',num2str(i3+(i2-1)*Size + 1),'-',num2str(n_c)));
-                    title(figName,'interpreter','none');
-                end
-                axis tight
-            end
-            zoom on
-            fig = figure(i2+1);
-            print(fig, fullfile(figDir,figName), '-dpng');
-            close
-        end
-    else
-        figure(1)
+
+Size = 8;  % Number of channels per screenshot
+n_c  = size(D,1);
+if n_c >= Size
+    tmp = floor(n_c/Size);
+    for i2 = 1:tmp
+        figure(i2);
         set(gcf,'Position',[629 -17 702 1101])
-        for i5 = 1:n_c
-            if intersect(i5,bIdx)== i5
-                color = 'r';
+        for i3 = 1:Size
+            if intersect(i3+(i2-1)*Size,bIdx) == i3+(i2-1)*Size
+                color = 'r'; %Bad channels will be printed in red
             else
-                color = 'k';
+                color = 'k'; %Good channels will be printed in black
             end
-            subplot(n_c,1,i5)
-            plot(time(D),D(i5,:),color);
-            ylabel([num2str(i5) ' : ' D.chanlabels{i5}])
-            if i5 == 1
-                figName = char(strcat(FileOut,'_',num2str(1),'-',num2str(n_c)));
+            subplot(Size,1,i3)
+            plot(time(D),D(i3+(i2-1)*Size,:),color);
+            ylabel([num2str(i3+(i2-1)*Size) ' : ' D.chanlabels{i3+(i2-1)*Size}])
+            if i3 == 1
+                figName = char(strcat(FileOut,'_',num2str(i3+(i2-1)*Size),'-', ...
+                    num2str(i2*Size)));
                 title(figName,'interpreter','none');
             end
             axis tight
         end
         zoom on
-        fig = figure(1);
+        fig = figure(i2);
+        print(fig,fullfile(figDir,figName),'-dpng'); %ScreenShot
+        close;
+    end
+    
+    rmd = size(D,1) - tmp*Size;
+    if rmd ~= 0
+        figure(tmp + 1)
+        set(gcf,'Position',[629 -17 702 1101])
+        for i4 = 1:rmd
+            if intersect(i3+(i2-1)*Size+i4,bIdx)== i3+(i2-1)*Size+i4
+                color = 'r';
+            else
+                color = 'k';
+            end
+            subplot(rmd,1,i4)
+            plot(time(D),D(i3+(i2-1)*Size+i4,:),color);
+            ylabel([num2str(i3+(i2-1)*Size+i4) ' : ' D.chanlabels{i3+(i2-1)*Size+i4}])
+            if i4 == 1
+                figName = char(strcat(FileOut,'_',num2str(i3+(i2-1)*Size + 1),'-',num2str(n_c)));
+                title(figName,'interpreter','none');
+            end
+            axis tight
+        end
+        zoom on
+        fig = figure(i2+1);
         print(fig, fullfile(figDir,figName), '-dpng');
         close
     end
-    set_final_status('OK')
-    
-% catch ME
-%     fprintf('%s \n', ME.message)
-%     set_final_status('NOK')
-% end 
+else
+    figure(1)
+    set(gcf,'Position',[629 -17 702 1101])
+    for i5 = 1:n_c
+        if intersect(i5,bIdx)== i5
+            color = 'r';
+        else
+            color = 'k';
+        end
+        subplot(n_c,1,i5)
+        plot(time(D),D(i5,:),color);
+        ylabel([num2str(i5) ' : ' D.chanlabels{i5}])
+        if i5 == 1
+            figName = char(strcat(FileOut,'_',num2str(1),'-',num2str(n_c)));
+            title(figName,'interpreter','none');
+        end
+        axis tight
+    end
+    zoom on
+    fig = figure(1);
+    print(fig, fullfile(figDir,figName), '-dpng');
+    close
+end
+set_final_status('OK')
     
