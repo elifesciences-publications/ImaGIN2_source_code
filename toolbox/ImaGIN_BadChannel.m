@@ -82,12 +82,17 @@ end
     % Predict new dataset
     channelClass = trainedClassifier.predictFcn(T(:,2:8)); 
     % Get list of detected bad channels
-    bIdx = find(strcmp(channelClass, 'Bad'));
+    bIdx = T.noIdx(strcmp(channelClass, 'Bad'));
 
     %%
     % In case disconnected electrode doesn't have stimulation artefact
     % specific for some FTRACT dataset
-    chanLbs = upper(char(D.chanlabels));
+    chanLbs = D.chanlabels;
+    try
+        chanLbs = upper(char(chanLbs));
+    catch
+        chanLbs = upper(char(vertcat(chanLbs{1,:})));
+    end
     chanLbs = strrep(cellstr(chanLbs),'''','p');
     crFname = D.fname;
     crFname = strrep(crFname,'welectrodes_','');
@@ -130,7 +135,8 @@ end
     badFile = fopen(fullfile(badDir, [FileOut, '_bIdx.txt']), 'w'); 
     fprintf(badFile, '%d\n', bIdx(:));
     fclose(badFile);
-    channelClass(bIdx) = {'Bad'};
+    Lia = ismember(T.noIdx,bIdx);
+    channelClass(Lia) = {'Bad'};
     Tnew = [T channelClass];
     Tnew.Properties.VariableNames{'Var9'} = 'Note';
     csvfilename = fullfile(badDir, [FileOut, '.csv']); % Save feature table & badchannels indices

@@ -77,7 +77,7 @@ for j=1:length(KeepEvent) % Navigate all stim events
     noteName(~ismember(double(noteName),['A':'Z' 'a':'z' '_' '.' '''' 'µ' '-' '0':'9'])) ='';
     noteName = regexprep(noteName,'_+','_'); noteName = regexprep(noteName,'µ','u');
     
-    noteName = strrep(noteName,'.0','');
+    noteName = strrep(noteName,'.0',''); noteName = strrep(noteName,'_MA_','_'); %some MIL notes
     noteName = strrep(noteName,'.',''); noteName = strrep(noteName,',','');
     noteName = strrep(noteName,'sec','s');  noteName = strrep(noteName,'AA','A');
     noteName = strrep(noteName,'stim','');

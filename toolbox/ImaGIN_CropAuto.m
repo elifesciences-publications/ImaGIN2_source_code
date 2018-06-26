@@ -119,13 +119,12 @@ for c=1:length(KeepEvent) % Navigate all stim events
     noteName = regexprep(noteName,'_+','_'); noteName = regexprep(noteName,'µ','u');
     noteName = strrep(noteName,'usec','us'); 
     noteName = regexprep(noteName,'MA','mA'); %OD
-    noteName = regexprep(noteName,'MS','mA'); %OD - errors in Milan notes
     noteName = regexprep(noteName,'Stim_Start_',''); %YUQ notes
     noteName = regexprep(noteName,'Stim_Stop_','');  %YUQ notes    
     noteName = strrep(noteName,'-','_');  noteName = strrep(noteName,'__','_');    
-    noteName = strrep(noteName,',','');
+    noteName = strrep(noteName,',','');noteName = strrep(noteName,'_mA_','_');
     noteName = strrep(noteName,'sec','us');  noteName = strrep(noteName,'_us','us');
-    noteName = strrep(noteName,'AA','A');
+    noteName = strrep(noteName,'AA','A'); noteName = strrep(noteName,'_MA_','_'); %some MIL notes 
     keepN = ''; noteName = strrep(noteName,'stim','');  noteName = strrep(noteName,'Stim','');
     try
         fundc = strfind(noteName,'_');
@@ -136,13 +135,23 @@ for c=1:length(KeepEvent) % Navigate all stim events
         end  
     end   
     %% Avoid number starting with 0: 01 02 03,...
-    numZ = regexp(noteName,'\d*','Match');
+    [numZ, numZI] = regexp(noteName,'\d*','Match');
     if numel(numZ) >= 2
         noteName =  char(strrep(noteName,numZ(1), num2str(str2double(numZ(1)))));
-        noteName =  char(strrep(noteName,numZ(2), num2str(str2double(numZ(2)))));
+        noteName =  char(strrep(noteName,numZ(2), num2str(str2double(numZ(2)))));        
     end
+<<<<<<< HEAD
 %     noteName = strrep(noteName,'.0','');
 %       noteName = strrep(noteName,'.','');  %OD for EXCITATOR
+=======
+    noteName = strrep(noteName,'.0',''); noteName = strrep(noteName,'.','');
+    idScore = strfind(noteName,'_');
+    if ~isempty(idScore)
+        if idScore(1) < numZI(1)
+           noteName(idScore(1)) = '';
+        end
+    end
+>>>>>>> 49be8a3362aa9558ed0de011f6ec40fc69754f9f
     %% check if stim electr numbers are concatenated without space or -
     
     numbr = regexp(noteName,'\d*','Match');
@@ -209,13 +218,13 @@ for c=1:length(KeepEvent) % Navigate all stim events
                        elecno = strcat(numbr{2}(1),'_',numbr{2}(2));
                        noteName = strrep(noteName,numbr{2},elecno);
                     end
-                elseif numel(numbr{2}) == 3
-                    elecno = strcat(numbr{2}(1),'_',numbr{2}(2:3));
-                    if str2double(numbr{2}(1)) <= str2double(numbr(1)) + 1 || str2double(numbr{2}(1)) + 1 >= str2double(numbr(1)) 
+                elseif numel(numbr{2}) == 3                    
+                    if str2double(numbr{2}(1)) == str2double(numbr(1)) + 1 || str2double(numbr{2}(1)) + 1 == str2double(numbr(1))
+                        elecno = strcat(numbr{2}(1),'_',numbr{2}(2:3));
                         noteName = strrep(noteName,numbr{2},elecno);
-                    else
-                        elecno = strcat(numbr{2}(1:2),'_',numbr{2}(3));
-                        if str2double(numbr(1)) + 1 == str2double(numbr{2}(1:2)) || str2double(numbr(1)) == str2double(numbr{2}(1:2)) + 1
+                    else                        
+                        if str2double(numbr(1)) + 1 == str2double(numbr{2}(1:2))
+                            elecno = strcat(numbr{2}(1:2),'_',numbr{2}(3));
                             noteName = strrep(noteName,numbr{2},elecno);
                         end
                     end
@@ -426,7 +435,7 @@ for c=1:length(KeepEvent) % Navigate all stim events
         endTime(KeepEvent(c)) = stimTime(end);
         
         % Select only the stimulations
-        if stimFq <= nHz && numel(stimTime) >= minStim && numel(numb) > 1 ...
+        if stimFq <= nHz && numel(stimTime) >= minStim && numel(numb) >= 1 ...
                 && ~strcmp(xsub2(1),'50Hz') 
             clear S
             S.Job   = 'Manual';
@@ -461,7 +470,7 @@ for c=1:length(KeepEvent) % Navigate all stim events
         end
     end
             
-    if stimFq <= nHz && numel(stimTime) >= minStim && numel(numb) > 1 ...
+    if stimFq <= nHz && numel(stimTime) >= minStim && numel(numb) >= 1 ...
             && ~strcmp(xsub2(1),'50Hz') ...
             
         % Add events
