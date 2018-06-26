@@ -49,13 +49,13 @@ catch
     S.D = D;
 end
 
+D = spm_eeg_load(D);
+
 try
     FileOut=S.FileOut;
 catch
-    FileOut=[S.pre D.fname];
+    FileOut=fullfile(D.path,[S.pre D.fname]);
 end
-
-D = spm_eeg_load(D);
 
 
 %-Get parameters

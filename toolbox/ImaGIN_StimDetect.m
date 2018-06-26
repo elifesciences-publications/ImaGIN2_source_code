@@ -71,6 +71,9 @@ if isempty(Start)
     Start=1;
 else
     Start=min(indsample(D,Start));
+    if isnan(Start)
+        Start=1;
+    end
 end
 if isempty(End)
     End=nsamples(D);
@@ -126,8 +129,18 @@ if 1==1
     
     % [tmp1,tmp2]=max(d);
     % Index=find(d>tmp1/4);
-    Index=find(d>2);
-    Index=Index(find(Index>ceil(Stim/2)+1&Index<length(d)-ceil(Stim/2)-1));
+    Th=2;
+    ok=1;
+    while ok
+        EstimatedStim=(length(d)-ceil(Stim))./ceil(Stim);
+        Index=find(d>Th);
+        Index=Index(find(Index>ceil(Stim/2)+1&Index<length(d)-ceil(Stim/2)-1));
+        if length(Index)/5>EstimatedStim
+            Th=Th+1;
+        else
+            ok=0;
+        end
+    end
     if ~isempty(Index)
         IndexClust=zeros(size(Index));
         IndexClust(1)=1;

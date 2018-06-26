@@ -100,6 +100,10 @@ for i0=1:size(Filename,1)
     
     
     Data=D(bipole(1,:),:,:)-D(bipole(2,:),:,:);
+    
+    %in case monopolar is kept on some electrodes
+    Data(find(bipole(1,:)==bipole(2,:)),:,:)=D(bipole(1,find(bipole(1,:)==bipole(2,:))),:,:);
+    
     if strcmp(Name{end},'ecg')
         Data(end,:)=D(bipole(1,end),:,:);
     end
