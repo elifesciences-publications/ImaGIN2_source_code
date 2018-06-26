@@ -5,9 +5,9 @@ function [sFile, ChannelMat] = in_fopen_edf(DataFile, ImportOptions)
 
 % @=============================================================================
 % This function is part of the Brainstorm software:
-% http://neuroimage.usc.edu/brainstorm
+% https://neuroimage.usc.edu/brainstorm
 % 
-% Copyright (c)2000-2017 University of Southern California & McGill University
+% Copyright (c)2000-2018 University of Southern California & McGill University
 % This software is distributed under the terms of the GNU General Public License
 % as published by the Free Software Foundation. Further details on the GPLv3
 % license can be found at http://www.gnu.org/copyleft/gpl.html.
@@ -21,7 +21,7 @@ function [sFile, ChannelMat] = in_fopen_edf(DataFile, ImportOptions)
 % For more information type "brainstorm license" at command prompt.
 % =============================================================================@
 %
-% Authors: Francois Tadel, 2012-2017
+% Authors: Francois Tadel, 2012-2018
         
 
 % Parse inputs
@@ -196,6 +196,9 @@ sFile.prop.times   = sFile.prop.samples ./ sFile.prop.sfreq;
 sFile.prop.nAvg    = 1;
 % No info on bad channels
 sFile.channelflag = ones(hdr.nsignal,1);
+% Acquisition date
+sFile.acq_date = str_date(hdr.startdate);
+
 
 
 %% ===== PROCESS CHANNEL NAMES/TYPES =====
@@ -203,16 +206,17 @@ sFile.channelflag = ones(hdr.nsignal,1);
 SplitType = repmat({''}, 1, hdr.nsignal);
 SplitName = repmat({''}, 1, hdr.nsignal);
 for i = 1:hdr.nsignal
+    signalLabel = strrep(hdr.signal(i).label, ' - ', '-');
     % Find space chars (label format "Type Name")
-    iSpace = find(hdr.signal(i).label == ' ');
+    iSpace = find(signalLabel == ' ');
     % Only if there is one space only
     if (length(iSpace) == 1) && (iSpace >= 3)
-        SplitName{i} = hdr.signal(i).label(iSpace+1:end);
-        SplitType{i} = hdr.signal(i).label(1:iSpace-1);
+        SplitName{i} = signalLabel(iSpace+1:end);
+        SplitType{i} = signalLabel(1:iSpace-1);
     % Accept also 2 spaces
     elseif (length(iSpace) == 2) && (iSpace(1) >= 3)
-        SplitName{i} = strrep(hdr.signal(i).label(iSpace(1)+1:end), ' ', '_');
-        SplitType{i} = hdr.signal(i).label(1:iSpace(1)-1);
+        SplitName{i} = strrep(signalLabel(iSpace(1)+1:end), ' ', '_');
+        SplitType{i} = signalLabel(1:iSpace(1)-1);
     end
 end
 % Remove the classification if it makes some names non unique
@@ -255,7 +259,7 @@ for i = 1:hdr.nsignal
             if ~isempty(hdr.signal(i).type)
                 if (length(hdr.signal(i).type) == 3)
                     ChannelMat.Channel(i).Type = hdr.signal(i).type(hdr.signal(i).type ~= ' ');
-                elseif isequal(hdr.signal(i).type, 'Active Electrode')
+                elseif isequal(hdr.signal(i).type, 'Active Electrode') || isequal(hdr.signal(i).type, 'AgAgCl electrode')
                     ChannelMat.Channel(i).Type = 'EEG';
                 else
                     ChannelMat.Channel(i).Type = 'Misc';
@@ -348,6 +352,10 @@ if ~isempty(iEvtChans) % && ~isequal(ImportOptions.EventsMode, 'ignore')
                     label = Fsplit{iAnnot+1};
                     if (length(t_dur) > 1)
                         duration = str2double(t_dur{2});
+                        % Exclude 1-sample long events
+                        if (round(duration .* sFile.prop.sfreq) <= 1)
+                            duration = 0;
+                        end
                     else
                         duration = 0;
                     end

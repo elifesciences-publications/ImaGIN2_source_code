@@ -120,10 +120,13 @@ if 1==1
     d1=max(d,[],1);
     d1=ImaGIN_normalisation(d1,2);
     d2=mean(d,1);
-    d2=ImaGIN_normalisation(d2,2);
+    d2=ImaGIN_normalisation(d2,2);  
+    if isempty(d1)  % fix: matlab2015 doesn't know how to make addition NaN matrix and empty matrix
+        d1 = NaN(size(d2));
+    end
     
     d=d1+d2;
-
+    
     
     d=ImaGIN_normalisation(d,2);
     
